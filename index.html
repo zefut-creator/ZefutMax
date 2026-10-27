@@ -694,7 +694,7 @@ function render(){
     'content','#050505');
   $('theme').textContent=state.theme==='dark'?'☀️':'🌙';
   $('theme').setAttribute('aria-label',state.theme==='dark'?'Включить светлую тему':'Включить тёмную тему');
-  $('main').innerHTML=tab==='market'?renderMarket():tab==='mine'?renderMine():tab==='history'?renderHistory():tab==='profile'?renderProfile():renderPlay();
+  $('main').innerHTML=tab==='market'?renderMarket():tab==='mine'?renderMine():tab==='profile'?renderProfile():renderPlay();
 }
 
 function find(arr,id){
