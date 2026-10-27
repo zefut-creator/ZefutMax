@@ -332,10 +332,24 @@ function seed(){
 }
 
 function validState(x){
-  return x && Number.isFinite(x.bal) && x.bal>=0 &&
-    Array.isArray(x.mk) && Array.isArray(x.mine) &&
-    Array.isArray(x.favs) && Array.isArray(x.history) &&
-    typeof x.theme==='string';
+  if(!x || !Number.isFinite(x.bal) || x.bal<0 ||
+    !Array.isArray(x.mk) || !Array.isArray(x.mine) ||
+    !Array.isArray(x.favs) || !Array.isArray(x.history) ||
+    !['dark','light'].includes(x.theme) ||
+    !Number.isFinite(x.nid)) return false;
+
+  const validGift = g => Number.isInteger(g) && g>=0 && g<gifts.length;
+  const validListing = item => item && Number.isFinite(item.id) &&
+    validGift(item.g) && Number.isFinite(item.n) &&
+    Number.isFinite(item.p) && item.p>0;
+
+  return x.mk.every(item => validListing(item) &&
+      (item.own===undefined || typeof item.own==='boolean')) &&
+    x.mine.every(item => item && Number.isFinite(item.id) &&
+      validGift(item.g) && Number.isFinite(item.n)) &&
+    x.favs.every(validGift) &&
+    x.history.every(item => item && typeof item.name==='string' &&
+      Number.isFinite(item.amount) && Number.isFinite(item.at));
 }
 
 function load(){
@@ -521,7 +535,10 @@ function renderHistory(){
 function render(){
   $('bal').textContent=fmt(state.bal);
   document.documentElement.dataset.theme=state.theme;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute(
+    'content',state.theme==='dark'?'#10091f':'#f5efff');
   $('theme').textContent=state.theme==='dark'?'☀️':'🌙';
+  $('theme').setAttribute('aria-label',state.theme==='dark'?'Включить светлую тему':'Включить тёмную тему');
   $('main').innerHTML=tab==='market'?renderMarket():tab==='mine'?renderMine():renderHistory();
 }
 
