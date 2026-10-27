@@ -329,7 +329,6 @@ nav button{min-width:0;font-size:11px}
 <nav>
   <button id="marketTab" class="active"><span class="ico">🛍️</span>Маркет</button>
   <button id="mineTab"><span class="ico">🎁</span>Мои подарки</button>
-  <button id="historyTab"><span class="ico">📊</span>История</button>
   <button id="playTab"><span class="ico">🚀</span>Play Hub</button>
   <button id="profileTab"><span class="ico">👤</span>Профиль</button>
 </nav>
@@ -518,7 +517,6 @@ function setTab(next){
   tab=next;
   $('marketTab').classList.toggle('active',next==='market');
   $('mineTab').classList.toggle('active',next==='mine');
-  $('historyTab').classList.toggle('active',next==='history');
   $('playTab').classList.toggle('active',next==='play');
   $('profileTab').classList.toggle('active',next==='profile');
   $('toolbar').style.display=next==='market'?'grid':'none';
@@ -826,7 +824,6 @@ document.addEventListener('click',e=>{
 
   if(b.id==='marketTab') return setTab('market');
   if(b.id==='mineTab') return setTab('mine');
-  if(b.id==='historyTab') return setTab('history');
   if(b.id==='playTab') return setTab('play');
   if(b.id==='profileTab') return setTab('profile');
   if(d.play){playMode=d.play;playRound=0;if(d.play==='mines') startMines();render();return;}
