@@ -409,7 +409,8 @@ const esc = s => String(s).replace(/[&<>"']/g,c=>({
 
 let tab='market', filter='all', mineTab='owned', search='', sort='priceUp';
 let playMode=''; let playRound=0;
-let minesCount=3, minesSet=new Set(), openedCells=new Set(), minesOver=false;\nlet trainingStake=10, minesMultiplier=1, minesCashed=false;
+let minesCount=3, minesSet=new Set(), openedCells=new Set(), minesOver=false;
+let trainingStake=10, minesMultiplier=1, minesCashed=false;
 let toastTimer, state;
 let liveCatalog=null, liveCatalogError='', liveCatalogLoading=true;
 
@@ -829,14 +830,15 @@ document.addEventListener('click',e=>{
   if(b.id==='playTab') return setTab('play');
   if(b.id==='profileTab') return setTab('profile');
   if(d.play){playMode=d.play;playRound=0;if(d.play==='mines') startMines();render();return;}
-  if(d.playback){playMode='';minesOver=false;minesCashed=false;openedCells.clear();setTab('play');return;}\n  if(d.cashout){if(minesOver||openedCells.size===0)return;minesOver=true;minesCashed=true;haptic('success');toast('Результат тренировки зафиксирован: '+fmt(trainingStake*minesMultiplier)+' очков');render();return;}
+  if(d.playback){playMode='';minesOver=false;minesCashed=false;openedCells.clear();setTab('play');return;}
+  if(d.cashout){if(minesOver||openedCells.size===0)return;minesOver=true;minesCashed=true;haptic('success');toast('Результат тренировки зафиксирован: '+fmt(trainingStake*minesMultiplier)+' очков');render();return;}
   if(d.newmines){const input=$('trainingStakeInput');if(input){const n=Number(input.value);if(Number.isFinite(n)&&n>=0.1&&n<=10000)trainingStake=Math.round(n*10)/10;else{toast('Очки должны быть от 0,1 до 10 000');return;}}startMines();render();return;}
   if(d.cell!==undefined){
     const cell=Number(d.cell);
     if(minesOver||openedCells.has(cell)) return;
     openedCells.add(cell);
-    if(minesSet.has(cell)){minesOver=true;haptic('error');toast('💥 Мина! Раунд проигран.');}
-    else haptic('light');
+    if(minesSet.has(cell)){minesOver=true;haptic('error');toast('💥 Мина! Раунд завершён. Очки тренировки не начислены.');}
+    else {minesMultiplier*=2;haptic('light');}
     render();return;
   }
   if(d.rocket){playRound++;$('rocketStatus').textContent='Раунд завершён · тренировочный';$('rocketMult').textContent=(1+playRound*0.37).toFixed(2)+'×';b.textContent='Запустить ещё раз';return;}
