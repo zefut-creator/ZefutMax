@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#10091f">
+<meta name="theme-color" content="#050505">
 <meta name="description" content="ZefutMax — демо-интерфейс каталога Telegram Gifts. Реальные покупки и передача подарков пока не подключены.">
 <meta name="color-scheme" content="dark light">
 <title>ZefutMax — Gift Market</title>
@@ -12,18 +12,18 @@
 <style>
 :root{
   color-scheme:dark;
-  --bg:#10091f;--panel:#21143b;--panel2:#30204f;
-  --line:#49316b;--text:#f8f1ff;--muted:#ad9bbf;
+  --bg:#050505;--panel:#101010;--panel2:#191919;
+  --line:#303030;--text:#f7f7f7;--muted:#a3a3a3;
   --accent:#ff9f1c;--green:#4ce0a0;--red:#ff8193;
   --gradient:linear-gradient(135deg,#ffad1f,#ff7a18);
   --shadow:0 12px 32px #0003
 }
 :root[data-theme="light"]{
   color-scheme:light;
-  --bg:#f5efff;--panel:#fff;--panel2:#eee2ff;
-  --line:#d9c4f5;--text:#271536;--muted:#786687;
-  --accent:#c66a00;--green:#087b50;--red:#cb304a;
-  --gradient:linear-gradient(135deg,#ffbd3d,#ff8a18);
+  --bg:#080808;--panel:#111;--panel2:#1b1b1b;
+  --line:#333;--text:#f7f7f7;--muted:#aaa;
+  --accent:#ff8a00;--green:#47d18c;--red:#ff667a;
+  --gradient:linear-gradient(135deg,#ffad1f,#ff7600);
   --shadow:0 12px 32px #4b286010
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -94,12 +94,12 @@ main{max-width:1000px;margin:auto;padding:18px 15px}
 .art{
   position:relative;aspect-ratio:1;border-radius:13px;
   display:grid;place-items:center;overflow:hidden;font-size:50px;
-  background:radial-gradient(circle at 25% 15%,#ffffff36,transparent 40%),
-  linear-gradient(145deg,#6d35d4,#7f3fe0 52%,#ff9f1c)
+  background:radial-gradient(circle at 25% 15%,#ffffff20,transparent 40%),
+  linear-gradient(145deg,#171717,#ff8a00 120%)
 }
-.art.c1{background:linear-gradient(145deg,#673ad1,#ff9a1f)}
-.art.c2{background:linear-gradient(145deg,#8a4de5,#ff941f)}
-.art.c3{background:linear-gradient(145deg,#ffad1f,#6d38c4)}
+.art.c1{background:linear-gradient(145deg,#111,#ff8a00)}
+.art.c2{background:linear-gradient(145deg,#242424,#b85b00)}
+.art.c3{background:linear-gradient(145deg,#ffad1f,#202020)}
 .emoji{filter:drop-shadow(0 5px 7px #0002)}
 .cardtop{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:9px}
 .cardtop b{font-size:13px;line-height:1.3;overflow-wrap:anywhere}
@@ -231,7 +231,7 @@ header{box-shadow:0 8px 28px #00000008}
 .art:before{
   content:"";position:absolute;inset:0;z-index:-1;
   background:radial-gradient(circle at 25% 15%,#ffffff38,transparent 42%),
-    linear-gradient(145deg,#6d35d4,#7f3fe0 52%,#ff9f1c)
+    linear-gradient(145deg,#111,#ff8a00 125%)
 }
 .art .emoji{transition:transform .22s var(--ease)}
 .card:hover .art .emoji{transform:translateY(-2px) scale(1.06)}
@@ -261,6 +261,25 @@ nav button:active{transform:scale(.97)}
   #overlay{transition:none!important}
 }
 
+
+/* Play Hub + monochrome orange identity */
+.logo{background:#080808;border:1px solid #ff8a00;border-radius:14px}
+.btn{color:#080808}
+.hub-banner{display:flex;align-items:center;gap:14px;padding:17px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(110deg,#171717,#0b0b0b);margin-bottom:14px}
+.hub-orb{width:48px;height:48px;display:grid;place-items:center;border-radius:15px;background:#ff8a00;color:#080808;font-size:27px}
+.gamecards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.gamecard{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:9px;padding:13px 11px;min-height:170px;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:17px}
+.gamecard:hover{border-color:var(--accent);transform:translateY(-2px)}
+.gameicon{font-size:29px;width:48px;height:48px;display:grid;place-items:center;background:#1c1c1c;border-radius:14px}
+.game-open{margin-top:auto;color:var(--accent);font-size:12px;font-weight:800}
+.gameboard{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:16px 0}
+.gamecell{aspect-ratio:1;border-radius:12px;border:1px solid #3a3a3a;background:#181818;color:var(--accent);font-weight:900;font-size:20px}
+.gamecell.revealed{background:#262626}
+.rocket-stage{margin:16px 0;padding:28px 15px;text-align:center;border:1px solid var(--line);border-radius:20px;background:radial-gradient(circle at 50% 20%,#ff8a0022,transparent 65%),#101010}
+.rocket-icon{font-size:55px;margin-bottom:10px}.rocket-mult{font-size:34px;color:var(--accent);font-weight:900;margin-top:12px}
+.pvp-box{display:flex;align-items:center;justify-content:space-around;gap:12px;padding:25px 12px;border:1px solid var(--line);border-radius:18px;background:var(--panel)}
+.fighter{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:32px}.fighter b{font-size:12px}.fighter strong{font-size:25px;color:var(--accent)}.versus{font-weight:900;color:var(--muted)}
+@media(max-width:430px){.gamecards{grid-template-columns:1fr}.gamecard{min-height:unset;display:grid;grid-template-columns:48px 1fr;align-items:center}.gamecard .muted,.game-open{grid-column:2}.gameicon{grid-row:1/4}}
 </style>
 </head>
 <body>
@@ -268,7 +287,7 @@ nav button:active{transform:scale(.97)}
   <div class="wrap">
     <div class="top">
       <div class="brand">
-        <div class="logo">🎁</div>
+        <div class="logo" aria-label="ZefutMax crystal logo"><svg viewBox="0 0 48 48" width="34" height="34" aria-hidden="true"><path d="M15 5h18l11 12-20 26L4 17Z" fill="#080808" stroke="#ff8a00" stroke-width="2.5" stroke-linejoin="round"/><path d="M15 5 24 17 33 5M4 17h40M24 17v26" fill="none" stroke="#ffb13b" stroke-width="1.7"/><path d="m15 22 18 9-7-1-5 5 1-7Z" fill="#ff8a00"/><path d="m30 10 1.4 3.3 3.6 1.2-3.6 1.2L30 19l-1.3-3.3-3.7-1.2 3.7-1.2Z" fill="#fff2d7"/></svg></div>
         <div><h1>ZefutMax</h1><div class="subhead">Telegram Gifts Market</div></div>
       </div>
       <div class="topactions">
@@ -319,8 +338,8 @@ try {
   if(tg){
     tg.ready();
     tg.expand();
-    tg.setHeaderColor('#10091f');
-    tg.setBackgroundColor('#10091f');
+    tg.setHeaderColor('#050505');
+    tg.setBackgroundColor('#050505');
   }
 } catch(e) {}
 
@@ -379,6 +398,7 @@ const esc = s => String(s).replace(/[&<>"']/g,c=>({
 }[c]));
 
 let tab='market', filter='all', mineTab='owned', search='', sort='priceUp';
+let playMode=''; let playRound=0;
 let toastTimer, state;
 let liveCatalog=null, liveCatalogError='', liveCatalogLoading=true;
 
@@ -487,6 +507,7 @@ function setTab(next){
   $('marketTab').classList.toggle('active',next==='market');
   $('mineTab').classList.toggle('active',next==='mine');
   $('historyTab').classList.toggle('active',next==='history');
+  $('playTab').classList.toggle('active',next==='play');
   $('toolbar').style.display=next==='market'?'grid':'none';
   $('filters').style.display=next==='market'?'flex':'none';
   render();
@@ -618,14 +639,26 @@ function renderHistory(){
       </div>`).join('');
 }
 
+function renderPlay(){
+  const games=[
+    ['💣','Мины','Открывай клетки и тренируй внимательность.','mines'],
+    ['🚀','Ракетка','Следи за полётом ракеты и останови раунд в любой момент.','rocket'],
+    ['⚔️','PvP Арена','Тренировочный матч против демо-соперника.','pvp']
+  ];
+  if(playMode==='mines') return '<div class="sectionhead"><h2>💣 Мины · тренировка</h2><span class="count">Без ставок</span></div><p class="note">Учебное поле: без баланса, ставок и выигрышей. Просто открой клетки.</p><div class="gameboard">'+Array.from({length:25},(_,i)=>'<button class="gamecell" data-cell="'+i+'">?</button>').join('')+'</div><button class="btn secondary" data-playback>← Все режимы</button>';
+  if(playMode==='rocket') return '<div class="sectionhead"><h2>🚀 Ракетка · тренировка</h2><span class="count">Без ставок</span></div><div class="rocket-stage"><div class="rocket-icon">🚀</div><strong id="rocketStatus">Ракета готова к запуску</strong><div class="rocket-mult" id="rocketMult">1.00×</div></div><p class="note">Тренировочная анимация, множитель условный. Нет ставок, выплат или реальных выигрышей.</p><button class="btn" data-rocket>Запустить ракету</button><button class="btn secondary" data-playback>← Все режимы</button>';
+  if(playMode==='pvp') return '<div class="sectionhead"><h2>⚔️ PvP Арена</h2><span class="count">Демо-матч</span></div><div class="pvp-box"><div class="fighter">🟠<b>Ты</b><strong id="youScore">0</strong></div><div class="versus">VS</div><div class="fighter">🤖<b>Бот-соперник</b><strong id="botScore">0</strong></div></div><p class="note">Локальная тренировка против компьютера. Другие игроки пока не подключены; матч не влияет на баланс.</p><button class="btn" data-pvp>Начать раунд</button><button class="btn secondary" data-playback>← Все режимы</button>';
+  return '<div class="sectionhead"><h2>Play Hub</h2><span class="count">Игровой центр</span></div><div class="hub-banner"><div class="hub-orb">✦</div><div><b>Играй в тренировочных режимах</b><div class="muted">Чёрный · оранжевый · без ставок</div></div></div><div class="gamecards">'+games.map(g=>'<button class="gamecard" data-play="'+g[3]+'"><span class="gameicon">'+g[0]+'</span><b>'+g[1]+'</b><span class="muted">'+g[2]+'</span><span class="game-open">Открыть →</span></button>').join('')+'</div><p class="note">Это первая демо-версия Play Hub. Игры работают локально: без реальных денег, ставок, выплат и онлайн-матчмейкинга.</p>';
+}
+
 function render(){
   $('bal').textContent=fmt(state.bal);
   document.documentElement.dataset.theme=state.theme;
   document.querySelector('meta[name="theme-color"]')?.setAttribute(
-    'content',state.theme==='dark'?'#10091f':'#f5efff');
+    'content','#050505');
   $('theme').textContent=state.theme==='dark'?'☀️':'🌙';
   $('theme').setAttribute('aria-label',state.theme==='dark'?'Включить светлую тему':'Включить тёмную тему');
-  $('main').innerHTML=tab==='market'?renderMarket():tab==='mine'?renderMine():renderHistory();
+  $('main').innerHTML=tab==='market'?renderMarket():tab==='mine'?renderMine():tab==='history'?renderHistory():renderPlay();
 }
 
 function find(arr,id){
@@ -757,6 +790,12 @@ document.addEventListener('click',e=>{
   if(b.id==='marketTab') return setTab('market');
   if(b.id==='mineTab') return setTab('mine');
   if(b.id==='historyTab') return setTab('history');
+  if(b.id==='playTab') return setTab('play');
+  if(d.play){playMode=d.play;playRound=0;render();return;}
+  if(d.playback){playMode='';render();return;}
+  if(d.cell!==undefined){b.classList.add('revealed');b.textContent=(Number(d.cell)%7===0)?'💣':'✦';b.disabled=true;b.style.color=(Number(d.cell)%7===0)?'#ff667a':'#ffad1f';return;}
+  if(d.rocket){playRound++;$('rocketStatus').textContent='Раунд завершён · тренировочный';$('rocketMult').textContent=(1+playRound*0.37).toFixed(2)+'×';b.textContent='Запустить ещё раз';return;}
+  if(d.pvp){const you=Math.floor(Math.random()*4)+1;const bot=Math.floor(Math.random()*4)+1;$('youScore').textContent=you;$('botScore').textContent=bot;b.textContent=you===bot?'Ничья · ещё раунд':you>bot?'Победа в тренировке · ещё раунд':'Соперник выиграл · ещё раунд';return;}
 
   if(b.id==='theme'){
     state.theme=state.theme==='dark'?'light':'dark';
