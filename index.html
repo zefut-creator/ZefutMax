@@ -455,7 +455,7 @@ function renderLiveCatalog(){
         ? '<img src="/api/gift-image?file_id='+encodeURIComponent(g.stickerFileId)+'" alt="Стикер подарка Telegram" loading="lazy" style="width:100%;height:100%;object-fit:contain;padding:18px" onerror="this.style.display=\'none\'">'
         : '<span class="emoji">🎁</span>';
       const stock=g.remainingCount!==null?'Осталось: '+fmt(g.remainingCount):'Доступен у бота';
-      return '<article class="card"><div class="art">'+visual+'</div><div class="cardtop"><b>Telegram Gift</b></div><div class="muted">'+esc(stock)+(g.premiumOnly?' · Premium':'')+'</div><div class="price">'+fmt(g.stars)+' <small>Stars</small></div><button class="btn secondary" data-giftinfo="'+esc(g.id)+'">Подробнее</button></article>';
+      return '<article class="card"><div class="art">'+visual+'</div><div class="cardtop"><b>'+esc(g.stickerEmoji||'Telegram Gift')+'</b></div><div class="muted">'+esc(stock)+(g.premiumOnly?' · Premium':'')+'</div><div class="price">'+fmt(g.stars)+' <small>Stars</small></div><button class="btn secondary" data-giftinfo="'+esc(g.id)+'">Подробнее</button></article>';
     }).join('')+'</div><p class="note">Данные из официального Telegram Bot API. Это подарки, которые бот может отправлять, а не лоты вторичного рынка. Покупка и отправка через этот каталог пока не включены.</p>';
 }
 
