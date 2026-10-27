@@ -20,10 +20,10 @@
 }
 :root[data-theme="light"]{
   color-scheme:light;
-  --bg:#080808;--panel:#111;--panel2:#1b1b1b;
-  --line:#333;--text:#f7f7f7;--muted:#aaa;
-  --accent:#ff8a00;--green:#47d18c;--red:#ff667a;
-  --gradient:linear-gradient(135deg,#ffad1f,#ff7600);
+  --bg:#f7f5fb;--panel:#ffffff;--panel2:#f0eaf8;
+  --line:#ded6e8;--text:#21162b;--muted:#716879;
+  --accent:#8b45d6;--green:#16865b;--red:#c83756;
+  --gradient:linear-gradient(135deg,#9b5de5,#ff8a00);
   --shadow:0 12px 32px #4b286010
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -264,6 +264,12 @@ nav button:active{transform:scale(.97)}
 
 /* Play Hub + monochrome orange identity */
 .logo{background:#080808;border:1px solid #ff8a00;border-radius:14px}
+:root[data-theme="light"] .logo{background:#fff;border-color:#8b45d6}
+:root[data-theme="light"] .hub-banner,:root[data-theme="light"] .profile-hero{background:linear-gradient(120deg,#fff,#f0eaf8)}
+:root[data-theme="light"] .gameicon{background:#f0eaf8}
+:root[data-theme="light"] .gameboard .gamecell{background:#fff;border-color:#ded6e8;color:#8b45d6}
+:root[data-theme="light"] .rocket-stage,:root[data-theme="light"] .pvp-box{background:#fff}
+:root[data-theme="light"] .art:before{background:radial-gradient(circle at 25% 15%,#ffffff90,transparent 42%),linear-gradient(145deg,#eee5f8,#ffb15c 125%)}
 .btn{color:#080808}
 .hub-banner{display:flex;align-items:center;gap:14px;padding:17px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(110deg,#171717,#0b0b0b);margin-bottom:14px}
 .hub-orb{width:48px;height:48px;display:grid;place-items:center;border-radius:15px;background:#ff8a00;color:#080808;font-size:27px}
@@ -514,6 +520,7 @@ function log(type,name,amount,detail=''){
 }
 
 function setTab(next){
+  if(next!=='play' && rocketTimer){clearInterval(rocketTimer);rocketTimer=null;rocketRunning=false;}
   tab=next;
   $('marketTab').classList.toggle('active',next==='market');
   $('mineTab').classList.toggle('active',next==='mine');
@@ -655,6 +662,7 @@ function startMines(){
   if(select) minesCount=Number(select.value)||minesCount;
   minesCount=Math.max(1,Math.min(24,Math.floor(minesCount)));
   minesSet=new Set();openedCells=new Set();minesOver=false;minesMultiplier=1;minesCashed=false;
+  minesStarted=true;
   while(minesSet.size<minesCount) minesSet.add(Math.floor(Math.random()*25));
 }
 
@@ -826,7 +834,7 @@ document.addEventListener('click',e=>{
   if(b.id==='mineTab') return setTab('mine');
   if(b.id==='playTab') return setTab('play');
   if(b.id==='profileTab') return setTab('profile');
-  if(d.play){playMode=d.play;playRound=0;if(d.play==='mines'){minesStarted=false;minesOver=false;minesCashed=false;openedCells.clear();minesMultiplier=1;}if(d.play==='rocket'){rocketRunning=false;if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketValue=1;}render();return;}
+  if(d.play){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode=d.play;playRound=0;if(d.play==='mines'){minesStarted=false;minesOver=false;minesCashed=false;openedCells.clear();minesMultiplier=1;}if(d.play==='rocket'){rocketRunning=false;if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketValue=1;}render();return;}
   if(d.playback){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode='';minesStarted=false;minesOver=false;minesCashed=false;openedCells.clear();setTab('play');return;}
   if(d.cashout){if(minesOver||openedCells.size===0)return;minesOver=true;minesCashed=true;haptic('success');toast('Результат тренировки: '+fmt(trainingStake*minesMultiplier)+' GRAM (демо)');render();return;}
   if(d.newmines||d.startmines){const input=$('trainingStakeInput');const mineSelect=$('mineCountSelect');if(input){const n=Number(input.value);if(Number.isFinite(n)&&n>=0.1&&n<=10000)trainingStake=Math.round(n*10)/10;else{toast('Укажи значение от 0,1 до 10 000 GRAM');return;}}if(mineSelect)minesCount=Number(mineSelect.value)||3;startMines();render();return;}
