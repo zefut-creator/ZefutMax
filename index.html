@@ -282,7 +282,7 @@ nav button:active{transform:scale(.97)}
 .gamecell{aspect-ratio:1;border-radius:12px;border:1px solid #3a3a3a;background:#181818;color:var(--accent);font-weight:900;font-size:20px}
 .gamecell.revealed{background:#262626}
 .rocket-stage{margin:16px 0;padding:28px 15px;text-align:center;border:1px solid var(--line);border-radius:20px;background:radial-gradient(circle at 50% 20%,#ff8a0022,transparent 65%),#101010}
-.rocket-icon{font-size:55px;margin-bottom:10px}.rocket-mult{font-size:34px;color:var(--accent);font-weight:900;margin-top:12px}
+.rocket-icon{font-size:55px;margin-bottom:10px;display:inline-block}.rocket-icon.flying{animation:rocket-lift .38s ease-in-out infinite alternate}.rocket-mult{font-size:34px;color:var(--accent);font-weight:900;margin-top:12px}.rocket-sub{font-size:12px;color:var(--muted);margin-top:8px}@keyframes rocket-lift{from{transform:translate(0,4px) rotate(-4deg)}to{transform:translate(5px,-12px) rotate(5deg)}}
 .pvp-box{display:flex;align-items:center;justify-content:space-around;gap:12px;padding:25px 12px;border:1px solid var(--line);border-radius:18px;background:var(--panel)}
 .fighter{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:32px}.fighter b{font-size:12px}.fighter strong{font-size:25px;color:var(--accent)}.versus{font-weight:900;color:var(--muted)}
 @media(max-width:430px){.gamecards{grid-template-columns:1fr}.gamecard{min-height:unset;display:grid;grid-template-columns:48px 1fr;align-items:center}.gamecard .muted,.game-open{grid-column:2}.gameicon{grid-row:1/4}}
@@ -413,7 +413,7 @@ const esc = s => String(s).replace(/[&<>"']/g,c=>({
 }[c]));
 
 let tab='market', filter='all', mineTab='owned', search='', sort='priceUp';
-let playMode=''; let playRound=0; let rocketTimer=null; let rocketValue=1; let rocketRunning=false;
+let playMode=''; let playRound=0; let rocketTimer=null; let rocketValue=1; let rocketRunning=false; let rocketCrashAt=0; let rocketBest=1;
 let minesCount=3, minesSet=new Set(), openedCells=new Set(), minesOver=false;
 let trainingStake=10, minesMultiplier=1, minesCashed=false, minesStarted=false;
 let toastTimer, state;
@@ -673,7 +673,7 @@ function renderPlay(){
     ['⚔️','PvP Арена','Тренировочный матч против демо-соперника.','pvp']
   ];
   if(playMode==='mines') return '<div class="sectionhead"><h2>💣 Мины</h2><span class="count">Демо-режим</span></div><div class="gameboard">'+Array.from({length:25},(_,i)=>'<button class="gamecell '+(minesStarted&&openedCells.has(i)?'revealed':'')+'" data-cell="'+i+'" '+(!minesStarted||openedCells.has(i)||minesOver?'disabled':'')+'>'+((minesStarted&&(openedCells.has(i)||minesOver&&minesSet.has(i)))?(minesSet.has(i)?'💣':'✦'):'?')+'</button>').join('')+'</div><div class="summary"><div><span>Статус</span><b>'+(minesOver?(minesCashed?'Результат зафиксирован':'Раунд завершён'):(minesStarted?'Игра идёт':'Готов к запуску'))+'</b></div><div><span>Множитель</span><b>'+minesMultiplier.toFixed(2)+'×</b></div><div><span>Демо-результат</span><b>'+fmt(trainingStake*minesMultiplier)+' GRAM</b></div></div><div class="sectionhead" style="margin-top:18px"><h2>Настройки игры</h2></div><label class="inputlabel" for="trainingStakeInput">Демо-ставка в GRAM (0,1–10 000)</label><input id="trainingStakeInput" type="number" min="0.1" max="10000" step="0.1" value="'+trainingStake+'" '+(minesStarted?'disabled':'')+' style="width:100%;margin:6px 0 10px"><label class="inputlabel" for="mineCountSelect">Количество мин</label><select id="mineCountSelect" style="width:100%;margin:6px 0 10px" '+(minesStarted?'disabled':'')+'>'+[1,3,5,8,10,12,15,20].map(n=>'<option value="'+n+'" '+(n===minesCount?'selected':'')+'>'+n+' мин</option>').join('')+'</select>'+(minesOver?'<button class="btn" data-newmines>Новая игра</button>':minesStarted?'<button class="btn" data-cashout>Забрать результат · '+fmt(trainingStake*minesMultiplier)+' GRAM</button>':'<button class="btn" data-startmines>Начать игру</button>')+'<button class="btn secondary" style="margin-top:8px" data-playback>← Вернуться в Play Hub</button>';
-  if(playMode==='rocket') return '<div class="sectionhead"><h2>🚀 Ракета</h2><span class="count">Аркадная тренировка</span></div><div class="rocket-stage"><div class="rocket-icon" id="rocketIcon">🚀</div><strong id="rocketStatus">Готов к старту</strong><div class="rocket-mult" id="rocketMult">1.00×</div></div><p class="note">Нажми «Запустить», затем «Остановить» в любой момент. Это аркадная тренировка: GRAM не списываются и не начисляются.</p><button class="btn" data-rocket>Запустить ракету</button><button class="btn secondary" data-playback>← Все режимы</button>';
+  if(playMode==='rocket') return '<div class="sectionhead"><h2>🚀 Ракета</h2><span class="count">Аркадная тренировка</span></div><div class="rocket-stage"><div class="rocket-icon" id="rocketIcon">🚀</div><strong id="rocketStatus">Готов к старту</strong><div class="rocket-mult" id="rocketMult">1.00×</div><div class="rocket-sub">Лучший результат: <b id="rocketBest">'+rocketBest.toFixed(2)+'×</b></div></div><p class="note">После запуска ракета летит сама и неожиданно завершает полёт. Наблюдай за множителем и нажми «Остановить и сохранить очки» до конца полёта. Это аркадная тренировка без ставок: GRAM не списываются и не выплачиваются.</p><button class="btn" data-rocket>Запустить ракету</button><button class="btn secondary" data-playback style="margin-top:8px">← Все режимы</button>';
   if(playMode==='pvp') return '<div class="sectionhead"><h2>⚔️ PvP Арена</h2><span class="count">Демо-матч</span></div><div class="pvp-box"><div class="fighter">🟠<b>Ты</b><strong id="youScore">0</strong></div><div class="versus">VS</div><div class="fighter">🤖<b>Бот-соперник</b><strong id="botScore">0</strong></div></div><p class="note">Локальная тренировка против компьютера. Другие игроки пока не подключены; матч не влияет на баланс.</p><button class="btn" data-pvp>Начать раунд</button><button class="btn secondary" data-playback>← Все режимы</button>';
   return '<div class="sectionhead"><h2>Play Hub</h2><span class="count">Игровой центр</span></div><div class="hub-banner"><div class="hub-orb">✦</div><div><b>Играй в тренировочных режимах</b><div class="muted">Чёрный · оранжевый · без ставок</div></div></div><div class="gamecards">'+games.map(g=>'<button class="gamecard" data-play="'+g[3]+'"><span class="gameicon">'+g[0]+'</span><b>'+g[1]+'</b><span class="muted">'+g[2]+'</span><span class="game-open">Открыть →</span></button>').join('')+'</div><p class="note">Это первая демо-версия Play Hub. Игры работают локально: без реальных денег, ставок, выплат и онлайн-матчмейкинга.</p>';
 }
@@ -834,20 +834,56 @@ document.addEventListener('click',e=>{
   if(b.id==='mineTab') return setTab('mine');
   if(b.id==='playTab') return setTab('play');
   if(b.id==='profileTab') return setTab('profile');
-  if(d.play){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode=d.play;playRound=0;if(d.play==='mines'){minesStarted=false;minesOver=false;minesCashed=false;openedCells.clear();minesMultiplier=1;}if(d.play==='rocket'){rocketRunning=false;if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketValue=1;}render();return;}
-  if(d.playback){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode='';minesStarted=false;minesOver=false;minesCashed=false;openedCells.clear();setTab('play');return;}
-  if(d.cashout){if(minesOver||openedCells.size===0)return;minesOver=true;minesCashed=true;haptic('success');toast('Результат тренировки: '+fmt(trainingStake*minesMultiplier)+' GRAM (демо)');render();return;}
-  if(d.newmines||d.startmines){const input=$('trainingStakeInput');const mineSelect=$('mineCountSelect');if(input){const n=Number(input.value);if(Number.isFinite(n)&&n>=0.1&&n<=10000)trainingStake=Math.round(n*10)/10;else{toast('Укажи значение от 0,1 до 10 000 GRAM');return;}}if(mineSelect)minesCount=Number(mineSelect.value)||3;startMines();render();return;}
+  if(d.play!==undefined){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode=d.play;playRound=0;if(d.play==='mines'){minesStarted=false;minesOver=false;minesCashed=false;openedCells.clear();minesMultiplier=1;}if(d.play==='rocket'){rocketValue=1;rocketCrashAt=0;}render();return;}
+  if(d.playback!==undefined){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode='';minesStarted=false;minesOver=false;minesCashed=false;openedCells.clear();setTab('play');return;}
+  if(d.cashout!==undefined){if(minesOver||openedCells.size===0)return;minesOver=true;minesCashed=true;haptic('success');toast('Результат тренировки: '+fmt(trainingStake*minesMultiplier)+' GRAM (демо)');render();return;}
+  if(d.newmines!==undefined||d.startmines!==undefined){const input=$('trainingStakeInput');const mineSelect=$('mineCountSelect');if(input){const n=Number(input.value);if(Number.isFinite(n)&&n>=0.1&&n<=10000)trainingStake=Math.round(n*10)/10;else{toast('Укажи значение от 0,1 до 10 000 GRAM');return;}}if(mineSelect)minesCount=Number(mineSelect.value)||3;startMines();haptic('light');render();return;}
   if(d.cell!==undefined){
     const cell=Number(d.cell);
-    if(minesOver||openedCells.has(cell)) return;
+    if(minesOver||!minesStarted||openedCells.has(cell)) return;
     openedCells.add(cell);
     if(minesSet.has(cell)){minesOver=true;haptic('error');toast('💥 Мина! Раунд завершён. Демо-баланс не изменился.');}
     else {minesMultiplier=Math.min(3,Math.round(minesMultiplier*1.12*100)/100);haptic('light');}
     render();return;
   }
-  if(d.rocket){const status=$('rocketStatus'),mult=$('rocketMult');if(!status||!mult)return;if(rocketRunning){rocketRunning=false;if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}status.textContent='Полёт остановлен · результат зафиксирован';b.textContent='Запустить ракету';toast('Результат тренировки: '+rocketValue.toFixed(2)+'×');}else{rocketRunning=true;rocketValue=1;const started=Date.now();status.textContent='Ракета летит…';mult.textContent='1.00×';b.textContent='Остановить ракету';rocketTimer=setInterval(()=>{if(!rocketRunning){clearInterval(rocketTimer);rocketTimer=null;return;}const elapsed=(Date.now()-started)/1000;rocketValue=Math.min(2.5,1+elapsed*0.12);const currentMult=$('rocketMult'),currentStatus=$('rocketStatus'),rocketButton=document.querySelector('[data-rocket]');if(currentMult)currentMult.textContent=rocketValue.toFixed(2)+'×';if(elapsed>=12){rocketRunning=false;clearInterval(rocketTimer);rocketTimer=null;if(currentStatus)currentStatus.textContent='Полёт завершён';if(rocketButton)rocketButton.textContent='Запустить ракету';toast('Полёт завершён · '+rocketValue.toFixed(2)+'×');}},100);}return;}
-  if(d.pvp){const you=Math.floor(Math.random()*4)+1;const bot=Math.floor(Math.random()*4)+1;$('youScore').textContent=you;$('botScore').textContent=bot;b.textContent=you===bot?'Ничья · ещё раунд':you>bot?'Победа в тренировке · ещё раунд':'Соперник выиграл · ещё раунд';return;}
+  if(d.rocket!==undefined){
+    const status=$('rocketStatus'),mult=$('rocketMult'),icon=$('rocketIcon');
+    if(!status||!mult||!icon)return;
+    if(rocketRunning){
+      rocketRunning=false;
+      if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}
+      rocketBest=Math.max(rocketBest,rocketValue);
+      status.textContent='Очки сохранены · '+rocketValue.toFixed(2)+'×';
+      icon.classList.remove('flying');icon.textContent='✅';
+      mult.textContent=rocketValue.toFixed(2)+'×';
+      b.textContent='Запустить снова';
+      const best=$('rocketBest');if(best)best.textContent=rocketBest.toFixed(2)+'×';
+      haptic('success');toast('Сохранён результат: '+rocketValue.toFixed(2)+'×');
+    }else{
+      rocketRunning=true;rocketValue=1;
+      rocketCrashAt=4+Math.random()*6;
+      const started=Date.now();
+      status.textContent='Ракета летит — успей остановить!';
+      icon.textContent='🚀';icon.classList.add('flying');
+      mult.textContent='1.00×';b.textContent='Остановить и сохранить очки';
+      rocketTimer=setInterval(()=>{
+        if(!rocketRunning){clearInterval(rocketTimer);rocketTimer=null;return;}
+        const elapsed=(Date.now()-started)/1000;
+        rocketValue=Math.min(99,Math.exp(elapsed*0.13));
+        const currentMult=$('rocketMult'),currentStatus=$('rocketStatus'),rocketIcon=$('rocketIcon'),rocketButton=document.querySelector('[data-rocket]');
+        if(currentMult)currentMult.textContent=rocketValue.toFixed(2)+'×';
+        if(elapsed>=rocketCrashAt){
+          rocketRunning=false;clearInterval(rocketTimer);rocketTimer=null;
+          if(currentStatus)currentStatus.textContent='Полёт завершился — в следующий раз останови раньше';
+          if(rocketIcon){rocketIcon.classList.remove('flying');rocketIcon.textContent='💥';}
+          if(rocketButton)rocketButton.textContent='Запустить снова';
+          toast('Полёт завершён на '+rocketValue.toFixed(2)+'×. Очки не сохранены.');
+        }
+      },80);
+    }
+    return;
+  }
+  if(d.pvp!==undefined){const you=Math.floor(Math.random()*4)+1;const bot=Math.floor(Math.random()*4)+1;$('youScore').textContent=you;$('botScore').textContent=bot;b.textContent=you===bot?'Ничья · ещё раунд':you>bot?'Победа в тренировке · ещё раунд':'Соперник выиграл · ещё раунд';return;}
 
   if(b.id==='theme'){
     state.theme=state.theme==='dark'?'light':'dark';
@@ -863,7 +899,7 @@ document.addEventListener('click',e=>{
     return;
   }
 
-  if(d.demotopup){
+  if(d.demotopup!==undefined){
     state.bal=round(state.bal+500);
     log('topup','Демо-пополнение',500,'Виртуальные GRAM');
     save();closeSheet();render();haptic('success');
@@ -896,7 +932,7 @@ document.addEventListener('click',e=>{
 
   if(d.buy) return confirmBuy(d.buy);
   if(d.confirmbuy) return doBuy(d.confirmbuy);
-  if(d.close) return closeSheet();
+  if(d.close!==undefined) return closeSheet();
   if(d.sell) return sellSheet(d.sell);
   if(d.list) return listMine(d.list);
   if(d.unlist) return unlist(d.unlist);
@@ -917,7 +953,7 @@ document.addEventListener('click',e=>{
     mineTab=d.minetab;render();return;
   }
 
-  if(d.clearhistory){
+  if(d.clearhistory!==undefined){
     openSheet(`<h2>Очистить историю?</h2>
       <div class="desc">История будет удалена с этого устройства.</div>
       <button class="btn danger" data-confirmclear>Очистить историю</button>
@@ -925,7 +961,7 @@ document.addEventListener('click',e=>{
     return;
   }
 
-  if(d.confirmclear){
+  if(d.confirmclear!==undefined){
     state.history=[];
     save();closeSheet();render();toast('История очищена');
   }
