@@ -5,6 +5,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#10091f">
+<meta name="description" content="ZefutMax — демо-интерфейс каталога Telegram Gifts. Реальные покупки и передача подарков пока не подключены.">
+<meta name="color-scheme" content="dark light">
 <title>ZefutMax — Gift Market</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
@@ -119,6 +121,10 @@ main{max-width:1000px;margin:auto;padding:18px 15px}
 .btn.danger{background:transparent;border:1px solid var(--red);color:var(--red)}
 .card .btn{margin-top:auto}
 .note{font-size:11px;line-height:1.55;color:var(--muted);margin:18px 2px}
+.demo-banner{max-width:1000px;margin:12px auto 0;padding:10px 14px;border:1px solid var(--line);border-radius:13px;background:var(--panel);font-size:12px;color:var(--muted)}
+.demo-banner strong{color:var(--accent)}
+.demo-banner .demo-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:7px}
+@media(max-width:1030px){.demo-banner{margin-left:15px;margin-right:15px}}
 .empty{border:1px dashed var(--line);border-radius:18px;text-align:center;padding:38px 20px;color:var(--muted)}
 .empty .big{font-size:35px;margin-bottom:8px}
 .listrow{
@@ -196,7 +202,7 @@ nav button.active{background:var(--panel2);color:var(--accent)}
       </div>
       <div class="topactions">
         <button class="iconbtn" id="theme" aria-label="Сменить тему">☀️</button>
-        <button class="balance" id="balance" title="Демо-баланс">
+        <button class="balance" id="balance" title="Виртуальный демо-баланс — нажми, чтобы увидеть пояснение" aria-label="Виртуальный баланс GRAM">
           <strong id="bal">500</strong> <span>GRAM</span> ＋
         </button>
       </div>
@@ -219,6 +225,7 @@ nav button.active{background:var(--panel2);color:var(--accent)}
   </div>
 </header>
 
+<div class="demo-banner" role="status"><span class="demo-dot"></span><strong>ДЕМО-РЕЖИМ</strong> · Баланс, цены и операции виртуальные. Реальные платежи и передача подарков не подключены.</div>
 <main id="main" class="wrap"></main>
 
 <nav>
@@ -654,9 +661,18 @@ document.addEventListener('click',e=>{
   }
 
   if(b.id==='balance'){
+    openSheet(`<h2>Виртуальный баланс</h2>
+      <div class="desc">Это тестовые GRAM внутри демо-приложения. Они не имеют денежной стоимости и не связаны с Telegram Wallet.</div>
+      <div class="summary"><div><span>Текущий баланс</span><b>${fmt(state.bal)} GRAM</b></div></div>
+      <button class="btn" data-demotopup>Добавить 500 виртуальных GRAM</button>
+      <button class="btn secondary" data-close>Закрыть</button>`);
+    return;
+  }
+
+  if(d.demotopup){
     state.bal=round(state.bal+500);
     log('topup','Демо-пополнение',500,'Виртуальные GRAM');
-    save();render();haptic('success');
+    save();closeSheet();render();haptic('success');
     toast('+500 виртуальных GRAM');
     return;
   }
