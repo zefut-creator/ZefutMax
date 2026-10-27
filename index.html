@@ -459,6 +459,8 @@ let tab='market', filter='all', mineTab='owned', search='', sort='priceUp';
 let playMode=''; let playRound=0; let rocketTimer=null; let rocketValue=1; let rocketRunning=false; let rocketCrashAt=0; let rocketBest=1;
 let minesCount=3, minesSet=new Set(), openedCells=new Set(), minesOver=false;
 let trainingStake=10, rocketStake=10, minesMultiplier=1, minesCashed=false, minesStarted=false;
+let memoryCards=['🍊','🎁','🚀','💎','⭐','🪙','🍊','🎁','🚀','💎','⭐','🪙'].sort(()=>Math.random()-.5);
+let memoryOpen=[],memoryMatched=[],memoryXp=0,reactionTimeout=null,reactionReadyAt=0,reactionArmed=false;
 let toastTimer, state;
 let liveCatalog=null, liveCatalogError='', liveCatalogLoading=true;
 
@@ -711,10 +713,16 @@ function startMines(){
 
 function renderPlay(){
   const games=[
+    ['🎁','Gift Reveal','Открой бесплатный подарок и добавь его в коллекцию.','reveal'],
     ['💣','Мины','Открывай клетки и тренируй внимательность.','mines'],
-    ['🚀','Ракетка','Следи за полётом ракеты и останови раунд в любой момент.','rocket'],
-    ['⚔️','PvP Арена','Тренировочный матч против демо-соперника.','pvp']
+    ['🚀','Ракета','Следи за полётом ракеты и останови раунд в любой момент.','rocket'],
+    ['⚔️','PvP Арена','Тренировочный матч против демо-соперника.','pvp'],
+    ['🧠','Память','Найди пары символов и получи опыт.','memory'],
+    ['⚡','Реакция','Проверь скорость реакции в коротком челлендже.','reaction']
   ];
+  if(playMode==='reveal') return '<div class="sectionhead"><h2>🎁 Gift Reveal</h2><span class="count">Бесплатный демо-подарок</span></div><div class="rocket-stage"><div class="rocket-icon" id="revealIcon">🎁</div><b id="revealStatus">Подарок ждёт тебя</b><div class="rocket-sub">Фиксированная награда, без денежных призов.</div></div><button class="btn" data-reveal>Открыть подарок</button><button class="btn secondary" style="margin-top:8px" data-playback>← Все режимы</button>';
+  if(playMode==='memory') return '<div class="sectionhead"><h2>🧠 Память</h2><span class="count">Найди пары</span></div><p class="note">Открой все пары символов. Баланс не затрагивается.</p><div class="gameboard">'+memoryCards.map((v,i)=>'<button class="gamecell '+(memoryOpen.includes(i)||memoryMatched.includes(i)?'revealed':'')+'" data-memory="'+i+'" '+(memoryMatched.includes(i)||memoryOpen.includes(i)||memoryOpen.length>=2?'disabled':'')+'>'+(memoryOpen.includes(i)||memoryMatched.includes(i)?v:'?')+'</button>').join('')+'</div><div class="summary"><div><span>Найдено пар</span><b>'+memoryMatched.length/2+' / 6</b></div><div><span>Опыт</span><b>'+memoryXp+' XP</b></div></div><button class="btn" data-memoryreset>Новая игра</button><button class="btn secondary" style="margin-top:8px" data-playback>← Все режимы</button>';
+  if(playMode==='reaction') return '<div class="sectionhead"><h2>⚡ Реакция</h2><span class="count">Тест скорости</span></div><div class="rocket-stage"><div class="rocket-icon">⚡</div><b id="reactionStatus">Нажми начать и дождись сигнала</b><div class="rocket-sub" id="reactionResult">Твой результат появится здесь</div></div><button class="btn" data-reaction>Начать тест</button><button class="btn secondary" style="margin-top:8px" data-playback>← Все режимы</button>';
   if(playMode==='mines') return '<div class="sectionhead"><h2>💣 Мины</h2><span class="count">Демо-режим</span></div><div class="gameboard">'+Array.from({length:25},(_,i)=>'<button class="gamecell '+(minesStarted&&openedCells.has(i)?'revealed':'')+'" data-cell="'+i+'" '+(!minesStarted||openedCells.has(i)||minesOver?'disabled':'')+'>'+((minesStarted&&(openedCells.has(i)||minesOver&&minesSet.has(i)))?(minesSet.has(i)?'💣':'✦'):'?')+'</button>').join('')+'</div><div class="summary"><div><span>Статус</span><b>'+(minesOver?(minesCashed?'Результат зафиксирован':'Раунд завершён'):(minesStarted?'Игра идёт':'Готов к запуску'))+'</b></div><div><span>Множитель</span><b>'+minesMultiplier.toFixed(2)+'×</b></div><div><span>Демо-результат</span><b>'+fmt(trainingStake*minesMultiplier)+' GRAM</b></div></div><div class="sectionhead" style="margin-top:18px"><h2>Настройки игры</h2></div><label class="inputlabel" for="trainingStakeInput">Демо-ставка в GRAM (0,1–10 000)</label><input id="trainingStakeInput" type="number" min="0.1" max="10000" step="0.1" value="'+trainingStake+'" '+(minesStarted&&!minesOver?'disabled':'')+' style="width:100%;margin:6px 0 10px"><label class="inputlabel" for="mineCountSelect">Количество мин</label><select id="mineCountSelect" style="width:100%;margin:6px 0 10px" '+(minesStarted&&!minesOver?'disabled':'')+'>'+[1,3,5,8,10,12,15,20].map(n=>'<option value="'+n+'" '+(n===minesCount?'selected':'')+'>'+n+' мин</option>').join('')+'</select>'+(minesOver?'<button class="btn" data-newmines>Новая игра</button>':minesStarted?'<button class="btn" data-cashout '+(openedCells.size===0?'disabled':'')+'>Сохранить демо-результат · '+fmt(trainingStake*minesMultiplier)+' GRAM</button>':'<button class="btn" data-startmines>Начать игру</button>')+'<button class="btn secondary" style="margin-top:8px" data-playback>← Вернуться в Play Hub</button>';
   if(playMode==='rocket') return '<div class="sectionhead"><h2>🚀 Ракета</h2><span class="count">Демо-раунд</span></div><label class="inputlabel" for="rocketStakeInput">Демо-ставка в GRAM</label><input id="rocketStakeInput" type="number" min="0.1" max="10000" step="0.1" value="'+trainingStake+'" '+(rocketRunning?'disabled':'')+' style="width:100%;margin:6px 0 10px"><div class="summary"><div><span>Баланс</span><b>'+fmt(state.bal)+' GRAM</b></div><div><span>Ставка раунда</span><b>'+fmt(trainingStake)+' GRAM</b></div></div><div class="rocket-stage"><div class="rocket-icon" id="rocketIcon">🚀</div><strong id="rocketStatus">Готов к старту</strong><div class="rocket-mult" id="rocketMult">1.00×</div><div class="rocket-sub">Лучший результат: <b id="rocketBest">'+rocketBest.toFixed(2)+'×</b></div></div><p class="note">При запуске ставка списывается с виртуального баланса. Забери результат до завершения полёта; если ракета упадёт, демо-ставка сгорит. GRAM не имеют денежной стоимости.</p><button class="btn" data-rocket>Запустить ракету</button><button class="btn secondary" data-playback style="margin-top:8px">← Все режимы</button>';
   if(playMode==='pvp') return '<div class="sectionhead"><h2>⚔️ PvP Арена</h2><span class="count">Демо-матч</span></div><div class="pvp-box"><div class="fighter">🟠<b>Ты</b><strong id="youScore">0</strong></div><div class="versus">VS</div><div class="fighter">🤖<b>Бот-соперник</b><strong id="botScore">0</strong></div></div><p class="note">Локальная тренировка против компьютера. Другие игроки пока не подключены; матч не влияет на баланс.</p><button class="btn" data-pvp>Начать раунд</button><button class="btn secondary" data-playback>← Все режимы</button>';
@@ -879,6 +887,30 @@ document.addEventListener('click',e=>{
   if(b.id==='profileTab') return setTab('profile');
   if(d.play!==undefined){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode=d.play;playRound=0;if(d.play==='mines'){minesStarted=false;minesOver=false;minesCashed=false;openedCells.clear();minesMultiplier=1;}if(d.play==='rocket'){rocketValue=1;rocketCrashAt=0;}render();return;}
   if(d.playback!==undefined){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode='';minesStarted=false;minesOver=false;minesCashed=false;openedCells.clear();setTab('play');return;}
+  if(d.reveal!==undefined){
+    if(state.mine.some(x=>x.g===0)){toast('Демо-подарок уже в коллекции');return;}
+    state.mine.push({id:++state.nid,g:0,n:10000+state.nid,buy:0});
+    log('gift_reveal','Gift Reveal',0,'Бесплатный демо-подарок');save();render();
+    const icon=$('revealIcon'),status=$('revealStatus');if(icon)icon.textContent='🎉';if(status)status.textContent='Подарок добавлен в коллекцию!';
+    haptic('success');toast('🎁 Демо-подарок добавлен');return;
+  }
+  if(d.memory!==undefined){
+    const i=Number(d.memory);if(memoryOpen.length>=2||memoryOpen.includes(i)||memoryMatched.includes(i))return;
+    memoryOpen.push(i);
+    if(memoryOpen.length===2){
+      if(memoryCards[memoryOpen[0]]===memoryCards[memoryOpen[1]]){memoryMatched.push(...memoryOpen);memoryXp+=10;memoryOpen=[];toast('Пара найдена · +10 XP');}
+      else {const pair=memoryOpen.slice();setTimeout(()=>{memoryOpen=memoryOpen.filter(x=>!pair.includes(x));if(tab==='play'&&playMode==='memory')render();},700);}
+    }
+    render();return;
+  }
+  if(d.memoryreset!==undefined){memoryCards=['🍊','🎁','🚀','💎','⭐','🪙','🍊','🎁','🚀','💎','⭐','🪙'].sort(()=>Math.random()-.5);memoryOpen=[];memoryMatched=[];render();return;}
+  if(d.reaction!==undefined){
+    const status=$('reactionStatus'),result=$('reactionResult');
+    if(reactionArmed){const elapsed=Date.now()-reactionReadyAt;reactionArmed=false;if(reactionTimeout)clearTimeout(reactionTimeout);if(status)status.textContent='Результат зафиксирован';if(result)result.textContent=elapsed+' мс · нажми начать для повтора';b.textContent='Повторить тест';return;}
+    reactionArmed=true;if(status)status.textContent='Жди зелёный сигнал…';if(result)result.textContent='Не нажимай раньше времени';b.textContent='Жду сигнал…';
+    reactionTimeout=setTimeout(()=>{if(!reactionArmed)return;reactionReadyAt=Date.now();if(status)status.textContent='🟢 ЖМИ СЕЙЧАС!';b.textContent='Нажать!';},900+Math.random()*2200);return;
+  }
+
   if(d.cashout!==undefined){if(minesOver||!minesStarted||openedCells.size===0)return;minesOver=true;minesCashed=true;const payout=round(trainingStake*minesMultiplier);state.bal=round(state.bal+payout);log('game_win','Мины',payout,'Возврат демо-ставки × '+minesMultiplier.toFixed(2));save();haptic('success');toast('Забрал '+fmt(payout)+' GRAM · демо-баланс');render();return;}
   if(d.newmines!==undefined||d.startmines!==undefined){const input=$('trainingStakeInput');const mineSelect=$('mineCountSelect');if(input){const n=Number(input.value);if(Number.isFinite(n)&&n>=0.1&&n<=10000)trainingStake=Math.round(n*10)/10;else{toast('Укажи значение от 0,1 до 10 000 GRAM');return;}}if(mineSelect)minesCount=Number(mineSelect.value)||3;if(d.startmines!==undefined&&state.bal<trainingStake){toast('Недостаточно GRAM на демо-балансе');return;}if(d.startmines!==undefined){state.bal=round(state.bal-trainingStake);log('game_bet','Мины',-trainingStake,'Демо-ставка · '+minesCount+' мин');save();}startMines();haptic('light');render();return;}
   if(d.cell!==undefined){
@@ -913,9 +945,10 @@ document.addEventListener('click',e=>{
       rocketRunning=true;rocketValue=1;
       rocketCrashAt=4+Math.random()*6;
       const started=Date.now();
-      status.textContent='Ракета летит — успей остановить!';
-      icon.textContent='🚀';icon.classList.add('flying');
-      mult.textContent='1.00×';b.textContent='Остановить и сохранить очки';
+      const liveStatus=$('rocketStatus'),liveMult=$('rocketMult'),liveIcon=$('rocketIcon'),liveButton=document.querySelector('[data-rocket]');
+      if(liveStatus)liveStatus.textContent='Ракета летит — успей остановить!';
+      if(liveIcon){liveIcon.textContent='🚀';liveIcon.classList.add('flying');}
+      if(liveMult)liveMult.textContent='1.00×';if(liveButton)liveButton.textContent='Остановить и сохранить очки';
       rocketTimer=setInterval(()=>{
         if(!rocketRunning){clearInterval(rocketTimer);rocketTimer=null;return;}
         const elapsed=(Date.now()-started)/1000;
