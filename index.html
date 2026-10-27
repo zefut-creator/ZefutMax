@@ -309,6 +309,7 @@ const esc = s => String(s).replace(/[&<>"']/g,c=>({
 
 let tab='market', filter='all', mineTab='owned', search='', sort='priceUp';
 let toastTimer, state;
+let liveCatalog=null, liveCatalogError='', liveCatalogLoading=true;
 
 function seed(){
   let randomSeed=11;
@@ -444,6 +445,20 @@ function card(x){
   </article>`;
 }
 
+function renderLiveCatalog(){
+  if(liveCatalogLoading) return '<div class="note">Загружаем официальный каталог Telegram…</div>';
+  if(!liveCatalog) return '<div class="note">Официальный каталог пока недоступен. '+esc(liveCatalogError||'Проверь настройку TELEGRAM_BOT_TOKEN в Vercel.')+'</div>';
+  if(!liveCatalog.length) return '<div class="note">Telegram не вернул доступных подарков.</div>';
+  return '<div class="sectionhead" style="margin-top:28px"><h2>Официальные подарки Telegram</h2><span class="count">'+liveCatalog.length+' типов · цены в Stars</span></div>'+
+    '<div class="grid">'+liveCatalog.map(g=>{
+      const visual=g.stickerFileId && g.stickerType==='static'
+        ? '<img src="/api/gift-image?file_id='+encodeURIComponent(g.stickerFileId)+'" alt="Стикер подарка Telegram" loading="lazy" style="width:100%;height:100%;object-fit:contain;padding:18px" onerror="this.style.display=\'none\'">'
+        : '<span class="emoji">🎁</span>';
+      const stock=g.remainingCount!==null?'Осталось: '+fmt(g.remainingCount):'Доступен у бота';
+      return '<article class="card"><div class="art">'+visual+'</div><div class="cardtop"><b>Telegram Gift</b></div><div class="muted">'+esc(stock)+(g.premiumOnly?' · Premium':'')+'</div><div class="price">'+fmt(g.stars)+' <small>Stars</small></div><button class="btn secondary" data-giftinfo="'+esc(g.id)+'">Подробнее</button></article>';
+    }).join('')+'</div><p class="note">Данные из официального Telegram Bot API. Это подарки, которые бот может отправлять, а не лоты вторичного рынка. Покупка и отправка через этот каталог пока не включены.</p>';
+}
+
 function renderMarket(){
   let list=state.mk.filter(x=>gifts[x.g][1].toLowerCase().includes(search));
 
@@ -465,7 +480,7 @@ function renderMarket(){
     empty('🔎','Ничего не найдено','Измени запрос или фильтр.')}
   <p class="note">Демо-режим: каталог, цены и изменение за 24 часа — примеры.
   Баланс и операции сохраняются только в этом браузере. Реальные платежи и
-  передача Telegram-подарков не подключены.</p>`;
+  передача Telegram-подарков не подключены.</p>`+renderLiveCatalog();
 }
 
 function renderMine(){
@@ -709,6 +724,14 @@ document.addEventListener('click',e=>{
     save();render();return;
   }
 
+  if(d.giftinfo){
+    const gift=liveCatalog?.find(x=>String(x.id)===String(d.giftinfo));
+    if(gift){
+      openSheet('<h2>Официальный подарок Telegram</h2><div class="desc">ID: '+esc(gift.id)+'</div><div class="summary"><div><span>Цена отправки ботом</span><b>'+fmt(gift.stars)+' Stars</b></div><div><span>Тип стикера</span><b>'+esc(gift.stickerType)+'</b></div><div><span>Остаток</span><b>'+(gift.remainingCount===null?'Не указан':fmt(gift.remainingCount))+'</b></div></div><p class="note">Это информационная карточка. Реальная покупка или передача не выполняется.</p><button class="btn secondary" data-close>Закрыть</button>');
+    }
+    return;
+  }
+
   if(d.buy) return confirmBuy(d.buy);
   if(d.confirmbuy) return doBuy(d.confirmbuy);
   if(d.close) return closeSheet();
@@ -765,6 +788,24 @@ document.addEventListener('keydown',e=>{
 });
 
 render();
+
+async function loadLiveCatalog(){
+  try{
+    const response=await fetch('/api/gifts',{headers:{Accept:'application/json'}});
+    const data=await response.json();
+    if(!response.ok) throw new Error(data.setup||data.error||'Каталог временно недоступен');
+    if(!Array.isArray(data.gifts)) throw new Error('Некорректный ответ каталога');
+    liveCatalog=data.gifts;
+    liveCatalogError='';
+  }catch(error){
+    liveCatalog=null;
+    liveCatalogError=error?.message||'Не удалось загрузить каталог';
+  }finally{
+    liveCatalogLoading=false;
+    if(tab==='market') render();
+  }
+}
+loadLiveCatalog();
 })();
 </script>
 </body>
