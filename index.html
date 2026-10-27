@@ -312,7 +312,7 @@ nav button{min-width:0;font-size:11px}
       </div>
     </div>
     <div class="toolbar" id="toolbar">
-      <div class="searchbox"><span>⌕</span><input id="q" type="search" placeholder="Найти подарок…" aria-label="Поиск подарка"></div>
+      <div class="searchbox"><span>⌕</span><input id="q" type="search" placeholder="Название или номер лота…" aria-label="Поиск подарка"></div>
       <select id="sort" aria-label="Сортировка">
         <option value="priceUp">Дешевле</option>
         <option value="priceDown">Дороже</option>
@@ -570,7 +570,7 @@ function renderLiveCatalog(){
 }
 
 function renderMarket(){
-  let list=state.mk.filter(x=>gifts[x.g][1].toLowerCase().includes(search));
+  let list=state.mk.filter(x=>gifts[x.g][1].toLowerCase().includes(search)||String(x.n).includes(search));
 
   if(filter==='up') list=list.filter(x=>gifts[x.g][3]>0);
   if(filter==='down') list=list.filter(x=>gifts[x.g][3]<0);
