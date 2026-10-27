@@ -280,6 +280,14 @@ nav button:active{transform:scale(.97)}
 .pvp-box{display:flex;align-items:center;justify-content:space-around;gap:12px;padding:25px 12px;border:1px solid var(--line);border-radius:18px;background:var(--panel)}
 .fighter{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:32px}.fighter b{font-size:12px}.fighter strong{font-size:25px;color:var(--accent)}.versus{font-weight:900;color:var(--muted)}
 @media(max-width:430px){.gamecards{grid-template-columns:1fr}.gamecard{min-height:unset;display:grid;grid-template-columns:48px 1fr;align-items:center}.gamecard .muted,.game-open{grid-column:2}.gameicon{grid-row:1/4}}
+
+.profile-hero{display:flex;align-items:center;gap:15px;padding:19px;border:1px solid var(--line);border-radius:19px;background:linear-gradient(120deg,#171717,#0b0b0b);margin-bottom:14px;min-width:0}
+.profile-avatar{width:76px;height:76px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);flex:none}
+.profile-placeholder{display:grid;place-items:center;background:#222;font-size:34px}
+.profile-name{min-width:0;overflow-wrap:anywhere}.profile-name h2{font-size:21px;margin:0 0 4px}
+.profile-id{font-size:10px;color:var(--muted);margin-top:7px;overflow-wrap:anywhere}
+nav button{min-width:0;font-size:11px}
+@media(max-width:390px){nav{gap:2px;padding-left:4px;padding-right:4px}nav button{font-size:10px;padding-left:1px;padding-right:1px}nav button .ico{font-size:18px}}
 </style>
 </head>
 <body>
@@ -323,6 +331,7 @@ nav button:active{transform:scale(.97)}
   <button id="mineTab"><span class="ico">🎁</span>Мои подарки</button>
   <button id="historyTab"><span class="ico">📊</span>История</button>
   <button id="playTab"><span class="ico">🚀</span>Play Hub</button>
+  <button id="profileTab"><span class="ico">👤</span>Профиль</button>
 </nav>
 
 <div id="overlay" role="dialog" aria-modal="true" aria-label="Детали"></div>
@@ -509,6 +518,7 @@ function setTab(next){
   $('mineTab').classList.toggle('active',next==='mine');
   $('historyTab').classList.toggle('active',next==='history');
   $('playTab').classList.toggle('active',next==='play');
+  $('profileTab').classList.toggle('active',next==='profile');
   $('toolbar').style.display=next==='market'?'grid':'none';
   $('filters').style.display=next==='market'?'flex':'none';
   render();
@@ -652,6 +662,22 @@ function renderPlay(){
   return '<div class="sectionhead"><h2>Play Hub</h2><span class="count">Игровой центр</span></div><div class="hub-banner"><div class="hub-orb">✦</div><div><b>Играй в тренировочных режимах</b><div class="muted">Чёрный · оранжевый · без ставок</div></div></div><div class="gamecards">'+games.map(g=>'<button class="gamecard" data-play="'+g[3]+'"><span class="gameicon">'+g[0]+'</span><b>'+g[1]+'</b><span class="muted">'+g[2]+'</span><span class="game-open">Открыть →</span></button>').join('')+'</div><p class="note">Это первая демо-версия Play Hub. Игры работают локально: без реальных денег, ставок, выплат и онлайн-матчмейкинга.</p>';
 }
 
+function renderProfile(){
+  const user=tg?.initDataUnsafe?.user||null;
+  const fullName=user?[user.first_name,user.last_name].filter(Boolean).join(' '):'Гость';
+  const username=user?.username?'@'+user.username:'Ник не передан';
+  const avatar=user?.photo_url;
+  const avatarHtml=avatar
+    ? '<img src="'+esc(avatar)+'" alt="Аватар Telegram" class="profile-avatar">'
+    : '<div class="profile-avatar profile-placeholder">👤</div>';
+  const items=state.history.slice(0,30);
+  return '<div class="profile-hero">'+avatarHtml+'<div class="profile-name"><h2>'+esc(fullName)+'</h2><div class="muted">'+esc(username)+'</div><div class="profile-id">Telegram ID: '+(user?esc(user.id):'доступен только внутри Telegram')+'</div></div></div>'+
+    '<div class="stats"><div class="stat"><div class="label">Баланс демо</div><strong>'+fmt(state.bal)+'</strong><div class="muted">GRAM</div></div><div class="stat"><div class="label">Мои подарки</div><strong>'+state.mine.length+'</strong></div><div class="stat"><div class="label">Операций</div><strong>'+state.history.length+'</strong></div></div>'+
+    '<div class="sectionhead"><h2>Личная история</h2><span class="count">Последние 30</span></div>'+
+    (items.length?items.map(x=>'<div class="history"><div><b>'+esc(x.name)+'</b><div class="detail">'+esc(x.detail||x.type)+' · '+new Date(x.at).toLocaleString('ru-RU',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})+'</div></div><div class="amount '+(x.amount>=0?'positive':'negative')+'">'+(x.amount>0?'+':'')+fmt(x.amount)+' GRAM</div></div>').join(''):empty('📜','История пока пуста','Твои демо-операции появятся здесь.'))+
+    '<p class="note">Профиль загружается из Telegram, когда приложение открыто внутри Telegram. История сейчас хранится только на этом устройстве в демо-режиме; для синхронизации между устройствами нужен сервер и проверка Telegram initData.</p>';
+}
+
 function render(){
   $('bal').textContent=fmt(state.bal);
   document.documentElement.dataset.theme=state.theme;
@@ -659,7 +685,7 @@ function render(){
     'content','#050505');
   $('theme').textContent=state.theme==='dark'?'☀️':'🌙';
   $('theme').setAttribute('aria-label',state.theme==='dark'?'Включить светлую тему':'Включить тёмную тему');
-  $('main').innerHTML=tab==='market'?renderMarket():tab==='mine'?renderMine():tab==='history'?renderHistory():renderPlay();
+  $('main').innerHTML=tab==='market'?renderMarket():tab==='mine'?renderMine():tab==='history'?renderHistory():tab==='profile'?renderProfile():renderPlay();
 }
 
 function find(arr,id){
@@ -792,6 +818,7 @@ document.addEventListener('click',e=>{
   if(b.id==='mineTab') return setTab('mine');
   if(b.id==='historyTab') return setTab('history');
   if(b.id==='playTab') return setTab('play');
+  if(b.id==='profileTab') return setTab('profile');
   if(d.play){playMode=d.play;playRound=0;render();return;}
   if(d.playback){playMode='';render();return;}
   if(d.cell!==undefined){b.classList.add('revealed');b.textContent=(Number(d.cell)%7===0)?'💣':'✦';b.disabled=true;b.style.color=(Number(d.cell)%7===0)?'#ff667a':'#ffad1f';return;}
