@@ -1039,11 +1039,30 @@ document.addEventListener('click',e=>{
     const gift=gifts[giftIndex];
     if(!gift){toast('Подарок не найден');return;}
     const price=round(gift[2]);
-    if(state.bal<price){toast('Недостаточно виртуальных GRAM');return;}
+    const enough=state.bal>=price;
+    openSheet(`${art(giftIndex)}<h2>${esc(gift[1])}</h2>
+      <div class="desc">Добавление в локальную демо-коллекцию</div>
+      <div class="summary">
+        <div><span>Демо-цена</span><b>${fmt(price)} GRAM</b></div>
+        <div><span>Текущий баланс</span><b>${fmt(state.bal)} GRAM</b></div>
+        <div><span>Останется</span><b>${fmt(Math.max(0,state.bal-price))} GRAM</b></div>
+      </div>
+      ${enough
+        ? `<button class="btn" data-confirmcatalogbuy="${giftIndex}">Подтвердить добавление</button>`
+        : '<p style="color:var(--red);font-size:13px">Недостаточно виртуальных GRAM.</p>'}
+      <button class="btn secondary" data-close>Отмена</button>`);
+    return;
+  }
+  if(d.confirmcatalogbuy!==undefined){
+    const giftIndex=Number(d.confirmcatalogbuy);
+    const gift=gifts[giftIndex];
+    if(!gift){toast('Подарок не найден');closeSheet();return;}
+    const price=round(gift[2]);
+    if(!Number.isFinite(price)||price<=0||state.bal<price){toast('Недостаточно виртуальных GRAM');return;}
     state.bal=round(state.bal-price);
     state.mine.unshift({id:++state.nid,g:giftIndex,n:Math.floor(Date.now()/1000),buy:price});
     log('catalog_buy',gift[1],-price,'Добавлено из демо-каталога');
-    save();render();haptic('success');toast('Добавлено в демо-коллекцию');return;
+    save();closeSheet();render();haptic('success');toast('Добавлено в демо-коллекцию');return;
   }
   if(d.buy) return confirmBuy(d.buy);
   if(d.confirmbuy) return doBuy(d.confirmbuy);
