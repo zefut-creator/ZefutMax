@@ -1265,8 +1265,33 @@ document.addEventListener('click',e=>{
       toast('Укажи корректную цену');
       return;
     }
-    x.p=round(p);
-    save();closeSheet();render();toast('Цена обновлена');return;
+    const newPrice=round(p);
+    b.disabled=true;
+    b.textContent='Сохраняю…';
+    (async()=>{
+      try{
+        if(x.shared && x.dbId){
+          await sharedRequest('rpc/update_market_listing',{
+            method:'POST',
+            body:JSON.stringify({
+              p_listing_id:Number(x.dbId),
+              p_seller_id:sellerId,
+              p_new_price:newPrice
+            })
+          });
+          await refreshSharedListings();
+        }else{
+          x.p=newPrice;
+          save();
+        }
+        closeSheet();render();toast('Цена обновлена');
+      }catch(err){
+        console.warn('Price update failed:',err);
+        b.disabled=false;b.textContent='Сохранить';
+        toast('Не удалось сохранить цену. Проверь подключение базы и SQL-настройку.');
+      }
+    })();
+    return;
   }
 
   if(d.minetab){
