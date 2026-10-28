@@ -1334,6 +1334,12 @@ async function loadLiveCatalog(){
 }
 loadLiveCatalog();
 refreshSharedListings();
+setInterval(() => {
+  if (document.visibilityState === 'visible') refreshSharedListings();
+}, 15000);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') refreshSharedListings();
+});
 })();
 </script>
 </body>
