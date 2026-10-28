@@ -506,6 +506,26 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
 @keyframes crystal-core-flash{0%{opacity:0;transform:scale(.2) rotate(-30deg)}28%{opacity:1;transform:scale(1.15) rotate(8deg)}65%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(1.5)}}
 @media(prefers-reduced-motion:reduce){.crystal-half,.crystal-inner-bomb{animation:none!important;opacity:1}}
 
+
+/* MRKT-style market cards (demo data) */
+.mk-card{padding:0;overflow:hidden;display:flex;flex-direction:column}
+.mk-art{position:relative;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 42%,var(--mk-c1) 0%,var(--mk-c2) 100%);overflow:hidden}
+.mk-art:before{content:"";position:absolute;inset:0;opacity:.16;
+  background-image:radial-gradient(circle,#fff 1.5px,transparent 2px);background-size:22px 22px}
+.mk-art .emoji{position:relative;font-size:64px;filter:drop-shadow(0 6px 10px #0006)}
+.mk-badge{position:absolute;left:8px;bottom:8px;padding:3px 9px;border-radius:9px;font-size:11px;font-weight:700;
+  color:#fff;background:#00000066;backdrop-filter:blur(4px)}
+.mk-art .fav{position:absolute;top:7px;right:7px;width:30px;height:30px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#00000055;color:#fff;border:0}
+.mk-body{padding:9px 10px 10px;display:flex;flex-direction:column;gap:3px;flex:1}
+.mk-name{font-size:14px;font-weight:700;line-height:1.25;overflow-wrap:anywhere}
+.mk-num{font-size:12px;color:var(--muted)}
+.mk-buy{display:flex;gap:7px;margin-top:auto;padding-top:8px}
+.mk-price{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;border-radius:12px;
+  background:var(--panel2);font-weight:700;font-size:14px;padding:9px 6px}
+.mk-price i{font-style:normal;color:var(--accent)}
+.mk-cart{width:44px;border-radius:12px;border:0;background:var(--accent);color:#fff;font-size:17px;cursor:pointer}
+.mk-own{margin-top:auto}
 </style>
 </head>
 <body>
@@ -757,21 +777,28 @@ function empty(icon,title,desc){
     <b>${esc(title)}</b><div style="margin-top:6px;font-size:12px">${esc(desc)}</div></div>`;
 }
 
+const MK_HUES=[205,28,150,275,340,48,185,0];
+function mkArt(index){
+  const g=gifts[index], h=MK_HUES[index%MK_HUES.length];
+  return `<div class="mk-art" style="--mk-c1:hsl(${h} 70% 62%);--mk-c2:hsl(${h} 65% 38%)" aria-label="${esc(g[1])}">
+    <span class="emoji">${g[0]}</span><span class="mk-badge">Minted</span>`;
+}
+
 function card(x){
   const g=gifts[x.g];
   const isFav=state.favs.includes(x.g);
-  return `<article class="card">
-    ${art(x.g)}
-    <div class="cardtop">
-      <b>${esc(g[1])}</b>
+  return `<article class="card mk-card">
+    ${mkArt(x.g)}
       <button class="fav ${isFav?'on':''}" data-fav="${x.g}"
         aria-label="${isFav?'Убрать из избранного':'В избранное'}">${isFav?'♥':'♡'}</button>
     </div>
-    <div class="muted">Лот #${x.n} · ${change(x.g)}</div>
-    <div class="price">${fmt(x.p)} <small>GRAM</small></div>
-    ${x.own
-      ? '<button class="btn secondary" data-unlist="'+x.id+'">Снять лот</button>'
-      : '<div class="buyrow"><button class="btn" data-buy="'+x.id+'">Купить</button><button class="lucky-mini" data-lucky="'+x.id+'" aria-label="Lucky Buy" title="Lucky Buy"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff" aria-hidden="true"><circle cx="12" cy="7.5" r="4.2"/><circle cx="7" cy="14" r="4.2"/><circle cx="17" cy="14" r="4.2"/><path d="M12 13v8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button></div>'}
+    <div class="mk-body">
+      <div class="mk-name">${esc(g[1])}</div>
+      <div class="mk-num">#${x.n} · ${change(x.g)}</div>
+      ${x.own
+        ? '<button class="btn secondary mk-own" data-unlist="'+x.id+'">Снять лот</button>'
+        : '<div class="mk-buy"><div class="mk-price"><i>◆</i>'+fmt(x.p)+'</div><button class="mk-cart" data-buy="'+x.id+'" aria-label="Купить">🛒</button><button class="lucky-mini" data-lucky="'+x.id+'" aria-label="Lucky Buy" title="Lucky Buy"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff" aria-hidden="true"><circle cx="12" cy="7.5" r="4.2"/><circle cx="7" cy="14" r="4.2"/><circle cx="17" cy="14" r="4.2"/><path d="M12 13v8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button></div>'}
+    </div>
   </article>`;
 }
 
