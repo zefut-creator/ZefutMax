@@ -601,7 +601,7 @@ async function publishSharedListing(giftIndex, serial, price) {
   const rows = await sharedRequest(SUPABASE_TABLE, {
     method:'POST',
     headers:{Prefer:'return=representation'},
-    body:JSON.stringify({gift_name:gifts[giftIndex][1],price:round(price),seller_id:sellerId})
+    body:JSON.stringify({gift_name:gifts[giftIndex][1],serial:Number(serial),price:round(price),seller_id:sellerId})
   });
   return Array.isArray(rows) && rows[0] ? rows[0] : null;
 }
@@ -920,8 +920,13 @@ function sellSheet(id){
 
 function updateSale(){
   const p=Number($('priceInput')?.value);
-  $('saleSummary').innerHTML=`<div><span>Комиссия (расчёт 5%)</span><b>${p>0?fmt(p*.05):'—'} GRAM</b></div>
-    <div><span>После комиссии</span><b>${p>0?fmt(p*.95):'—'} GRAM</b></div>`;
+  const valid=Number.isFinite(p)&&p>=0.01&&p<=100000000;
+  const summary=$('saleSummary');
+  if(!summary)return;
+  summary.innerHTML=`<div><span>Комиссия (расчёт 5%)</span><b>${valid?fmt(p*.05):'—'} GRAM</b></div>
+    <div><span>После комиссии</span><b>${valid?fmt(p*.95):'—'} GRAM</b></div>`;
+  const submit=document.querySelector('[data-list]');
+  if(submit)submit.disabled=!valid;
 }
 
 function listMine(id){
