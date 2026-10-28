@@ -411,7 +411,6 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
   <button id="marketTab" class="active"><span class="ico">🛍️</span>Маркет</button>
   <button id="mineTab"><span class="ico">🎁</span>Мои подарки</button>
   <button id="playTab"><span class="ico">🚀</span>Игры</button>
-  <button id="luckyTab"><span class="ico">🍀</span>Лаки бай</button>
   <button id="profileTab"><span class="ico">👤</span>Профиль</button>
 </nav>
 
@@ -614,7 +613,6 @@ function stopRocketOnNavigate(){
 function setTab(next){
   if(next!=='play') stopRocketOnNavigate();
   tab=next;
-  $('luckyTab')?.classList.toggle('active',next==='lucky');
   $('marketTab').classList.toggle('active',next==='market');
   $('mineTab').classList.toggle('active',next==='mine');
   $('playTab').classList.toggle('active',next==='play');
@@ -1025,7 +1023,6 @@ document.addEventListener('click',e=>{
   if(b.id==='mineTab') return setTab('mine');
   if(b.id==='playTab'){stopRocketOnNavigate();playMode='';return setTab('play');}
   if(b.id==='profileTab') return setTab('profile');
-  if(b.id==='luckyTab') return setTab('lucky');
   if(d.lucky) return lbOpen(d.lucky);
   if(d.lbgo) return lbGo(d.lbgo);
   if(d.luckyinfo!==undefined){openSheet('<h2>Lucky Buy в MRKT</h2><div class="desc">Это не покупка случайного подарка за фиксированные 25 GRAM. В оригинальном MRKT пользователь предлагает цену ниже цены подарка; шанс зависит от предложения. При проигрыше предусмотрена компенсация карточкой Lucky Buy. В этом проекте ставки, списания баланса и выдача случайных подарков отключены — функция показана только как справка.</div><button class="btn secondary" data-close>Понятно</button>');return;}
