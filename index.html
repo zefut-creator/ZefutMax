@@ -653,30 +653,19 @@ async function refreshSharedWallet() {
 }
 async function refreshSharedListings() {
   try {
-    // Publish locally saved own listings that are not yet in the shared database.
-    // Do this even if an older app version already set the migration flag.
-    const localOwn = state.mk.filter(x=>x.own && !x.shared && !x.dbId);
-    for (const x of localOwn) {
-      const row = await publishSharedListing(x.g, x.n, x.p);
-      if (row) {
-        state.mk = state.mk.filter(y=>String(y.id)!==String(x.id));
-        save();
-      }
-    }
-    localStorage.setItem(SHARED_MIGRATION_KEY, '1');
     const rows = await sharedRequest(SUPABASE_TABLE + '?select=id,gift_name,price,seller_id,created_at&order=created_at.desc');
     if (!Array.isArray(rows)) return;
     const shared = rows.map(row => {
-      const giftIndex = gifts.findIndex(g=>g[1]===row.gift_name);
+      const giftIndex = gifts.findIndex(g => g[1] === row.gift_name);
       if (giftIndex < 0) return null;
-      return {id: 'sb-' + row.id, dbId:row.id, g:giftIndex, n:Number(row.id), p:round(row.price), own:String(row.seller_id)===sellerId, shared:true};
+      return {id:'sb-'+row.id,dbId:row.id,g:giftIndex,n:Number(row.id),p:round(row.price),own:String(row.seller_id)===sellerId,shared:true};
     }).filter(Boolean);
-    // The seeded catalog is only a visual demo and has no real database listing.
-    // Show only listings that actually exist in Supabase so every visible buyable lot
-    // has a database ID and can be purchased across accounts.
-    state.mk = shared;
+    // Preserve the user's local drafts, but never auto-publish them during polling.
+    // The explicit create_market_listing RPC is the only publishing path.
+    const drafts = state.mk.filter(x => x.own === true && !x.shared && !x.dbId);
+    state.mk = [...shared, ...drafts];
     save();
-    if (tab==='market' || tab==='mine') render();
+    if (tab === 'market' || tab === 'mine') render();
   } catch (e) {
     console.warn('Shared market unavailable:', e);
     if (!window.__zefutSharedToastShown) {
@@ -685,6 +674,7 @@ async function refreshSharedListings() {
     }
   }
 }
+
 const STORAGE_KEY = 'zefutmax_market_v2';
 const round = n => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
 const fmt = n => Number(n).toLocaleString('ru-RU',{maximumFractionDigits:2});
@@ -948,8 +938,9 @@ function renderProfile(){
 function render(){
   $('bal').textContent=fmt(state.bal);
   document.documentElement.dataset.theme=state.theme;
-  document.querySelector('meta[name="theme-color"]')?.setAttribute(
-    'content','#050505');
+  const chromeColor=state.theme==='dark'?'#050505':'#f7f5fb';
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content',chromeColor);
+  try{if(tg){tg.setHeaderColor(chromeColor);tg.setBackgroundColor(chromeColor);}}catch(e){}
   $('theme').textContent=state.theme==='dark'?'☀️':'🌙';
   $('theme').setAttribute('aria-label',state.theme==='dark'?'Включить светлую тему':'Включить тёмную тему');
   $('main').innerHTML=tab==='market'?renderMarket():tab==='mine'?renderMine():tab==='profile'?renderProfile():renderPlay();
