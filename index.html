@@ -360,6 +360,35 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
 
 .spins-hero{background:radial-gradient(ellipse at 80% 30%,#ff8a0030,transparent 48%),linear-gradient(130deg,#17100a,#090a0d 65%)}.spins-machine{background:#090a0d;border:1px solid #333036;border-radius:18px;padding:14px;margin:14px 0}.spins-reels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:18px 0}.spins-reel{display:flex;align-items:center;justify-content:center;min-height:92px;background:linear-gradient(180deg,#202126,#111216);border:1px solid #3c3329;border-radius:13px;font-size:clamp(32px,9vw,48px);box-shadow:inset 0 0 20px #ff8a000c}.spins-busy .spins-reel{animation:spins-pulse .22s ease-in-out infinite alternate}.spins-result{text-align:center;font-size:13px;font-weight:850;color:#f6a23a;min-height:20px}.spins-action{min-height:52px}.spins-paytable{background:#0c0d10;border:1px solid #28292e;border-radius:16px;padding:12px;margin:16px 0}.spins-paytable .sectionhead h3{font-size:13px}.spins-payrow{display:grid;grid-template-columns:1.1fr 1fr auto;align-items:center;gap:8px;padding:10px 2px;border-bottom:1px solid #ffffff0c;font-size:11px}.spins-payrow:last-child{border-bottom:0}.spins-payrow b{font-size:12px;white-space:nowrap}.spins-payrow span{color:var(--muted)}.spins-payrow strong{color:var(--accent);white-space:nowrap}@keyframes spins-pulse{from{transform:translateY(-3px);filter:brightness(1)}to{transform:translateY(3px);filter:brightness(1.5)}}
 .spins-paytable{box-shadow:0 14px 40px #0003}.spins-payrow{grid-template-columns:minmax(88px,1.05fr) minmax(0,1.4fr) auto;min-height:38px}.spins-payrow:nth-child(-n+5) strong{color:#ffd27a}.spins-reel{transition:border-color .2s,box-shadow .2s}.spins-busy .spins-reel{border-color:#ff8a00;box-shadow:0 0 20px #ff8a0022}.spins-action{letter-spacing:.06em;font-weight:900;box-shadow:0 8px 24px #ff8a0020}.spins-action:not(:disabled):active{transform:scale(.99)}@media(max-width:430px){.spins-payrow{grid-template-columns:1fr auto;gap:3px 8px}.spins-payrow span{grid-column:1;grid-row:2}.spins-payrow strong{grid-column:2;grid-row:1 / span 2}}
+
+/* Premium marketplace storefront */
+.live-market{margin-top:30px}
+.market-heading{align-items:flex-end;margin-bottom:16px}
+.market-heading h2{font-size:22px;letter-spacing:-.7px;margin-top:3px}
+.market-kicker{font-size:9px;letter-spacing:2px;font-weight:900;color:var(--accent)}
+.market-caption{font-size:11px;color:var(--muted);margin-top:4px}
+.market-total{font-size:11px;font-weight:800;padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:var(--panel)}
+.market-grid{gap:12px}
+.market-card{padding:8px;border-radius:19px;background:linear-gradient(160deg,var(--panel),color-mix(in srgb,var(--panel) 84%,var(--accent) 16%));border-color:color-mix(in srgb,var(--line) 75%,var(--accent) 25%);overflow:hidden}
+.market-art{aspect-ratio:1;border-radius:14px;position:relative;background:radial-gradient(circle at 50% 38%,#ffb84a30,transparent 58%),linear-gradient(145deg,#25201a,#111 68%)}
+.market-art:after{content:"";position:absolute;inset:0;border:1px solid #ffffff0d;border-radius:inherit;pointer-events:none}
+.market-art-1{background:radial-gradient(circle at 50% 38%,#9e75ff40,transparent 58%),linear-gradient(145deg,#211a30,#101014 68%)}
+.market-art-2{background:radial-gradient(circle at 50% 38%,#59d7c340,transparent 58%),linear-gradient(145deg,#142a29,#101414 68%)}
+.market-art-3{background:radial-gradient(circle at 50% 38%,#ff759c40,transparent 58%),linear-gradient(145deg,#301a27,#130f13 68%)}
+.market-art-4{background:radial-gradient(circle at 50% 38%,#69a9ff40,transparent 58%),linear-gradient(145deg,#17253a,#101116 68%)}
+.market-art img{filter:drop-shadow(0 9px 12px #0005);position:relative;z-index:1}
+.market-rarity{position:absolute;left:7px;top:7px;z-index:2;font-size:8px;font-weight:900;letter-spacing:.7px;padding:5px 7px;border-radius:7px;background:#090909b8;color:#fff;border:1px solid #ffffff18}
+.market-index{font-size:9px;color:var(--muted);font-weight:800;white-space:nowrap}
+.market-stock{margin-top:5px;min-height:16px}
+.market-price{display:flex;align-items:baseline;gap:5px;margin:10px 0 11px;font-size:19px;font-weight:950;letter-spacing:-.6px}
+.market-price small{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:0}
+.market-details{display:flex;align-items:center;justify-content:space-between;background:var(--panel2);color:var(--text);border:1px solid var(--line);font-size:11px;padding:10px}
+.market-details span{font-size:16px;color:var(--accent)}
+.market-state{margin:18px 0;padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--muted);font-size:13px}
+.market-pulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:9px;box-shadow:0 0 12px var(--accent)}
+@media(min-width:600px){.market-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(min-width:850px){.market-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
 </style>
 </head>
 <body>
@@ -623,17 +652,17 @@ function card(x){
 }
 
 function renderLiveCatalog(){
-  if(liveCatalogLoading) return '<div class="note">Загружаем официальный каталог Telegram…</div>';
-  if(!liveCatalog) return '<div class="note">Официальный каталог пока недоступен. '+esc(liveCatalogError||'Проверь настройку TELEGRAM_BOT_TOKEN в Vercel.')+'</div>';
-  if(!liveCatalog.length) return '<div class="note">Telegram не вернул доступных подарков.</div>';
-  return '<div class="sectionhead" style="margin-top:28px"><h2>Официальные подарки Telegram</h2><span class="count">'+liveCatalog.length+' типов · цены в Stars</span></div>'+
-    '<div class="grid">'+liveCatalog.map(g=>{
+  if(liveCatalogLoading) return '<div class="market-state"><span class="market-pulse"></span>Загружаем витрину подарков…</div>';
+  if(!liveCatalog) return '<div class="market-state">Витрина временно не загрузилась. '+esc(liveCatalogError||'Попробуй обновить страницу чуть позже.')+'</div>';
+  if(!liveCatalog.length) return '<div class="market-state">Подарки пока не найдены.</div>';
+  return '<section class="live-market"><div class="sectionhead market-heading"><div><div class="market-kicker">ZEFUTMAX · COLLECTION</div><h2>Витрина подарков</h2><div class="market-caption">Каталог Telegram · цены в Stars</div></div><span class="market-total">'+liveCatalog.length+' видов</span></div>'+
+    '<div class="grid market-grid">'+liveCatalog.map((g,i)=>{
       const visual=g.stickerFileId && g.stickerType==='static'
-        ? '<img src="/api/gift-image?file_id='+encodeURIComponent(g.stickerFileId)+'" alt="Стикер подарка Telegram" loading="lazy" style="width:100%;height:100%;object-fit:contain;padding:18px" onerror="this.style.display=\'none\'">'
-        : '<span class="emoji">🎁</span>';
-      const stock=g.remainingCount!==null?'Осталось: '+fmt(g.remainingCount):'Доступен у бота';
-      return '<article class="card"><div class="art">'+visual+'</div><div class="cardtop"><b>'+esc(g.stickerEmoji||'Telegram Gift')+'</b></div><div class="muted">'+esc(stock)+(g.premiumOnly?' · Premium':'')+'</div><div class="price">'+fmt(g.stars)+' <small>Stars</small></div><button class="btn secondary" data-giftinfo="'+esc(g.id)+'">Подробнее</button></article>';
-    }).join('')+'</div><p class="note">Данные из официального Telegram Bot API. Это подарки, которые бот может отправлять, а не лоты вторичного рынка. Покупка и отправка через этот каталог пока не включены.</p>';
+        ? '<img src="/api/gift-image?file_id='+encodeURIComponent(g.stickerFileId)+'" alt="'+esc(g.stickerEmoji||'Подарок Telegram')+'" loading="lazy" style="width:100%;height:100%;object-fit:contain;padding:15px" onerror="this.style.display=\\'none\\'">'
+        : '<span class="emoji market-fallback">🎁</span>';
+      const stock=g.remainingCount!==null?'Осталось '+fmt(g.remainingCount):'Коллекция Telegram';
+      return '<article class="card market-card"><div class="art market-art market-art-'+(i%5)+'">'+visual+'<span class="market-rarity">'+(g.premiumOnly?'PREMIUM':'TELEGRAM')+'</span></div><div class="cardtop"><b>'+esc(g.stickerEmoji||'Telegram Gift')+'</b><span class="market-index">#'+esc(g.id)+'</span></div><div class="muted market-stock">'+esc(stock)+'</div><div class="market-price"><span>'+fmt(g.stars)+'</span><small>⭐ Stars</small></div><button class="btn market-details" data-giftinfo="'+esc(g.id)+'">Открыть карточку <span>↗</span></button></article>';
+    }).join('')+'</div></section>';
 }
 
 function renderMarket(){
