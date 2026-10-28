@@ -653,6 +653,7 @@ const esc = s => String(s).replace(/[&<>"']/g,c=>({
 
 let tab='market', filter='all', mineTab='owned', search='', sort='priceUp';
 let freeTapCount=0;
+let minesBombs=[];let minesRevealed=[];let pvpScore=[0,0];let pvpResult='Сделай первый ход.';let rocketResult='1.00';let rocketMessage='Ракета готова к запуску.';let spinResult=['🍒','⭐','💎'];let spinMessage='Нажми «Крутить», чтобы начать.';
 let playMode='';
 let toastTimer, state;
 
@@ -825,20 +826,22 @@ function renderHistory(){
 }
 
 function renderPlay(){
-  if(playMode==='tap'){
-    return '<div class="game-topline"><button class="back-link" data-playback>‹ Игровой центр</button><span class="live-pill"><i></i> FREE PLAY</span></div>'+
-      '<div class="game-hero"><div class="hero-copy"><span class="eyebrow">ZEFUTMAX MINI</span><h2>TAP <span>CHALLENGE</span></h2><p>Дойди до 20 нажатий. Никаких ставок и наград.</p></div><div class="arena-mark">👆</div></div>'+
-      '<div class="rocket-console"><div class="console-top"><span>ПРОГРЕСС</span><span>'+freeTapCount+'/20</span></div><div class="rocket-number">'+freeTapCount+'<small>/20</small></div><div class="flight-progress"><i style="width:'+Math.min(100,freeTapCount*5)+'%"></i></div><p class="flight-status">'+(freeTapCount>=20?'Готово! Ты достиг цели.':'Нажми кнопку '+(20-freeTapCount)+' раз.')+'</p></div>'+
-      '<button class="btn" data-tap '+(freeTapCount>=20?'disabled':'')+'>'+(freeTapCount>=20?'ГОТОВО':'НАЖАТЬ')+'</button>'+
-      '<button class="btn secondary" style="margin-top:8px" data-resettap>Сбросить счёт</button>'+
-      '<button class="btn secondary" style="margin-top:8px" data-playback>← Все игры</button>';
+  const back='<div class="game-topline"><button class="back-link" data-playback>‹ Все игры</button><span class="live-pill"><i></i> DEMO</span></div>';
+  if(playMode==='mines'){
+    const cells=Array.from({length:25},(_,i)=>'<button class="gamecell" data-minecell="'+i+'">'+(minesRevealed.includes(i)?(minesBombs.includes(i)?'💣':'💎'):'?')+'</button>').join('');
+    return back+'<div class="game-hero"><div class="hero-copy"><span class="eyebrow">ZEFUTMAX MINI</span><h2>MINES</h2><p>Открывай клетки и ищи драгоценности.</p></div><div class="arena-mark">💣</div></div><div class="gameboard">'+cells+'</div><p class="muted">Найдено: '+minesRevealed.filter(i=>!minesBombs.includes(i)).length+' · Демо-режим без реальных ставок.</p><button class="btn" data-minesreset>Новая игра</button>';
   }
-  return '<div class="sectionhead"><h2>Play Hub</h2><span class="count">Бесплатный режим</span></div>'+
-    '<div class="hub-banner"><div class="hub-orb">✦</div><div><b>Мини-игры без ставок</b><div class="muted">Не тратят баланс и не влияют на коллекцию</div></div></div>'+
-    '<div class="gamecards"><button class="gamecard" data-play="tap"><span class="gameicon">👆</span><b>Tap Challenge</b><span class="muted">Считай нажатия и дойди до цели.</span><span class="game-open">Открыть →</span></button></div>'+
-    '<p class="note">Игровой центр не меняет баланс, не принимает ставки и не выдаёт виртуальные выплаты.</p>';
+  if(playMode==='pvp'){
+    return back+'<div class="game-hero pvp-hero"><div class="hero-copy"><span class="eyebrow">ARENA</span><h2>PVP <span>DUEL</span></h2><p>Тренировочный поединок против бота.</p></div><div class="arena-mark">⚔️</div></div><div class="arena-scoreboard"><div class="arena-player"><div class="player-avatar user-avatar">YOU</div><b>Ты</b><strong>'+pvpScore[0]+'</strong><span>ПОБЕДЫ</span></div><div class="arena-vs">VS<div>BEST OF 1</div></div><div class="arena-player"><div class="player-avatar bot-avatar">🤖</div><b>Бот</b><strong>'+pvpScore[1]+'</strong><span>ПОБЕДЫ</span></div></div><div class="arena-challenge"><h3>Выбери ход</h3><p>Камень, ножницы или бумага. Результат раунда — против случайного бота.</p><div class="gamecards"><button class="gamecard" data-duel="rock">🪨 Камень</button><button class="gamecard" data-duel="paper">📄 Бумага</button><button class="gamecard" data-duel="scissors">✂️ Ножницы</button></div><div class="arena-result">'+esc(pvpResult)+'</div></div>';
+  }
+  if(playMode==='rocket'){
+    return back+'<div class="game-hero"><div class="hero-copy"><span class="eyebrow">FLIGHT</span><h2>ROCKET <span>RUN</span></h2><p>Запусти ракету и наблюдай за полётом.</p></div><div class="rocket-emblem"><div class="rocket-ring">🚀</div></div></div><div class="rocket-console"><div class="console-top"><span>ПОСЛЕДНИЙ ПОЛЁТ</span><span id="rocketPhase">DEMO</span></div><div class="flight-path"><div class="flight-grid"></div><div class="flight-trail"></div><div class="rocket-craft">'+(rocketResult?'💥':'🚀')+'</div></div><div class="rocket-number">'+rocketResult+'<small>x</small></div><p class="flight-status">'+esc(rocketMessage)+'</p></div><button class="btn rocket-action" data-rocket>🚀 ЗАПУСТИТЬ</button><p class="game-disclaimer">Демо-анимация. Баланс не меняется, реальных ставок и выплат нет.</p>';
+  }
+  if(playMode==='spins'){
+    return back+'<div class="game-hero spins-hero"><div class="hero-copy"><span class="eyebrow">LUCKY MACHINE</span><h2>SPIN <span>CLUB</span></h2><p>Крути барабаны и смотри комбинацию.</p></div><div class="arena-mark">🎰</div></div><div class="spins-machine"><div class="spins-reels"><div class="spins-reel">'+spinResult[0]+'</div><div class="spins-reel">'+spinResult[1]+'</div><div class="spins-reel">'+spinResult[2]+'</div></div><div class="spins-result">'+esc(spinMessage)+'</div></div><button class="btn spins-action" data-spin>КРУТИТЬ</button><p class="game-disclaimer">Демо-режим без ставок, списания GRAM или выплат.</p>';
+  }
+  return '<div class="sectionhead"><h2>Play Hub</h2><span class="count">Мини-игры</span></div><div class="hub-banner"><div class="hub-orb">✦</div><div><b>Игровой центр</b><div class="muted">Мины · PvP · Ракетка · Спин</div></div></div><div class="gamecards"><button class="gamecard" data-play="mines"><span class="gameicon">💣</span><b>Мины</b><span class="muted">Открывай клетки и ищи кристаллы.</span><span class="game-open">Играть →</span></button><button class="gamecard" data-play="pvp"><span class="gameicon">⚔️</span><b>PvP</b><span class="muted">Дуэль против бота.</span><span class="game-open">Играть →</span></button><button class="gamecard" data-play="rocket"><span class="gameicon">🚀</span><b>Ракетка</b><span class="muted">Запусти ракету.</span><span class="game-open">Играть →</span></button><button class="gamecard" data-play="spins"><span class="gameicon">🎰</span><b>Спин</b><span class="muted">Крути три барабана.</span><span class="game-open">Играть →</span></button></div><p class="note">Игры работают в демо-режиме и не меняют баланс.</p>';
 }
-
 function renderProfile(){
   const user=tg?.initDataUnsafe?.user||null;
   const fullName=user?[user.first_name,user.last_name].filter(Boolean).join(' '):'Гость';
@@ -997,8 +1000,13 @@ document.addEventListener('click',e=>{
   if(b.id==='mineTab') return setTab('mine');
   if(b.id==='playTab'){playMode='';freeTapCount=0;return setTab('play');}
   if(b.id==='profileTab') return setTab('profile');
-  if(d.play!==undefined){playMode=d.play;freeTapCount=0;render();return;}
+  if(d.play!==undefined){playMode=d.play;freeTapCount=0;minesRevealed=[];minesBombs=[];render();return;}
   if(d.playback!==undefined){playMode='';freeTapCount=0;setTab('play');return;}
+  if(d.minesreset!==undefined){minesBombs=[];while(minesBombs.length<5){const n=Math.floor(Math.random()*25);if(!minesBombs.includes(n))minesBombs.push(n);}minesRevealed=[];render();return;}
+  if(d.minecell!==undefined){const n=Number(d.minecell);if(!minesBombs.length){while(minesBombs.length<5){const z=Math.floor(Math.random()*25);if(!minesBombs.includes(z))minesBombs.push(z);}}if(!minesRevealed.includes(n))minesRevealed.push(n);render();return;}
+  if(d.duel){const opts=['rock','paper','scissors'],bot=opts[Math.floor(Math.random()*3)],win=d.duel===bot?0:((d.duel==='rock'&&bot==='scissors')||(d.duel==='paper'&&bot==='rock')||(d.duel==='scissors'&&bot==='paper'))?1:-1;if(win===1)pvpScore[0]++;else if(win===-1)pvpScore[1]++;pvpResult='Твой ход: '+({rock:'камень',paper:'бумага',scissors:'ножницы'}[d.duel])+'. Бот: '+({rock:'камень',paper:'бумага',scissors:'ножницы'}[bot])+'. '+(win===0?'Ничья.':win===1?'Ты выиграл раунд!':'Бот выиграл раунд.');render();return;}
+  if(d.rocket!==undefined){rocketResult=(1+Math.random()*8).toFixed(2);rocketMessage='Полёт завершён. Результат: '+rocketResult+'x (только визуальная демо-анимация).';render();return;}
+  if(d.spin!==undefined){const symbols=['🍒','⭐','💎','🔔','7️⃣','🍀'];spinResult=[0,1,2].map(()=>symbols[Math.floor(Math.random()*symbols.length)]);spinMessage=spinResult.every(x=>x===spinResult[0])?'Три одинаковых символа!':'Комбинация готова.';render();return;}
 
   if(d.tap!==undefined){freeTapCount=Math.min(20,freeTapCount+1);render();return;}
   if(d.resettap!==undefined){freeTapCount=0;render();return;}
@@ -1047,14 +1055,14 @@ document.addEventListener('click',e=>{
     const price=round(gift[2]);
     const enough=state.bal>=price;
     openSheet(`${art(giftIndex)}<h2>${esc(gift[1])}</h2>
-      <div class="desc">Добавление в локальную демо-коллекцию</div>
+      <div class="desc">Покупка из виртуального каталога</div>
       <div class="summary">
         <div><span>Демо-цена</span><b>${fmt(price)} GRAM</b></div>
         <div><span>Текущий баланс</span><b>${fmt(state.bal)} GRAM</b></div>
         <div><span>Останется</span><b>${fmt(Math.max(0,state.bal-price))} GRAM</b></div>
       </div>
       ${enough
-        ? `<button class="btn" data-confirmcatalogbuy="${giftIndex}">Подтвердить добавление</button>`
+        ? `<button class="btn" data-confirmcatalogbuy="${giftIndex}">Купить</button>`
         : '<p style="color:var(--red);font-size:13px">Недостаточно виртуальных GRAM.</p>'}
       <button class="btn secondary" data-close>Отмена</button>`);
     return;
@@ -1067,8 +1075,8 @@ document.addEventListener('click',e=>{
     if(!Number.isFinite(price)||price<=0||state.bal<price){toast('Недостаточно виртуальных GRAM');return;}
     state.bal=round(state.bal-price);
     state.mine.unshift({id:++state.nid,g:giftIndex,n:Math.floor(Date.now()/1000),buy:price});
-    log('catalog_buy',gift[1],-price,'Добавлено из демо-каталога');
-    save();closeSheet();render();haptic('success');toast('Добавлено в демо-коллекцию');return;
+    log('catalog_buy',gift[1],-price,'Покупка из виртуального каталога');
+    save();closeSheet();render();haptic('success');toast('Покупка успешна — подарок в коллекции');return;
   }
   if(d.buy) return confirmBuy(d.buy);
   if(d.confirmbuy) return doBuy(d.confirmbuy);
