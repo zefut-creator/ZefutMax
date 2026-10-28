@@ -59,7 +59,7 @@ begin
   select * into listing from public.market_listings where id=p_listing_id for update;
   if not found then raise exception 'Listing already sold or removed'; end if;
   if listing.seller_id=p_buyer_id then raise exception 'Cannot buy your own listing'; end if;
-  if listing.price<=0 then raise exception 'Invalid listing price'; end if;
+  if listing.price<=0 or listing.price>100000000 then raise exception 'Invalid listing price'; end if;
 
   -- Do not trust client-supplied balance values.
   insert into public.wallet_balances(user_id,balance)
@@ -190,8 +190,8 @@ set search_path = ''
 as $$
 declare updated_id bigint;
 begin
-  if p_new_price is null or p_new_price <= 0 then
-    raise exception 'Price must be greater than zero';
+  if p_new_price is null or p_new_price <= 0 or p_new_price > 100000000 then
+    raise exception 'Price must be between 0 and 100000000';
   end if;
 
   update public.market_listings
