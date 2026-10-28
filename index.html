@@ -156,6 +156,19 @@ nav button{
 nav button .ico{font-size:18px}
 .case-hero{padding:20px;border:1px solid var(--line);border-radius:20px;background:radial-gradient(circle at 50% 0%,#ff9f1c25,transparent 65%),var(--panel);text-align:center;margin-bottom:16px}
 .case-box{font-size:68px;line-height:1.25;filter:drop-shadow(0 8px 18px #ff9f1c30)}
+.case-roulette{position:relative;overflow:hidden;margin:18px 0 14px;padding:12px 0;border:1px solid var(--line);border-radius:14px;background:#0b0810}
+.case-roulette:before,.case-roulette:after{content:"";position:absolute;top:0;bottom:0;width:34px;z-index:2;pointer-events:none}
+.case-roulette:before{left:0;background:linear-gradient(90deg,#0b0810,transparent)}
+.case-roulette:after{right:0;background:linear-gradient(270deg,#0b0810,transparent)}
+.case-roulette-track{display:flex;gap:9px;width:max-content;transform:translateX(0);will-change:transform}
+.case-roulette-item{display:flex;flex:0 0 112px;min-height:78px;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1px solid #493321;border-radius:10px;background:linear-gradient(160deg,#302016,#171016);color:#fff;font-size:12px;text-align:center;padding:8px;box-sizing:border-box}
+.case-roulette-item .case-emoji{font-size:25px;line-height:1.1}
+.case-roulette-item.winner{border-color:#ffad1f;box-shadow:0 0 18px #ff9f1c90;background:linear-gradient(160deg,#583817,#24140e)}
+.case-roulette-pointer{position:absolute;z-index:3;left:50%;top:0;bottom:0;width:3px;transform:translateX(-50%);background:#ffad1f;box-shadow:0 0 9px #ff9f1f}
+.case-roulette-pointer:before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);border-left:7px solid transparent;border-right:7px solid transparent;border-top:10px solid #ffad1f}
+.case-opening .case-box{animation:case-box-shake .4s ease-in-out infinite alternate}
+@keyframes case-box-shake{from{transform:rotate(-5deg) scale(1)}to{transform:rotate(5deg) scale(1.06)}}
+.case-roulette-status{min-height:20px;color:var(--muted);font-size:12px;margin:8px 0}
 .case-drop-list{display:grid;gap:8px;margin:14px 0}
 .case-drop{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 12px;background:var(--panel);border:1px solid var(--line);border-radius:12px}
 .case-drop .reward{font-weight:750}
@@ -852,21 +865,42 @@ const freeCaseDrops=[
   {label:'NFT-подарок на выбор · 40–60 TON',chance:0.009,type:'nft',range:'40–60 TON'},
   {label:'NFT-подарок на выбор · 100–250 TON',chance:0.001,type:'nft',range:'100–250 TON'}
 ];
-let freeCaseBusy=false;
+let freeCaseBusy=false,freeCaseTimer=null;
+function caseItemMarkup(d,extra=''){
+  const icon=d.type==='nft'?'🎁':'🪙';
+  const label=d.type==='nft'?'NFT '+d.range:d.label;
+  return '<div class="case-roulette-item '+extra+'"><span class="case-emoji">'+icon+'</span><span>'+esc(label)+'</span></div>';
+}
 function renderCases(){
   return '<div class="sectionhead"><h2>📦 Кейсы</h2><span class="count">1 кейс</span></div>'+
-    '<div class="case-hero"><div class="case-box">🎁</div><h2>Бесплатный кейс</h2><p class="muted">Открой кейс и получи случайный дроп. Открытие бесплатное.</p><button class="btn" data-opencase '+(freeCaseBusy?'disabled':'')+'>'+(freeCaseBusy?'Открываем…':'Открыть бесплатно')+'</button></div>'+
+    '<div class="case-hero '+(freeCaseBusy?'case-opening':'')+'"><div class="case-box">🎁</div><h2>Бесплатный кейс</h2><p class="muted">Открой кейс и получи случайный дроп. Открытие бесплатное.</p>'+
+    (freeCaseBusy?'<div class="case-roulette"><div class="case-roulette-track" id="caseRouletteTrack"></div><div class="case-roulette-pointer"></div></div><div class="case-roulette-status">Рулетка крутится…</div>':'')+
+    '<button class="btn" data-opencase '+(freeCaseBusy?'disabled':'')+'>'+(freeCaseBusy?'Открываем…':'Открыть бесплатно')+'</button></div>'+
     '<div class="sectionhead"><h2>Шансы выпадения</h2><span class="count">100%</span></div>'+
     '<div class="case-drop-list">'+freeCaseDrops.map(d=>'<div class="case-drop"><span class="reward">'+esc(d.label)+'</span><span class="chance">'+String(d.chance).replace('.',',')+'%</span></div>').join('')+'</div>'+
     '<p class="note">Кейс работает в демо-режиме. GRAM-дропы добавляются к виртуальному балансу. NFT-дропы показываются как демо-награда: реальная выдача NFT и перевод TON пока не подключены.</p>';
 }
 function openFreeCase(){
   if(freeCaseBusy) return;
+  let roll=Math.random()*100,acc=0,drop=freeCaseDrops[freeCaseDrops.length-1];
+  for(const item of freeCaseDrops){acc+=item.chance;if(roll<acc){drop=item;break;}}
   freeCaseBusy=true;render();
-  setTimeout(()=>{
-    let roll=Math.random()*100,acc=0,drop=freeCaseDrops[freeCaseDrops.length-1];
-    for(const item of freeCaseDrops){acc+=item.chance;if(roll<acc){drop=item;break;}}
-    freeCaseBusy=false;
+  const track=$('caseRouletteTrack');
+  if(track){
+    const sequence=[];
+    for(let i=0;i<34;i++) sequence.push(freeCaseDrops[(i*7+Math.floor(Math.random()*freeCaseDrops.length))%freeCaseDrops.length]);
+    const winnerIndex=sequence.length-5;
+    sequence[winnerIndex]=drop;
+    sequence.push(...freeCaseDrops.slice(0,4));
+    track.innerHTML=sequence.map((d,i)=>caseItemMarkup(d,i===winnerIndex?'winner':'')).join('');
+    const itemWidth=121;
+    const target=winnerIndex*itemWidth-(track.parentElement.clientWidth/2-itemWidth/2);
+    track.style.transition='none';track.style.transform='translateX(0)';
+    track.getBoundingClientRect();
+    requestAnimationFrame(()=>{track.style.transition='transform 5.2s cubic-bezier(.08,.72,.08,1)';track.style.transform='translateX(-'+Math.max(0,target)+'px)';});
+  }
+  freeCaseTimer=setTimeout(()=>{
+    freeCaseBusy=false;freeCaseTimer=null;
     if(drop.type==='gram'){
       state.bal=round(state.bal+drop.amount);
       log('Кейс','Бесплатный кейс',drop.amount,'Дроп '+drop.label);
@@ -877,7 +911,7 @@ function openFreeCase(){
       save();render();
       openSheet('<div class="case-result"><div class="case-box">🎁</div><div>Редкий дроп!</div><div class="reward-big">NFT-подарок</div><b>'+esc(drop.range)+'</b><div class="desc">Это демо-награда. Сам NFT не выдан, поскольку реальная доставка ещё не подключена.</div></div><button class="btn" data-close>Забрать результат</button>');
     }
-  },650);
+  },5400);
 }
 function renderLuckyBuy(){
   return '<div class="sectionhead"><h2>🍀 Лаки бай</h2><span class="count">Информация</span></div><p class="note">В MRKT Lucky Buy — это не случайная выдача подарка за фиксированную цену. В оригинальном сервисе пользователь предлагает цену ниже указанной стоимости подарка, а результат зависит от вероятности. Проигрыш компенсируется карточкой Lucky Buy.</p><div class="hub-banner"><div class="hub-orb">🍀</div><div><b>Lucky Buy · MRKT</b><div class="muted">Демонстрационная справка</div></div></div><div class="summary"><div><span>Ставки и списания</span><b>Отключены</b></div><div><span>Реальные подарки</span><b>Не подключены</b></div></div><button class="btn secondary" data-luckyinfo>Как это работает?</button>';
