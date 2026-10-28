@@ -1091,46 +1091,53 @@ document.addEventListener('keydown',e=>{
 render();
 
 async function loadLiveCatalog(){
+  const known = [
+    ['PlushPepe','Plush Pepe'],['DurovsCap',"Durov's Cap"],['HeartLocket','Heart Locket'],
+    ['JellyBunny','Jelly Bunny'],['LootBag','Loot Bag'],['AstralShard','Astral Shard'],
+    ['PreciousPeach','Precious Peach'],['EternalRose','Eternal Rose'],
+    ['BerryBox','Berry Box'],['VintageCigar','Vintage Cigar'],
+    ['MagicPotion','Magic Potion'],['KissedFrog','Kissed Frog'],
+    ['DeskCalendar','Desk Calendar'],['PartySparkler','Party Sparkler'],
+    ['SignetRing','Signet Ring'],['ScaredCat','Scared Cat'],
+    ['GemSignet','Gem Signet'],['PerfumeBottle','Perfume Bottle']
+  ];
+  const arr = v => Array.isArray(v) ? v : (v && typeof v==='object' ? Object.values(v) : []);
+  const nm = v => typeof v==='string' ? v : (v && (v.name||v.slug||v.id||v.model||v.title));
   try{
-    const response=await fetch('https://api.changes.tg/gifts',{headers:{Accept:'application/json'}});
-    if(!response.ok) throw new Error('Источник NFT ответил ошибкой '+response.status);
-    const payload=await response.json();
-    const giftsList=Array.isArray(payload)?payload:(payload.gifts||payload.result||payload.data||[]);
-    if(!Array.isArray(giftsList)) throw new Error('Неизвестный формат каталога');
+    const ar=await fetch('https://api.changes.tg/gifts',{headers:{Accept:'application/json'}});
+    let items=[];
+    if(ar.ok){const p=await ar.json();items=arr(p.gifts||p.result||p.data||p);}
+    let queue=items.map(v=>({slug:String(nm(v)||''),title:typeof v==='object'?(v.title||v.name||''):''})).filter(v=>v.slug);
+    if(!queue.length) queue=known.map(v=>({slug:v[0],title:v[1]}));
     const rows=[];
-    for(const item of giftsList.slice(0,24)){
-      const slug=typeof item==='string'?item:(item.name||item.slug||item.id||item.gift);
-      if(!slug) continue;
+    for(const it of queue.slice(0,36)){
       try{
-        const detailResponse=await fetch('https://api.changes.tg/gift/'+encodeURIComponent(slug),{headers:{Accept:'application/json'}});
-        if(!detailResponse.ok) continue;
-        const detail=await detailResponse.json();
-        const d=detail.gift||detail.data||detail;
-        const models=Array.isArray(d.models)?d.models:(Array.isArray(d.result?.models)?d.result.models:[]);
-        const backdrops=Array.isArray(d.backdrops)?d.backdrops:(Array.isArray(d.result?.backdrops)?d.result.backdrops:[]);
-        const model=models[0];
-        if(!model) continue;
-        const modelName=typeof model==='string'?model:(model.name||model.slug||model.id);
+        const rs=await Promise.all([
+          fetch('https://api.changes.tg/gift/'+encodeURIComponent(it.slug)),
+          fetch('https://api.changes.tg/models/'+encodeURIComponent(it.slug)),
+          fetch('https://api.changes.tg/backdrops/'+encodeURIComponent(it.slug))
+        ]);
+        const d0=rs[0].ok?await rs[0].json():{};
+        const m0=rs[1].ok?await rs[1].json():{};
+        const b0=rs[2].ok?await rs[2].json():{};
+        const d=d0.gift||d0.data||d0.result||d0;
+        let models=arr(m0.models||m0.result||m0.data||m0);
+        if(!models.length) models=arr(d.models||d.model);
+        const backs=arr(b0.backdrops||b0.result||b0.data||b0);
+        if(!models.length) continue;
+        const model=models[0], modelName=nm(model);
         if(!modelName) continue;
-        const backdrop=backdrops[0];
-        const backdropName=typeof backdrop==='string'?backdrop:(backdrop?.name||backdrop?.slug||backdrop?.id||'');
-        const backdropColor=typeof backdrop==='object'?(backdrop.hex||backdrop.color||backdrop.center_color||''): '';
-        rows.push({
-          name:d.title||d.name||String(slug),
-          gift:String(slug),
-          model:String(modelName),
-          backdrop:String(backdropName||'—'),
-          backdropColor:String(backdropColor||''),
-          image:'https://api.changes.tg/model/'+encodeURIComponent(slug)+'/'+encodeURIComponent(modelName)+'.png?size=256'
-        });
+        const back=backs[0], backName=nm(back)||'Classic';
+        let color=back&&typeof back==='object'?(back.hex||back.color||back.center_color||back.bg_color||''):'';
+        if(color && /^[0-9a-f]{6}$/i.test(String(color))) color='#'+color;
+        rows.push({name:it.title||d.title||d.name||it.slug,gift:it.slug,model:String(modelName),backdrop:String(backName),backdropColor:String(color||''),image:'https://api.changes.tg/model/'+encodeURIComponent(it.slug)+'/'+encodeURIComponent(String(modelName))+'.png?size=256'});
       }catch(e){}
     }
     liveCatalog=rows;
-    liveCatalogError='';
-    if(!rows.length) liveCatalogError='Источник не вернул модели в ожидаемом формате.';
-  }catch(error){
-    liveCatalog=null;
-    liveCatalogError='Не удалось связаться с GiftChanges API. Попробуй обновить каталог.';
+    liveCatalogError=rows.length?'':'API ответил, но модели не удалось распознать.';
+  }catch(e){
+    liveCatalog=[];
+    liveCatalogError='Не удалось загрузить каталог NFT. Обнови страницу позже.';
   }finally{
     liveCatalogLoading=false;
     if(tab==='market') render();
