@@ -653,12 +653,12 @@ async function refreshSharedWallet() {
 }
 async function refreshSharedListings() {
   try {
-    const rows = await sharedRequest(SUPABASE_TABLE + '?select=id,gift_name,price,seller_id,created_at&order=created_at.desc');
+    const rows = await sharedRequest(SUPABASE_TABLE + '?select=id,gift_name,serial,price,seller_id,created_at&order=created_at.desc');
     if (!Array.isArray(rows)) return;
     const shared = rows.map(row => {
       const giftIndex = gifts.findIndex(g => g[1] === row.gift_name);
       if (giftIndex < 0) return null;
-      return {id:'sb-'+row.id,dbId:row.id,g:giftIndex,n:Number(row.id),p:round(row.price),own:String(row.seller_id)===sellerId,shared:true};
+      return {id:'sb-'+row.id,dbId:row.id,g:giftIndex,n:Number(row.serial)||Number(row.id),p:round(row.price),own:String(row.seller_id)===sellerId,shared:true};
     }).filter(Boolean);
     // Preserve the user's local drafts, but never auto-publish them during polling.
     // The explicit create_market_listing RPC is the only publishing path.
