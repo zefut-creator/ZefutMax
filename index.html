@@ -1091,13 +1091,20 @@ function listMine(id){
   mineTab='listed';
   render();
   toast('Публикую лот в общий маркет…');
-  publishSharedListing(x.g,x.n,p).then(row=>{
-    if(row){
-      state.mk=state.mk.filter(y=>y.id!==localListing.id);
-      state.mk.push({id:'sb-'+row.id,dbId:row.id,g:x.g,n:Number(row.id),p:round(row.price),own:true,shared:true});
-      save(); render(); toast('Лот опубликован для всех');
-    }
-  }).catch(e=>{console.warn(e);toast('Лот сохранён только на этом устройстве: ошибка общего маркета');});
+  sharedRequest('rpc/create_market_listing',{
+    method:'POST',
+    body:JSON.stringify({p_gift_name:gifts[x.g][1],p_serial:Number(x.n),p_price:round(p),p_seller_id:sellerId})
+  }).then(async result=>{
+    state.mk=state.mk.filter(y=>y.id!==localListing.id);
+    await refreshSharedListings();
+    await refreshSharedWallet();
+    save(); render(); toast('Лот выставлен в общий маркет');
+  }).catch(e=>{
+    console.warn(e);
+    state.mk=state.mk.filter(y=>y.id!==localListing.id);
+    state.mine.push({id:++state.nid,g:x.g,n:x.n,buy:x.buy||0});
+    save(); render(); toast('Не удалось выставить: запусти SQL-настройку маркета');
+  });
 }
 
 function unlist(id){
@@ -1109,8 +1116,8 @@ function unlist(id){
   log('unlist',gifts[x.g][1],0,'Лот снят с продажи');
   save(); render();
   if(x.shared && x.dbId){
-    sharedRequest(SUPABASE_TABLE+'?id=eq.'+encodeURIComponent(x.dbId)+'&seller_id=eq.'+encodeURIComponent(sellerId),{method:'DELETE'})
-      .then(()=>refreshSharedListings()).catch(e=>{console.warn(e);toast('Снятие не синхронизировалось: нужны права DELETE в Supabase');});
+    sharedRequest('rpc/cancel_market_listing',{method:'POST',body:JSON.stringify({p_listing_id:Number(x.dbId),p_seller_id:sellerId})})
+      .then(()=>refreshSharedListings()).catch(e=>{console.warn(e);toast('Не удалось снять лот: запусти SQL-настройку маркета');});
   } else toast('Лот снят');
 }
 
