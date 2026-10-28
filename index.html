@@ -528,7 +528,7 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
 .mk-price i{font-style:normal;color:var(--accent)}
 .mk-cart{width:44px;border-radius:12px;border:0;background:var(--accent);color:#fff;font-size:17px;cursor:pointer}
 .mk-own{margin-top:auto}
-.mk-cart.in{background:var(--green);color:#052;font-weight:800}
+.mk-cart.in{background:var(--red);color:#fff}
 .bs-card{border:1px solid var(--line);border-radius:14px;overflow:hidden;width:190px;margin:4px auto 14px;background:var(--panel2)}
 .bs-card .mk-art .emoji{font-size:54px}
 .bs-info{padding:8px 11px;display:flex;flex-direction:column;gap:2px;text-align:left}
@@ -573,7 +573,6 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
       <button class="chip active" data-filter="all">Все подарки</button>
       <button class="chip" data-filter="up">📈 Растут</button>
       <button class="chip" data-filter="down">📉 Падают</button>
-      <button class="chip" data-filter="fav">♥ Избранное</button>
     </div>
   </div>
 </header>
@@ -805,18 +804,17 @@ function mkArt(index){
 
 function card(x){
   const g=gifts[x.g];
-  const isFav=state.favs.includes(x.g);
   return `<article class="card mk-card">
     ${mkArt(x.g)}
-      <button class="fav ${isFav?'on':''}" data-fav="${x.g}"
-        aria-label="${isFav?'Убрать из избранного':'В избранное'}">${isFav?'♥':'♡'}</button>
     </div>
     <div class="mk-body">
       <div class="mk-name">${esc(g[1])}</div>
       <div class="mk-num">#${x.n} · ${change(x.g)}</div>
       ${x.own
         ? '<button class="btn secondary mk-own" data-unlist="'+x.id+'">Снять лот</button>'
-        : '<div class="mk-buy"><button class="mk-price" data-buynow="'+x.id+'" aria-label="Купить за '+fmt(x.p)+'"><i>◆</i>'+fmt(x.p)+'</button><button class="mk-cart'+(inCart(x.id)?' in':'')+'" data-cart="'+x.id+'" aria-label="В корзину">'+(inCart(x.id)?'✓':'🛒')+'</button><button class="lucky-mini" data-lucky="'+x.id+'" aria-label="Lucky Buy" title="Lucky Buy"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff" aria-hidden="true"><circle cx="12" cy="7.5" r="4.2"/><circle cx="7" cy="14" r="4.2"/><circle cx="17" cy="14" r="4.2"/><path d="M12 13v8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button></div>'}
+        : '<div class="mk-buy"><button class="mk-price" data-buynow="'+x.id+'" aria-label="Купить за '+fmt(x.p)+'"><i>◆</i>'+fmt(x.p)+'</button>'+(inCart(x.id)
+          ? '<button class="mk-cart in" data-cartremove="'+x.id+'" aria-label="Убрать из корзины">🗑️</button>'
+          : '<button class="mk-cart" data-cart="'+x.id+'" aria-label="В корзину">🛒</button>')+'<button class="lucky-mini" data-lucky="'+x.id+'" aria-label="Lucky Buy" title="Lucky Buy"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff" aria-hidden="true"><circle cx="12" cy="7.5" r="4.2"/><circle cx="7" cy="14" r="4.2"/><circle cx="17" cy="14" r="4.2"/><path d="M12 13v8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button></div>'}
     </div>
   </article>`;
 }
