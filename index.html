@@ -756,7 +756,7 @@ function renderMarket(){
  listings.sort((a,b)=>sort==='priceDown'?b.p-a.p:sort==='growth'?(gifts[b.g][3]-gifts[a.g][3]||a.p-b.p):sort==='name'?gifts[a.g][1].localeCompare(gifts[b.g][1]):a.p-b.p);
  let catalog=gifts.map((g,i)=>i).filter(i=>{const g=gifts[i];if(!(g[1].toLowerCase().includes(search)||String(i+1).includes(search)))return false;if(filter==='up'&&g[3]<=0)return false;if(filter==='down'&&g[3]>=0)return false;if(filter==='fav'&&!state.favs.includes(i))return false;return true;});
  catalog.sort((a,b)=>sort==='priceDown'?gifts[b][2]-gifts[a][2]:sort==='growth'?(gifts[b][3]-gifts[a][3]||gifts[a][2]-gifts[b][2]):sort==='name'?gifts[a][1].localeCompare(gifts[b][1]):gifts[a][2]-gifts[b][2]);
- return '<section class="market-section"><div class="sectionhead"><div><h2>Объявления маркета</h2><div class="muted">Лоты из общей базы</div></div><span class="count">'+listings.length+' лотов</span></div>'+(listings.length?'<div class="grid">'+listings.map(card).join('')+'</div>':empty('🛍️','Пока нет активных лотов','Каталог ниже доступен в демо-режиме.'))+'</section><section class="catalog-section"><div class="sectionhead"><div><h2>Каталог подарков</h2><div class="muted">Коллекция демонстрационных моделей</div></div><span class="count">'+catalog.length+' из '+gifts.length+'</span></div>'+(catalog.length?'<div class="grid">'+catalog.map(catalogCard).join('')+'</div>':empty('🔎','Ничего не найдено','Измени запрос или фильтр.'))+'<p class="note">Каталог и цены демонстрационные. Добавление здесь бесплатное и меняет только локальную демо-коллекцию. Реальные покупки и передача Telegram-подарков не подключены.</p></section>';
+ return '<section class="market-section"><div class="sectionhead"><div><h2>Объявления маркета</h2><div class="muted">Лоты из общей базы</div></div><span class="count">'+listings.length+' лотов</span></div>'+(listings.length?'<div class="grid">'+listings.map(card).join('')+'</div>':empty('🛍️','Пока нет активных лотов','Каталог ниже доступен в демо-режиме.'))+'</section><section class="catalog-section"><div class="sectionhead"><div><h2>Каталог подарков</h2><div class="muted">Коллекция демонстрационных моделей</div></div><span class="count">'+catalog.length+' из '+gifts.length+'</span></div>'+(catalog.length?'<div class="grid">'+catalog.map(catalogCard).join('')+'</div>':empty('🔎','Ничего не найдено','Измени запрос или фильтр.'))+'<p class="note">Каталог и цены демонстрационные. Добавление списывает виртуальные GRAM и сохраняет подарок только на этом устройстве. Реальные покупки и передача Telegram-подарков не подключены.</p></section>';
 }
 
 function renderMine(){
@@ -925,7 +925,7 @@ function updateSale(){
 
 function listMine(id){
  const input=$('priceInput'),p=Number(input?.value),x=find(state.mine,id);
- if(!x||!Number.isFinite(p)||p<=0||p>100000000){toast('Укажи корректную цену больше нуля');haptic('error');return;}
+ if(!x||!Number.isFinite(p)||p<=0||p>100000000){toast('Укажи цену от 0,01 до 100 000 000 GRAM');haptic('error');return;}
  const localListing={id:++state.nid,g:x.g,n:x.n,p:round(p),own:true};state.mk.push(localListing);state.mine=state.mine.filter(y=>y.id!==x.id);
  log('listing',gifts[x.g][1],0,'Лот выставлен · ожидание синхронизации');save();closeSheet();mineTab='listed';setTab('mine');toast('Публикую лот в общий маркет…');
  sharedRequest('rpc/create_market_listing',{method:'POST',body:JSON.stringify({p_gift_name:gifts[x.g][1],p_serial:Number(x.n),p_price:round(p),p_seller_id:sellerId,p_seller_balance:round(state.bal)})}).then(async result=>{
@@ -1075,8 +1075,8 @@ document.addEventListener('click',e=>{
   if(d.saveprice){
     const x=find(state.mk,d.saveprice);
     const p=Number($('editPrice')?.value);
-    if(!x||!x.own||!Number.isFinite(p)||p<=0){
-      toast('Укажи корректную цену');
+    if(!x||!x.own||!Number.isFinite(p)||p<=0||p>100000000){
+      toast('Укажи цену от 0,01 до 100 000 000 GRAM');
       return;
     }
     const newPrice=round(p);
