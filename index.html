@@ -663,7 +663,7 @@ function card(x){
 
 function renderLiveCatalog(){
   if(liveCatalogLoading) return '<div class="market-state"><span class="market-pulse"></span>Загружаем витрину подарков…</div>';
-  if(!liveCatalog) return '<div class="market-state"><b>Витрина не загрузилась</b><p>'+esc(liveCatalogError||'Каталог временно недоступен.')+'</p><button class="btn secondary" data-reloadcatalog>Повторить загрузку</button><p class="muted">Если ошибка повторяется, проверь TELEGRAM_BOT_TOKEN в настройках Vercel.</p></div>';
+  if(!liveCatalog) return '<div class="market-state"><b>NFT-витрина пока не подключена</b><p>'+esc(liveCatalogError||'Не удалось загрузить NFT-каталог.')+'</p><button class="btn secondary" data-reloadcatalog>Повторить загрузку</button><p class="muted">Обычные Telegram-подарки намеренно не показываются. Нужен источник именно коллекционных NFT.</p></div>';
   if(!liveCatalog.length) return '<div class="market-state">Telegram вернул пустой каталог.</div>';
   return '<section class="live-market"><div class="sectionhead market-heading"><div><div class="market-kicker">ZEFUTMAX · COLLECTION</div><h2>Витрина подарков</h2><div class="market-caption">Официальный каталог Telegram · не коллекционные NFT</div></div><div class="market-actions"><span class="market-total">'+liveCatalog.length+' видов</span><button class="btn secondary market-upgrade" data-upgrader>⚡ Апгрейдер</button></div></div>'+
     '<div class="grid market-grid">'+liveCatalog.map((g,i)=>{
@@ -1101,8 +1101,8 @@ async function loadLiveCatalog(){
     liveCatalogError='';
   }catch(error){
     liveCatalog=null;
-    liveCatalogError='Не удалось загрузить каталог Telegram. Коллекционные NFT нельзя подменять обычными подарками или демо-лотами.';
-  }finally{
+    liveCatalogError='NFT-каталог не подключён. Обычные подарки не отображаются.';
+    }finally{
     liveCatalogLoading=false;
     if(tab==='market') render();
   }
