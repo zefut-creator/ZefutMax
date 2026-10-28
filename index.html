@@ -13,8 +13,8 @@
   color-scheme:dark;
   --bg:#050505;--panel:#101010;--panel2:#191919;
   --line:#303030;--text:#f7f7f7;--muted:#a3a3a3;
-  --accent:#ff9f1c;--green:#4ce0a0;--red:#ff8193;
-  --gradient:linear-gradient(135deg,#ffad1f,#ff7a18);
+  --accent:#b18cff;--green:#4ce0a0;--red:#ff8193;
+  --gradient:linear-gradient(135deg,#9b5de5,#ff8a00);
   --shadow:0 12px 32px #0003
 }
 :root[data-theme="light"]{
@@ -266,9 +266,9 @@ nav button:active{transform:scale(.97)}
 }
 
 
-/* Play Hub + monochrome orange identity */
-.logo{background:#080808;border:1px solid #ff8a00;border-radius:14px}
-:root[data-theme="light"] .logo{background:#fff;border-color:#8b45d6}
+/* Unified purple-orange identity in both themes */
+.logo{background:var(--gradient);border:1px solid color-mix(in srgb,var(--accent) 55%,var(--line));border-radius:14px;color:#fff}
+:root[data-theme="light"] .logo{background:var(--gradient);border-color:#8b45d6}
 :root[data-theme="light"] .hub-banner,:root[data-theme="light"] .profile-hero{background:linear-gradient(120deg,#fff,#f0eaf8)}
 :root[data-theme="light"] .gameicon{background:#f0eaf8}
 :root[data-theme="light"] .gameboard .gamecell{background:#fff;border-color:#ded6e8;color:#8b45d6}
@@ -1034,6 +1034,17 @@ document.addEventListener('click',e=>{
   }
 
 
+  if(d.catalogbuy!==undefined){
+    const giftIndex=Number(d.catalogbuy);
+    const gift=gifts[giftIndex];
+    if(!gift){toast('Подарок не найден');return;}
+    const price=round(gift[2]);
+    if(state.bal<price){toast('Недостаточно виртуальных GRAM');return;}
+    state.bal=round(state.bal-price);
+    state.mine.unshift({id:++state.nid,g:giftIndex,n:Math.floor(Date.now()/1000),buy:price});
+    log('catalog_buy',gift[1],-price,'Добавлено из демо-каталога');
+    save();render();haptic('success');toast('Добавлено в демо-коллекцию');return;
+  }
   if(d.buy) return confirmBuy(d.buy);
   if(d.confirmbuy) return doBuy(d.confirmbuy);
   if(d.close!==undefined) return closeSheet();
@@ -1098,7 +1109,10 @@ document.addEventListener('click',e=>{
 
 $('q').addEventListener('input',e=>{
   search=e.target.value.trim().toLowerCase();
+  const start=e.target.selectionStart;
   render();
+  const next=$('q');
+  if(next){next.focus({preventScroll:true});try{next.setSelectionRange(start,start);}catch(_){}}
 });
 
 $('sort').addEventListener('change',e=>{
