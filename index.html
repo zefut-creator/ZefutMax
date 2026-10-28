@@ -566,6 +566,21 @@ async function publishSharedListing(giftIndex, serial, price) {
   });
   return Array.isArray(rows) && rows[0] ? rows[0] : null;
 }
+async function refreshSharedWallet() {
+  try {
+    const rows = await sharedRequest('wallet_balances?select=balance&user_id=eq.' + encodeURIComponent(sellerId));
+    if (Array.isArray(rows) && rows.length) state.bal = round(rows[0].balance);
+    const owned = await sharedRequest('owned_gifts?select=id,gift_name,serial,purchase_price&owner_id=eq.' + encodeURIComponent(sellerId) + '&order=id.desc');
+    if (Array.isArray(owned)) {
+      const serverMine = owned.map(row => {
+        const gi = gifts.findIndex(g => g[1] === row.gift_name);
+        return gi < 0 ? null : {id: -Number(row.id), dbId:row.id, g:gi, n:Number(row.serial)||Number(row.id), buy:round(row.purchase_price||0), shared:true};
+      }).filter(Boolean);
+      state.mine = [...state.mine.filter(x=>!x.shared), ...serverMine];
+    }
+    save();
+  } catch (e) { console.warn('Shared wallet unavailable:', e); }
+}
 async function refreshSharedListings() {
   try {
     if (!localStorage.getItem(SHARED_MIGRATION_KEY)) {
@@ -1099,23 +1114,29 @@ function unlist(id){
   } else toast('Лот снят');
 }
 
-function doBuy(id){
+async function doBuy(id){
   const x=find(state.mk,id);
   if(!x||x.own||!Number.isFinite(x.p)||x.p<=0) return;
-  if(state.bal<x.p){
-    toast('Недостаточно средств');
-    return;
+  if(state.bal<x.p){ toast('Недостаточно средств'); return; }
+  if(!x.shared || !x.dbId){ toast('Этот демо-лот нельзя купить между аккаунтами'); return; }
+  const buyButton=document.querySelector('[data-buy="'+String(id).replace(/"/g,'')+'"]');
+  if(buyButton) buyButton.disabled=true;
+  try {
+    await sharedRequest('rpc/purchase_market_listing',{
+      method:'POST',
+      body:JSON.stringify({p_listing_id:Number(x.dbId),p_buyer_id:sellerId,p_buyer_balance:round(state.bal)})
+    });
+    state.mk=state.mk.filter(y=>String(y.id)!==String(x.id));
+    log('buy',gifts[x.g][1],-x.p,'Покупка общего NFT');
+    await refreshSharedListings();
+    await refreshSharedWallet();
+    save(); closeSheet(); render(); haptic('success');
+    toast('NFT куплена! Продавцу начислена оплата');
+  } catch(e) {
+    console.warn('Purchase failed:',e);
+    toast('Покупка не прошла: обнови маркет и попробуй снова');
+    if(buyButton) buyButton.disabled=false;
   }
-
-  state.bal=round(state.bal-x.p);
-  state.mk=state.mk.filter(y=>y.id!==x.id);
-  state.mine.push({id:++state.nid,g:x.g,n:x.n,buy:x.p});
-  log('buy',gifts[x.g][1],-x.p,'Демо-покупка');
-  save(); closeSheet(); render(); haptic('success');
-  if(x.shared && x.dbId){
-    sharedRequest(SUPABASE_TABLE+'?id=eq.'+encodeURIComponent(x.dbId),{method:'DELETE'})
-      .then(()=>refreshSharedListings()).catch(e=>{console.warn(e);toast('Демо-покупка локальная; общий лот остался в базе');});
-  } else toast('Подарок добавлен в демо-коллекцию');
 }
 
 function editListing(id){
@@ -1334,11 +1355,12 @@ async function loadLiveCatalog(){
 }
 loadLiveCatalog();
 refreshSharedListings();
+refreshSharedWallet();
 setInterval(() => {
-  if (document.visibilityState === 'visible') refreshSharedListings();
+  if (document.visibilityState === 'visible') { refreshSharedListings(); refreshSharedWallet(); }
 }, 15000);
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') refreshSharedListings();
+  if (document.visibilityState === 'visible') { refreshSharedListings(); refreshSharedWallet(); }
 });
 })();
 </script>
