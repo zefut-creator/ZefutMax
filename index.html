@@ -459,7 +459,7 @@ const esc = s => String(s).replace(/[&<>"']/g,c=>({
 let tab='market', filter='all', mineTab='owned', search='', sort='priceUp';
 let playMode=''; let playRound=0; let rocketTimer=null; let rocketCooldownTimer=null; let rocketCooldownUntil=0; let rocketValue=1; let rocketRunning=false; let rocketCrashAt=0; let rocketBest=1; let rocketStake=10;
 let minesCount=3, minesSet=new Set(), openedCells=new Set(), minesOver=false;
-let trainingStake=10, rocketStake=10, minesMultiplier=1, minesCashed=false, minesStarted=false;
+let trainingStake=10, minesMultiplier=1, minesCashed=false, minesStarted=false;
 let toastTimer, state;
 let liveCatalog=null, liveCatalogError='', liveCatalogLoading=true;
 
