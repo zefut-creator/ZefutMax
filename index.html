@@ -652,10 +652,7 @@ const esc = s => String(s).replace(/[&<>"']/g,c=>({
 
 let tab='market', filter='all', mineTab='owned', search='', sort='priceUp';
 let freeTapCount=0;
-let playMode=''; let playRound=0; let rocketTimer=null; let rocketValue=1; let rocketRunning=false; let rocketCrashAt=0; let rocketBest=1;
-let minesCount=3, minesSet=new Set(), openedCells=new Set(), minesOver=false;
-let trainingStake=10, rocketStake=10, minesMultiplier=1, minesCashed=false, minesStarted=false;
-let spinsBusy=false, spinsLast=[], spinsResult='Нажми «Крутить»', spinsWin=0;
+let playMode='';
 let toastTimer, state;
 
 function seed(){return {bal:500,mine:[{id:1000,g:39,n:4521,buy:6.33}],mk:[],nid:1001,favs:[],history:[],theme:'dark'};}
@@ -713,7 +710,6 @@ function log(type,name,amount,detail=''){
 }
 
 function setTab(next){
-  if(next!=='play' && rocketTimer){clearInterval(rocketTimer);rocketTimer=null;rocketRunning=false;}
   tab=next;
   $('marketTab').classList.toggle('active',next==='market');
   $('mineTab').classList.toggle('active',next==='mine');
@@ -825,40 +821,6 @@ function renderHistory(){
           ${x.amount>0?'+':''}${fmt(x.amount)} GRAM
         </div>
       </div>`).join('');
-}
-
-function startMines(){
-  const select=$('mineCountSelect');
-  if(select) minesCount=Number(select.value)||minesCount;
-  minesCount=Math.max(1,Math.min(24,Math.floor(minesCount)));
-  minesSet=new Set();openedCells=new Set();minesOver=false;minesMultiplier=1;minesCashed=false;
-  minesStarted=true;
-  while(minesSet.size<minesCount) minesSet.add(Math.floor(Math.random()*25));
-}
-
-function startRocketRound(){
- if(playMode!=='rocket'||rocketRunning||rocketTimer)return;
- const input=$('rocketStakeInput'),n=Number(input?.value??trainingStake);
- if(!Number.isFinite(n)||n<.1||n>10000){toast('Укажи сумму от 0,1 до 10 000 GRAM');return;}
- trainingStake=Math.round(n*10)/10;
- if(state.bal<trainingStake){if($('rocketStatus'))$('rocketStatus').textContent='Недостаточно виртуальных GRAM';toast('Недостаточно виртуальных GRAM');return;}
- rocketStake=trainingStake;state.bal=round(state.bal-rocketStake);log('game_bet','Ракета',-rocketStake,'Демо-раунд');save();
- rocketRunning=true;rocketValue=1;rocketCrashAt=4+Math.random()*6;const started=Date.now();render();
- rocketTimer=setInterval(()=>{
-  if(!rocketRunning){clearInterval(rocketTimer);rocketTimer=null;return;}
-  const elapsed=(Date.now()-started)/1000,mult=$('rocketMult'),status=$('rocketStatus'),icon=$('rocketIcon'),phase=$('rocketPhase'),progress=$('rocketProgress'),craft=$('rocketIcon');
-  rocketValue=Math.min(99,Math.exp(elapsed*.13));
-  if(mult)mult.innerHTML=rocketValue.toFixed(2)+'<small>×</small>';if(status)status.textContent='Полёт идёт — забери результат до крушения';if(phase)phase.textContent='IN FLIGHT';if(progress)progress.style.width=Math.min(100,rocketValue*8)+'%';
-  if(craft){craft.style.left=Math.min(78,22+elapsed*5)+'%';craft.style.bottom=Math.min(75,13+elapsed*6)+'%';}
-  if(elapsed>=rocketCrashAt){
-   rocketRunning=false;clearInterval(rocketTimer);rocketTimer=null;
-   if(status)status.textContent='Крушение. Нажми «Запустить снова», чтобы начать новый раунд.';if(icon)icon.textContent='💥';if(phase)phase.textContent='ROUND ENDED';if(progress)progress.style.width='100%';
-   const button=document.querySelector('[data-rocket]');if(button){button.disabled=false;button.textContent='ЗАПУСТИТЬ СНОВА';}
-   log('game_loss','Ракета',-rocketStake,'Крушение · демо-ставка '+fmt(rocketStake)+' GRAM');save();
-   const balance=$('rocketBalance');if(balance)balance.innerHTML=fmt(state.bal)+' <small>GRAM</small>';
-   const best=$('rocketBest');if(best)best.textContent=rocketBest.toFixed(2)+'×';
-  }
- },80);
 }
 
 function renderPlay(){
@@ -1027,33 +989,13 @@ document.addEventListener('click',e=>{
 
   if(b.id==='marketTab') return setTab('market');
   if(b.id==='mineTab') return setTab('mine');
-  if(b.id==='playTab'){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode='';return setTab('play');}
+  if(b.id==='playTab'){playMode='';freeTapCount=0;return setTab('play');}
   if(b.id==='profileTab') return setTab('profile');
-  if(d.play!==undefined){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode=d.play;playRound=0;freeTapCount=0;render();return;}
-  if(d.playback!==undefined){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode='';minesStarted=false;minesOver=false;minesCashed=false;openedCells.clear();setTab('play');return;}
+  if(d.play!==undefined){playMode=d.play;freeTapCount=0;render();return;}
+  if(d.playback!==undefined){playMode='';freeTapCount=0;setTab('play');return;}
 
   if(d.tap!==undefined){freeTapCount=Math.min(20,freeTapCount+1);render();return;}
   if(d.resettap!==undefined){freeTapCount=0;render();return;}
-  if(d.cashout!==undefined){if(minesOver||!minesStarted||openedCells.size===0)return;minesOver=true;minesCashed=true;const payout=round(trainingStake*minesMultiplier);state.bal=round(state.bal+payout);log('game_win','Мины',payout,'Возврат демо-ставки × '+minesMultiplier.toFixed(2));save();haptic('success');toast('Забрал '+fmt(payout)+' GRAM · демо-баланс');render();return;}
-  if(d.newmines!==undefined||d.startmines!==undefined){const input=$('trainingStakeInput');const mineSelect=$('mineCountSelect');if(input){const n=Number(input.value);if(Number.isFinite(n)&&n>=0.1&&n<=10000)trainingStake=Math.round(n*10)/10;else{toast('Укажи значение от 0,1 до 10 000 GRAM');return;}}if(mineSelect)minesCount=Number(mineSelect.value)||3;if(d.startmines!==undefined&&state.bal<trainingStake){toast('Недостаточно GRAM на демо-балансе');return;}if(d.startmines!==undefined){state.bal=round(state.bal-trainingStake);log('game_bet','Мины',-trainingStake,'Демо-ставка · '+minesCount+' мин');save();}startMines();haptic('light');render();return;}
-  if(d.cell!==undefined){
-    const cell=Number(d.cell);
-    if(minesOver||!minesStarted||openedCells.has(cell)) return;
-    openedCells.add(cell);
-    if(minesSet.has(cell)){minesOver=true;log('game_loss','Мины',0,'Демо-ставка потеряна: '+fmt(trainingStake)+' GRAM');save();haptic('error');toast('💥 Мина! Потеряно '+fmt(trainingStake)+' демо-GRAM');}
-    else {minesMultiplier=Math.min(3,Math.round(minesMultiplier*1.12*100)/100);haptic('light');}
-    render();return;
-  }
-  if(d.stake){if(rocketRunning)return;const input=$('rocketStakeInput');let n=Number(input?.value??trainingStake);if(!Number.isFinite(n)||n<=0)n=trainingStake;n=d.stake==='half'?Math.max(.1,Math.round(n/2*10)/10):Math.min(10000,Math.round(n*2*10)/10);trainingStake=n;if(input)input.value=n;return;}
-  if(d.rocket!==undefined){
-   if(rocketRunning){rocketRunning=false;if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}const payout=round(rocketStake*rocketValue);state.bal=round(state.bal+payout);log('game_win','Ракета',payout,'Зафиксировано на '+rocketValue.toFixed(2)+'× · демо');save();rocketBest=Math.max(rocketBest,rocketValue);haptic('success');toast('Зафиксировано: '+fmt(payout)+' виртуальных GRAM');render();return;}
-   startRocketRound();return;
-  }
-  if(d.spinstake){const input=$('spinsStakeInput');let n=Number(input?.value??trainingStake);if(!Number.isFinite(n)||n<=0)n=trainingStake;n=d.spinstake==='half'?Math.max(.1,Math.round(n/2*10)/10):Math.min(10000,Math.round(n*2*10)/10);trainingStake=n;if(input)input.value=n;return;}
-  if(d.spins!==undefined){if(spinsBusy)return;const input=$('spinsStakeInput'),n=Number(input?.value??trainingStake);if(!Number.isFinite(n)||n<.1||n>10000){toast('Укажи ставку от 0,1 до 10 000 GRAM');return;}const stake=Math.round(n*10)/10;if(state.bal<stake){toast('Недостаточно виртуальных GRAM');return;}trainingStake=stake;state.bal=round(state.bal-stake);log('game_bet','Spins',-stake,'Виртуальная ставка');save();spinsBusy=true;spinsWin=0;spinsResult='Барабаны вращаются…';spinsLast=['🎁','⭐','🚀'];render();let ticks=0;const anim=setInterval(()=>{if(playMode!=='spins'){clearInterval(anim);spinsBusy=false;return;}spinsLast=Array.from({length:3},()=>['🍊','⭐','💎','7️⃣','👑','🎁','🚀','🎰','🍀','🔔','🪙','🔥'][Math.floor(Math.random()*12)]);ticks++;render();if(ticks>=9){clearInterval(anim);spinsBusy=false;const symbols=['🍊','⭐','💎','7️⃣','👑','🎁','🚀','🎰','🍀','🔔','🪙','🔥'];const wins=[['🎰🎰🎰',50,'СУПЕР-СПИН!'],['💎💎💎',25,'КРИСТАЛЬНЫЙ ДЖЕКПОТ!'],['7️⃣7️⃣7️⃣',15,'СЧАСТЛИВАЯ СЕМЁРКА!'],['👑👑👑',10,'КОРОЛЕВСКАЯ ТРОЙКА!'],['🔥🔥🔥',9,'ОГНЕННЫЙ ЗАРЯД!'],['🔔🔔🔔',8,'ТРИ КОЛОКОЛЬЧИКА!'],['⭐⭐⭐',7,'ТРИ ЗВЕЗДЫ!'],['🍀🍀🍀',6,'КЛЕВЕР УДАЧИ!'],['🪙🪙🪙',5.5,'ЗОЛОТЫЕ МОНЕТЫ!'],['🎁🎁🎁',5,'ПОДАРКИ!'],['🚀🚀🚀',4,'РАКЕТНЫЙ НАБОР!'],['🍊🍊🍊',3,'ТРИ АПЕЛЬСИНА!'],['💎💎⭐',2.5,'КРИСТАЛЛЫ И ЗВЕЗДА!'],['👑👑⭐',2.5,'КОРОНА СО ЗВЕЗДОЙ!'],['🚀🚀⭐',2,'ДВЕ РАКЕТЫ И ЗВЕЗДА!'],['🎁🎁🍀',2,'ДВА ПОДАРКА И КЛЕВЕР!'],['🔔🔔🪙',2,'КОЛОКОЛЬЧИКИ И МОНЕТА!'],['🔥🔥💎',2,'ОГОНЬ И КРИСТАЛЛ!']];const pick=a=>a[Math.floor(Math.random()*a.length)];const roll=Math.random();let forced=null;if(roll<.004)forced=wins[0];else if(roll<.012)forced=wins[1];else if(roll<.026)forced=wins[2];else if(roll<.05)forced=wins[3];else if(roll<.13)forced=pick(wins.slice(4,12));else if(roll<.25)forced=pick(wins.slice(12));if(forced)spinsLast=Array.from(forced[0].matchAll(/🎰|💎|7️⃣|👑|🔥|🔔|⭐|🍀|🪙|🎁|🚀|🍊/g),m=>m[0]);else spinsLast=Array.from({length:3},()=>pick(symbols));const key=spinsLast.join('');let mult=0,label='Комбинация не собрана';const combo=wins.find(x=>x[0]===key);if(combo){mult=combo[1];label=combo[2];}else if(new Set(spinsLast).size===2){mult=1.5;label='Пара символов!';}else if(new Set(spinsLast).size===3&&spinsLast.includes('⭐')){mult=1.2;label='Звезда среди разных!';}spinsWin=round(stake*mult);if(spinsWin>0){state.bal=round(state.bal+spinsWin);log('game_win','Spins',spinsWin,label+' · ×'+mult+' · демо');}else log('game_loss','Spins',-stake,'Без выигрышной комбинации');spinsResult=mult?label+' · '+mult+'× · '+fmt(spinsWin)+' GRAM':'Нет совпадения — попробуй ещё раз';save();render();}},110);return;}
-  if(d.pvpstake){const input=$('pvpStakeInput');let n=Number(input?.value??trainingStake);if(!Number.isFinite(n)||n<=0)n=trainingStake;n=d.pvpstake==='half'?Math.max(.1,Math.round(n/2*10)/10):Math.min(10000,Math.round(n*2*10)/10);trainingStake=n;if(input)input.value=n;return;}
-  if(d.pvp!==undefined){const input=$('pvpStakeInput'),parsed=Number(input?.value??trainingStake);if(!Number.isFinite(parsed)||parsed<.1||parsed>10000){toast('Укажи ставку от 0,1 до 10 000 GRAM');return;}const stake=Math.round(parsed*10)/10;if(state.bal<stake){toast('Недостаточно виртуальных GRAM');return;}trainingStake=stake;state.bal=round(state.bal-stake);const you=Math.floor(Math.random()*100)+1,bot=Math.floor(Math.random()*100)+1,ys=$('youScore'),bs=$('botScore'),status=$('pvpStatus'),result=$('pvpResult'),reward=$('pvpReward');let payout=0;if(you>bot){payout=round(stake*2);state.bal=round(state.bal+payout);log('game_win','PvP Arena',payout,'Победа · виртуальная ставка '+fmt(stake)+' GRAM');}else if(you===bot){payout=stake;state.bal=round(state.bal+payout);log('game_refund','PvP Arena',payout,'Ничья · возврат демо-ставки');}else{log('game_loss','PvP Arena',-stake,'Поражение · виртуальная ставка '+fmt(stake)+' GRAM');}if(ys)ys.textContent=you;if(bs)bs.textContent=bot;if(status)status.textContent=you===bot?'Ничья':you>bot?'Победа':'Поражение';if(reward)reward.textContent=fmt(payout)+' GRAM';if(result)result.textContent=you===bot?'Ничья — ставка возвращена: '+fmt(stake)+' GRAM.':you>bot?'🏆 Победа! Получено '+fmt(payout)+' GRAM (ставка + выигрыш).':'Бот победил. Ставка списана: '+fmt(stake)+' виртуальных GRAM.';log('game_bet','PvP Arena',-stake,'Демо-ставка раунда');save();if($('bal'))$('bal').textContent=fmt(state.bal);b.textContent='СЫГРАТЬ ЕЩЁ';haptic('success');return;}
-
   if(b.id==='theme'){
     state.theme=state.theme==='dark'?'light':'dark';
     save();render();return;
