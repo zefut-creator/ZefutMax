@@ -134,3 +134,44 @@ revoke all on function public.purchase_market_listing(bigint,text,numeric) from 
 grant execute on function public.create_market_listing(text,bigint,numeric,text) to anon, authenticated;
 grant execute on function public.cancel_market_listing(bigint,text) to anon, authenticated;
 grant execute on function public.purchase_market_listing(bigint,text,numeric) to anon, authenticated;
+
+
+-- Create a shared listing and initialize the seller's shared wallet.
+create or replace function public.create_market_listing(
+  p_gift_name text,
+  p_serial bigint,
+  p_price numeric,
+  p_seller_id text,
+  p_seller_balance numeric default 500
+) returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  listing_id bigint;
+begin
+  if p_seller_id is null or length(trim(p_seller_id)) < 3 then
+    raise exception 'Invalid seller';
+  end if;
+  if p_gift_name is null or length(trim(p_gift_name)) = 0 then
+    raise exception 'Invalid gift';
+  end if;
+  if p_price is null or p_price <= 0 then
+    raise exception 'Price must be greater than zero';
+  end if;
+
+  insert into public.wallet_balances(user_id, balance)
+  values (p_seller_id, greatest(0, coalesce(p_seller_balance, 500)))
+  on conflict (user_id) do nothing;
+
+  insert into public.market_listings(gift_name, price, seller_id)
+  values (p_gift_name, round(p_price, 2), p_seller_id)
+  returning id into listing_id;
+
+  return jsonb_build_object('ok', true, 'listing_id', listing_id);
+end;
+$$;
+
+revoke all on function public.create_market_listing(text, bigint, numeric, text, numeric) from public;
+grant execute on function public.create_market_listing(text, bigint, numeric, text, numeric) to anon, authenticated;
