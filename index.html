@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru" data-theme="dark">
 <head>
@@ -347,16 +346,6 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
 .pvp-hero{background:radial-gradient(ellipse at 80% 45%,#ff8a0028,transparent 45%),linear-gradient(125deg,#171717,#090909)}.arena-mark{position:relative;flex:none;width:92px;height:92px;display:grid;place-items:center;font-size:45px;border:1px solid #ff8a005e;border-radius:25px;background:#ff8a0010;transform:rotate(6deg)}.arena-mark span{position:absolute;right:-5px;bottom:-6px;background:var(--accent);color:#090909;font-size:9px;font-weight:950;padding:5px 7px;border-radius:7px}
 .arena-scoreboard{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:9px;padding:18px 10px;background:var(--panel);border:1px solid var(--line);border-radius:19px}.arena-player{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}.player-avatar{width:54px;height:54px;border-radius:17px;display:grid;place-items:center;font-size:13px;font-weight:950;border:1px solid var(--line)}.user-avatar{background:#ff8a001c;border-color:#ff8a0060;color:var(--accent)}.bot-avatar{background:#1b1b1b;font-size:28px}.arena-player>b{font-size:10px;max-width:100%;text-align:center;overflow-wrap:anywhere}.arena-player>strong{font-size:34px;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}.arena-player>span{font-size:8px;color:var(--muted);letter-spacing:1px}.arena-vs{text-align:center;font-size:19px;font-weight:950;color:var(--accent)}.arena-vs div{font-size:7px;color:var(--muted);letter-spacing:1px;margin-top:5px;white-space:nowrap}.arena-info{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.arena-info>div:last-child{grid-column:1/-1}.arena-info b{font-size:11px}.arena-challenge{padding:17px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(135deg,var(--panel),color-mix(in srgb,var(--accent) 5%,var(--panel)));margin-top:12px}.arena-challenge h3{font-size:21px;margin:6px 0}.arena-challenge p{font-size:11px;color:var(--muted);line-height:1.55;margin:0 0 13px}.pvp-action{min-height:48px}.arena-result{text-align:center;font-size:11px;color:var(--muted);margin-top:12px}
 @keyframes rocket-ring-pulse{0%,100%{transform:scale(1);box-shadow:0 0 25px #ff8a0015}50%{transform:scale(1.04);box-shadow:0 0 38px #ff8a0030}}@keyframes rocket-fly{from{transform:translate(0,3px) rotate(-22deg)}to{transform:translate(6px,-8px) rotate(-15deg)}}@media(max-width:390px){.game-hero{padding:17px 13px;min-height:150px}.rocket-emblem{width:77px;height:77px}.rocket-ring{width:64px;height:64px;font-size:35px}.hero-copy{max-width:68%}.arena-scoreboard{gap:5px;padding:15px 6px}.player-avatar{width:46px;height:46px}.arena-player>strong{font-size:29px}}@media(prefers-reduced-motion:reduce){.rocket-ring,.rocket-craft{animation:none!important}}
-/* Rocket + PvP full visual redesign */
-.game-topline{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}.back-link{border:0;background:transparent;color:var(--muted);padding:7px 0;font-weight:750;font-size:12px}.live-pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:7px 10px;color:var(--muted);font-size:9px;font-weight:900;letter-spacing:1px}.live-pill i,.status-light{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;box-shadow:0 0 10px var(--green)}
-.game-hero{position:relative;display:flex;align-items:center;justify-content:space-between;gap:8px;overflow:hidden;padding:22px 17px;border:1px solid #34302b;border-radius:21px;background:radial-gradient(ellipse at 80% 10%,#ff8a0030,transparent 55%),linear-gradient(125deg,#171717,#090909);margin-bottom:13px;min-height:166px}.hero-copy{position:relative;z-index:1;max-width:66%}.eyebrow{display:block;color:var(--accent);font-size:9px;font-weight:950;letter-spacing:2px}.hero-copy h2{font-size:clamp(24px,7vw,34px);line-height:1.02;letter-spacing:-1px;margin:9px 0}.hero-copy h2 span{color:var(--accent)}.hero-copy p{font-size:11px;color:#aaa;line-height:1.5;margin:0;max-width:255px}
-.rocket-emblem{width:100px;height:100px;flex:none;display:grid;place-items:center;position:relative}.rocket-ring{width:77px;height:77px;display:grid;place-items:center;font-size:43px;border-radius:50%;border:1px solid #ff8a005e;background:radial-gradient(circle,#ff8a0029,#ff8a0008 65%,transparent 70%);box-shadow:0 0 35px #ff8a0018;animation:rocket-ring-pulse 2.7s ease-in-out infinite}.orbit-dot{position:absolute;top:7px;right:10px;width:8px;height:8px;background:var(--accent);border-radius:50%;box-shadow:0 0 13px var(--accent)}
-.rocket-stats{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0 17px}.rocket-stats>div,.arena-info>div{padding:12px;background:var(--panel);border:1px solid var(--line);border-radius:14px;min-width:0}.rocket-stats span,.arena-info span{display:block;color:var(--muted);font-size:9px;letter-spacing:.7px;margin-bottom:6px}.rocket-stats b{font-size:16px;overflow-wrap:anywhere}.rocket-stats small{font-size:9px;color:var(--muted)}
-.stake-control{display:flex;gap:6px;align-items:center;margin:7px 0 13px;padding:5px;background:var(--panel);border:1px solid var(--line);border-radius:14px}.stake-control input{flex:1;width:30px;border:0;background:transparent;box-shadow:none!important;padding:8px;font-weight:850}.stake-control>span{font-size:10px;color:var(--muted);font-weight:850}.stake-control button{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:9px;padding:8px 10px;font-weight:850;font-size:11px}
-.rocket-console{position:relative;overflow:hidden;background:#080a0d;border:1px solid #2a2b2f;border-radius:20px;padding:13px;margin-bottom:12px;text-align:center}.console-top{display:flex;justify-content:space-between;align-items:center;color:#8d929b;font-size:9px;font-weight:900;letter-spacing:1px}.console-top>span:first-child{display:flex;align-items:center;gap:7px}#rocketPhase{color:var(--accent)}.flight-path{position:relative;height:145px;overflow:hidden;margin:5px -3px 0}.flight-grid{position:absolute;inset:0;background-image:linear-gradient(#ffffff09 1px,transparent 1px),linear-gradient(90deg,#ffffff09 1px,transparent 1px);background-size:25px 25px;transform:perspective(100px) rotateX(13deg);transform-origin:bottom}.flight-trail{position:absolute;left:17%;bottom:8%;width:62%;height:65%;border-top:3px solid var(--accent);border-right:3px solid var(--accent);border-radius:0 100% 0 0;transform:rotate(-18deg);opacity:.65;filter:drop-shadow(0 0 7px #ff8a00);transition:height .2s,width .2s}.rocket-craft{position:absolute;left:22%;bottom:13%;font-size:35px;filter:drop-shadow(0 0 12px #ff8a0070);transition:left .15s,bottom .15s;transform:rotate(-22deg)}.rocket-number{font-size:51px;font-weight:950;line-height:1.05;letter-spacing:-2px;color:#fff;font-variant-numeric:tabular-nums;text-shadow:0 0 24px #ff8a0028}.rocket-number small{font-size:20px;color:var(--accent);margin-left:3px}.flight-status{display:block;font-size:11px;color:#b9bbc1;margin:9px 0 13px}.flight-progress{height:4px;border-radius:9px;background:#25262a;overflow:hidden}.flight-progress i{display:block;height:100%;background:var(--gradient);transition:width .1s}.rocket-console.is-running .rocket-craft{animation:rocket-fly .65s ease-in-out infinite alternate}.rocket-action{min-height:52px;letter-spacing:.6px}.game-disclaimer{font-size:10px;line-height:1.55;color:var(--muted);text-align:center;margin:12px 8px}
-.pvp-hero{background:radial-gradient(ellipse at 80% 45%,#ff8a0028,transparent 45%),linear-gradient(125deg,#171717,#090909)}.arena-mark{position:relative;flex:none;width:92px;height:92px;display:grid;place-items:center;font-size:45px;border:1px solid #ff8a005e;border-radius:25px;background:#ff8a0010;transform:rotate(6deg)}.arena-mark span{position:absolute;right:-5px;bottom:-6px;background:var(--accent);color:#090909;font-size:9px;font-weight:950;padding:5px 7px;border-radius:7px}
-.arena-scoreboard{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:9px;padding:18px 10px;background:var(--panel);border:1px solid var(--line);border-radius:19px}.arena-player{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}.player-avatar{width:54px;height:54px;border-radius:17px;display:grid;place-items:center;font-size:13px;font-weight:950;border:1px solid var(--line)}.user-avatar{background:#ff8a001c;border-color:#ff8a0060;color:var(--accent)}.bot-avatar{background:#1b1b1b;font-size:28px}.arena-player>b{font-size:10px;max-width:100%;text-align:center;overflow-wrap:anywhere}.arena-player>strong{font-size:34px;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}.arena-player>span{font-size:8px;color:var(--muted);letter-spacing:1px}.arena-vs{text-align:center;font-size:19px;font-weight:950;color:var(--accent)}.arena-vs div{font-size:7px;color:var(--muted);letter-spacing:1px;margin-top:5px;white-space:nowrap}.arena-info{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.arena-info>div:last-child{grid-column:1/-1}.arena-info b{font-size:11px}.arena-challenge{padding:17px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(135deg,var(--panel),color-mix(in srgb,var(--accent) 5%,var(--panel)));margin-top:12px}.arena-challenge h3{font-size:21px;margin:6px 0}.arena-challenge p{font-size:11px;color:var(--muted);line-height:1.55;margin:0 0 13px}.pvp-action{min-height:48px}.arena-result{text-align:center;font-size:11px;color:var(--muted);margin-top:12px}
-@keyframes rocket-ring-pulse{0%,100%{transform:scale(1);box-shadow:0 0 25px #ff8a0015}50%{transform:scale(1.04);box-shadow:0 0 38px #ff8a0030}}@keyframes rocket-fly{from{transform:translate(0,3px) rotate(-22deg)}to{transform:translate(6px,-8px) rotate(-15deg)}}@media(max-width:390px){.game-hero{padding:17px 13px;min-height:150px}.rocket-emblem{width:77px;height:77px}.rocket-ring{width:64px;height:64px;font-size:35px}.hero-copy{max-width:68%}.arena-scoreboard{gap:5px;padding:15px 6px}.player-avatar{width:46px;height:46px}.arena-player>strong{font-size:29px}}@media(prefers-reduced-motion:reduce){.rocket-ring,.rocket-craft{animation:none!important}}
 
 .spins-hero{background:radial-gradient(ellipse at 80% 30%,#ff8a0030,transparent 48%),linear-gradient(130deg,#17100a,#090a0d 65%)}.spins-machine{background:#090a0d;border:1px solid #333036;border-radius:18px;padding:14px;margin:14px 0}.spins-reels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:18px 0}.spins-reel{display:flex;align-items:center;justify-content:center;min-height:92px;background:linear-gradient(180deg,#202126,#111216);border:1px solid #3c3329;border-radius:13px;font-size:clamp(32px,9vw,48px);box-shadow:inset 0 0 20px #ff8a000c}.spins-busy .spins-reel{animation:spins-pulse .22s ease-in-out infinite alternate}.spins-result{text-align:center;font-size:13px;font-weight:850;color:#f6a23a;min-height:20px}.spins-action{min-height:52px}.spins-paytable{background:#0c0d10;border:1px solid #28292e;border-radius:16px;padding:12px;margin:16px 0}.spins-paytable .sectionhead h3{font-size:13px}.spins-payrow{display:grid;grid-template-columns:1.1fr 1fr auto;align-items:center;gap:8px;padding:10px 2px;border-bottom:1px solid #ffffff0c;font-size:11px}.spins-payrow:last-child{border-bottom:0}.spins-payrow b{font-size:12px;white-space:nowrap}.spins-payrow span{color:var(--muted)}.spins-payrow strong{color:var(--accent);white-space:nowrap}@keyframes spins-pulse{from{transform:translateY(-3px);filter:brightness(1)}to{transform:translateY(3px);filter:brightness(1.5)}}
 .spins-paytable{box-shadow:0 14px 40px #0003}.spins-payrow{grid-template-columns:minmax(88px,1.05fr) minmax(0,1.4fr) auto;min-height:38px}.spins-payrow:nth-child(-n+5) strong{color:#ffd27a}.spins-reel{transition:border-color .2s,box-shadow .2s}.spins-busy .spins-reel{border-color:#ff8a00;box-shadow:0 0 20px #ff8a0022}.spins-action{letter-spacing:.06em;font-weight:900;box-shadow:0 8px 24px #ff8a0020}.spins-action:not(:disabled):active{transform:scale(.99)}@media(max-width:430px){.spins-payrow{grid-template-columns:1fr auto;gap:3px 8px}.spins-payrow span{grid-column:1;grid-row:2}.spins-payrow strong{grid-column:2;grid-row:1 / span 2}}
@@ -399,6 +388,31 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
 .upgrade-orb.target{border-color:#9e75ff77;background:radial-gradient(circle,#9e75ff35,transparent 70%),var(--panel2)}
 .upgrade-preview>span{color:var(--accent);font-size:22px;font-weight:900}
 
+/* Lucky Buy */
+.card .lucky-btn{margin-top:6px;background:transparent;border:1px solid var(--accent);color:var(--accent)}
+.lb-price{text-align:center;font-size:30px;font-weight:950;margin:6px 0}
+.lb-price small{font-size:12px;color:var(--muted)}
+.lb-box{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0}
+.lb-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.lb-chip{background:var(--panel);border:1px solid var(--line);color:var(--accent);border-radius:8px;padding:4px 9px;font-weight:900;font-size:12px}
+.lb-box input[type=range]{width:100%;padding:0;accent-color:var(--accent);border:0;background:transparent}
+.lb-skip{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0;font-size:13px}
+.sheet .lb-skip input{width:auto}
+.lb-spin{text-align:center;padding:36px 0;font-size:64px;animation:spins-pulse .25s ease-in-out infinite alternate}
+.lb-img{width:100%;height:100%;object-fit:contain;padding:8px}
+/* Lucky Buy roulette */
+.rl-wrap{position:relative;margin:16px -6px}
+.rl-view{overflow:hidden;padding:16px 0;-webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent)}
+.rl-track{display:flex;gap:10px;will-change:transform}
+.rl-tile{flex:none;width:96px;height:96px;border-radius:14px;display:grid;place-items:center;font-size:44px;border:1px solid var(--line);overflow:hidden}
+.rl-tile img{width:100%;height:100%;object-fit:contain;padding:8px}
+.rl-tile{position:relative}
+.rl-tile em{position:absolute;left:0;right:0;bottom:0;padding:12px 4px 5px;font-style:normal;font-size:9px;font-weight:850;text-align:center;color:#fff;background:linear-gradient(transparent,#000a);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rl-tile.clover{background:radial-gradient(circle at 50% 40%,#1d4a2acc,#0a1410);border-color:#2f5a3b}
+.rl-tile.clover span{font-size:40px;opacity:.9}
+.rl-arrow{position:absolute;left:50%;width:20px;height:14px;margin-left:-10px;background:var(--text);z-index:2}
+.rl-arrow.top{top:0;clip-path:polygon(0 0,100% 0,50% 100%)}
+.rl-arrow.bottom{bottom:0;clip-path:polygon(50% 0,0 100%,100% 100%)}
 
 </style>
 </head>
@@ -659,7 +673,7 @@ function card(x){
     <div class="price">${fmt(x.p)} <small>GRAM</small></div>
     ${x.own
       ? '<button class="btn secondary" data-unlist="'+x.id+'">Снять лот</button>'
-      : '<button class="btn" data-buy="'+x.id+'">Купить</button>'}
+      : '<button class="btn" data-buy="'+x.id+'">Купить</button><button class="btn lucky-btn" data-lucky="'+x.id+'">🍀 Lucky Buy</button>'}
   </article>`;
 }
 
@@ -821,6 +835,100 @@ function render(){
   $('theme').setAttribute('aria-label',state.theme==='dark'?'Включить светлую тему':'Включить тёмную тему');
   $('main').innerHTML=tab==='market'?renderMarket():tab==='mine'?renderMine():tab==='profile'?renderProfile():renderPlay();
 }
+
+/* ===== Lucky Buy ===== */
+let lbBusy=false,lbSkip=false,lbLast=10;
+const lbKey=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+function lbVisual(i){
+  const n=lbKey(gifts[i][1]);
+  const hit=(liveCatalog||[]).find(c=>lbKey(c.gift)===n||lbKey(c.name)===n);
+  if(!hit||!hit.image) return art(i);
+  return '<div class="art c'+(i%4)+'"><img class="lb-img" src="'+esc(hit.image)+'" alt="'+esc(gifts[i][1])+'" onerror="this.replaceWith(document.createTextNode(\''+gifts[i][0]+'\'))"></div>';
+}
+function lbStake(price,ch){return Math.max(0.01,round(price*ch/100*1.12));}
+function lbOpen(id){
+  const x=find(state.mk,id); if(!x||x.own) return;
+  const g=gifts[x.g];
+  openSheet(lbVisual(x.g)+'<h2>'+esc(g[1])+'</h2><div class="desc">Lucky Buy · лот #'+x.n+' · демо</div>'+
+    '<div class="lb-price" id="lbStake"></div>'+
+    '<div class="summary"><div><span>Баланс</span><b>'+fmt(state.bal)+' GRAM</b></div></div>'+
+    '<div class="lb-box"><div class="lb-head"><b>Вероятность выиграть</b><span class="lb-chip" id="lbChance"></span></div><input id="lbRange" type="range" min="1" max="90" value="'+lbLast+'" data-lbid="'+x.id+'"></div>'+
+    '<label class="lb-skip"><span>Пропустить анимацию</span><input type="checkbox" id="lbSkip" '+(lbSkip?'checked':'')+'></label>'+
+    '<div class="summary"><div><span>Возможный выигрыш (<span id="lbMult"></span>)</span><b id="lbWin"></b></div><div><span>Мы покрываем</span><b id="lbCover"></b></div></div>'+
+    '<label class="lb-skip"><span>Я понимаю: это демо, GRAM виртуальные</span><input type="checkbox" id="lbAgree"></label>'+
+    '<button class="btn" id="lbGo" data-lbgo="'+x.id+'" disabled>Крутить</button><button class="btn secondary" data-close>Закрыть</button>');
+  lbUpdate();
+}
+function lbUpdate(){
+  const r=$('lbRange'); if(!r) return;
+  const x=find(state.mk,r.dataset.lbid); if(!x) return;
+  const ch=Number(r.value), st=lbStake(x.p,ch);
+  lbLast=ch;
+  $('lbChance').textContent=ch+'%';
+  $('lbStake').innerHTML='💎 '+fmt(st)+' <small>GRAM</small>';
+  $('lbMult').textContent='×'+(x.p/st).toFixed(2);
+  $('lbWin').textContent=fmt(x.p)+' GRAM';
+  $('lbCover').textContent=fmt(Math.max(0,x.p-st))+' GRAM';
+  const enough=state.bal>=st;
+  $('lbGo').disabled=!($('lbAgree').checked&&enough&&!lbBusy);
+  $('lbGo').textContent=enough?'Крутить за '+fmt(st)+' GRAM':'Недостаточно GRAM';
+}
+function lbImgUrl(i){
+  const n=lbKey(gifts[i][1]);
+  const hit=(liveCatalog||[]).find(c=>lbKey(c.gift)===n||lbKey(c.name)===n);
+  return hit&&hit.image?hit.image:'';
+}
+function lbTile(i){
+  if(i<0) return '<div class="rl-tile clover"><span>🍀</span><em>Пусто</em></div>';
+  const u=lbImgUrl(i), pal=['#1f3d3a','#2a2442','#40301c','#1e3050','#44222d'][i%5];
+  return '<div class="rl-tile" style="background:radial-gradient(circle at 50% 40%,'+pal+'cc,#0c1010)">'+(u?'<img src="'+esc(u)+'" alt="" onerror="this.replaceWith(document.createTextNode(\''+gifts[i][0]+'\'))">':gifts[i][0])+'<em>'+esc(gifts[i][1])+'</em></div>';
+}
+function lbRoulette(x,win,st,finish){
+  const g=gifts[x.g], others=gifts.map((_,i)=>i).filter(i=>i!==x.g);
+  const rnd=a=>a[Math.floor(Math.random()*a.length)];
+  const TILE=96,GAP=10,STEP=TILE+GAP,STOP=34,TOTAL=42;
+  const seq=Array.from({length:TOTAL},(_,k)=>k===STOP?(win?x.g:-1):(Math.random()<.35?x.g:-1));
+  openSheet('<div class="market-kicker" style="text-align:center">LUCKY BUY</div><h2>'+esc(g[1])+'</h2><div class="lb-price">💎 '+fmt(st)+' <small>GRAM</small></div><div class="rl-wrap"><i class="rl-arrow top"></i><div class="rl-view" id="rlView"><div class="rl-track" id="rlTrack">'+seq.map(i=>lbTile(i)).join('')+'</div></div><i class="rl-arrow bottom"></i></div><div class="muted" style="text-align:center;margin-top:12px">Крутим…</div>');
+  const view=$('rlView'),track=$('rlTrack');
+  if(!view||!track){setTimeout(finish,300);return;}
+  const jitter=(Math.random()-.5)*50;
+  const target=STOP*STEP+TILE/2+jitter-view.clientWidth/2;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    track.style.transition='transform 4.6s cubic-bezier(.12,.72,.12,1)';
+    track.style.transform='translateX('+(-target)+'px)';
+  }));
+  setTimeout(finish,4900);
+}
+function lbGo(id){
+  if(lbBusy) return;
+  const x=find(state.mk,id), r=$('lbRange'); if(!x||x.own||!r) return;
+  const ch=Number(r.value), st=lbStake(x.p,ch), g=gifts[x.g];
+  if(state.bal<st){toast('Недостаточно виртуальных GRAM');return;}
+  lbBusy=true;
+  state.bal=round(state.bal-st); save(); render();
+  const win=Math.random()*100<ch;
+  const finish=()=>{
+    lbBusy=false;
+    if(win){
+      state.mk=state.mk.filter(y=>y.id!==x.id);
+      state.mine.push({id:++state.nid,g:x.g,n:x.n,buy:st});
+      log('lucky_win',g[1],-st,'Lucky Buy · победа · шанс '+ch+'% · демо');
+    }else log('lucky_loss',g[1],-st,'Lucky Buy · не повезло · шанс '+ch+'% · демо');
+    save(); render();
+    openSheet((win?lbVisual(x.g):'<div class="art c1"><span class="emoji">🍀</span></div>')+'<h2>'+(win?'🎉 Победа!':'Не повезло')+'</h2><div class="desc">'+esc(g[1])+' · '+(win?'добавлен в «Мои подарки»':'ставка списана, лот остался на маркете')+'</div>'+
+      '<div class="summary"><div><span>Ставка</span><b>'+fmt(st)+' GRAM</b></div><div><span>Шанс</span><b>'+ch+'%</b></div><div><span>Баланс</span><b>'+fmt(state.bal)+' GRAM</b></div></div>'+
+      (win?'':'<button class="btn" data-lucky="'+x.id+'">Ещё раз</button>')+'<button class="btn secondary" data-close>Закрыть</button>');
+    haptic(win?'success':'error');
+  };
+  if(lbSkip){finish();return;}
+  lbRoulette(x,win,st,finish);
+}
+document.addEventListener('input',e=>{if(e.target.id==='lbRange') lbUpdate();});
+document.addEventListener('change',e=>{
+  if(e.target.id==='lbSkip') lbSkip=e.target.checked;
+  if(e.target.id==='lbAgree'||e.target.id==='lbSkip') lbUpdate();
+});
+/* ===== /Lucky Buy ===== */
 
 function find(arr,id){
   return arr.find(x=>String(x.id)===String(id));
@@ -1033,6 +1141,8 @@ document.addEventListener('click',e=>{
     return;
   }
 
+  if(d.lucky) return lbOpen(d.lucky);
+  if(d.lbgo) return lbGo(d.lbgo);
   if(d.buy) return confirmBuy(d.buy);
   if(d.confirmbuy) return doBuy(d.confirmbuy);
   if(d.close!==undefined) return closeSheet();
