@@ -117,12 +117,13 @@ begin
     raise exception 'Price must be between 0 and 100000000';
   end if;
 
+  -- Demo-only wallet initialization: never trust a balance supplied by the browser.
   insert into public.wallet_balances(user_id, balance)
-  values (p_seller_id, greatest(0, round(coalesce(p_seller_balance, 500), 2)))
+  values (p_seller_id, 500)
   on conflict (user_id) do nothing;
 
-  insert into public.market_listings(gift_name, price, seller_id)
-  values (trim(p_gift_name), round(p_price, 2), p_seller_id)
+  insert into public.market_listings(gift_name, serial, price, seller_id)
+  values (trim(p_gift_name), p_serial, round(p_price, 2), p_seller_id)
   returning id into new_listing_id;
 
   delete from public.owned_gifts og
