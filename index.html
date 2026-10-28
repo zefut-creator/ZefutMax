@@ -410,22 +410,23 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
 }
 /* Light-theme black raindrops during the end-of-round effect */
 :root[data-theme="light"] .blast-overlay{background:linear-gradient(180deg,#f8f7fbe8,#e8e4eee8)}
+:root[data-theme="light"] .crystal-rain-shard{display:none}
 :root[data-theme="light"] .blast-flash{background:#17131d;clip-path:none;animation:light-black-flash 1.9s ease-out both}
 .black-rain-drop{position:absolute;top:-12%;left:var(--bx);width:var(--bw);height:var(--bh);border-radius:0 0 60% 60%;background:linear-gradient(180deg,#3a3542,#09080c);opacity:0;filter:drop-shadow(0 2px 2px #0003);animation:black-rain-fall var(--bd) linear var(--bdelay) forwards}
-.black-rain-drop:nth-of-type(1){--bx:4%;--bw:4px;--bh:16px;--bd:1.15s;--bdelay:0s}
-.black-rain-drop:nth-of-type(2){--bx:11%;--bw:6px;--bh:22px;--bd:1.35s;--bdelay:.08s}
-.black-rain-drop:nth-of-type(3){--bx:18%;--bw:3px;--bh:13px;--bd:1.05s;--bdelay:.18s}
-.black-rain-drop:nth-of-type(4){--bx:25%;--bw:5px;--bh:19px;--bd:1.25s;--bdelay:.03s}
-.black-rain-drop:nth-of-type(5){--bx:32%;--bw:4px;--bh:15px;--bd:1.4s;--bdelay:.22s}
-.black-rain-drop:nth-of-type(6){--bx:39%;--bw:6px;--bh:23px;--bd:1.18s;--bdelay:.12s}
-.black-rain-drop:nth-of-type(7){--bx:46%;--bw:3px;--bh:14px;--bd:1.3s;--bdelay:.28s}
-.black-rain-drop:nth-of-type(8){--bx:53%;--bw:5px;--bh:18px;--bd:1.08s;--bdelay:.06s}
-.black-rain-drop:nth-of-type(9){--bx:60%;--bw:4px;--bh:16px;--bd:1.38s;--bdelay:.16s}
-.black-rain-drop:nth-of-type(10){--bx:67%;--bw:6px;--bh:22px;--bd:1.2s;--bdelay:.24s}
-.black-rain-drop:nth-of-type(11){--bx:74%;--bw:3px;--bh:12px;--bd:1.32s;--bdelay:.04s}
-.black-rain-drop:nth-of-type(12){--bx:81%;--bw:5px;--bh:20px;--bd:1.12s;--bdelay:.2s}
-.black-rain-drop:nth-of-type(13){--bx:88%;--bw:4px;--bh:15px;--bd:1.42s;--bdelay:.1s}
-.black-rain-drop:nth-of-type(14){--bx:95%;--bw:6px;--bh:24px;--bd:1.22s;--bdelay:.26s}
+.black-rain-drop:nth-of-type(9){--bx:4%;--bw:4px;--bh:16px;--bd:1.15s;--bdelay:0s}
+.black-rain-drop:nth-of-type(10){--bx:11%;--bw:6px;--bh:22px;--bd:1.35s;--bdelay:.08s}
+.black-rain-drop:nth-of-type(11){--bx:18%;--bw:3px;--bh:13px;--bd:1.05s;--bdelay:.18s}
+.black-rain-drop:nth-of-type(12){--bx:25%;--bw:5px;--bh:19px;--bd:1.25s;--bdelay:.03s}
+.black-rain-drop:nth-of-type(13){--bx:32%;--bw:4px;--bh:15px;--bd:1.4s;--bdelay:.22s}
+.black-rain-drop:nth-of-type(14){--bx:39%;--bw:6px;--bh:23px;--bd:1.18s;--bdelay:.12s}
+.black-rain-drop:nth-of-type(15){--bx:46%;--bw:3px;--bh:14px;--bd:1.3s;--bdelay:.28s}
+.black-rain-drop:nth-of-type(16){--bx:53%;--bw:5px;--bh:18px;--bd:1.08s;--bdelay:.06s}
+.black-rain-drop:nth-of-type(17){--bx:60%;--bw:4px;--bh:16px;--bd:1.38s;--bdelay:.16s}
+.black-rain-drop:nth-of-type(18){--bx:67%;--bw:6px;--bh:22px;--bd:1.2s;--bdelay:.24s}
+.black-rain-drop:nth-of-type(19){--bx:74%;--bw:3px;--bh:12px;--bd:1.32s;--bdelay:.04s}
+.black-rain-drop:nth-of-type(20){--bx:81%;--bw:5px;--bh:20px;--bd:1.12s;--bdelay:.2s}
+.black-rain-drop:nth-of-type(21){--bx:88%;--bw:4px;--bh:15px;--bd:1.42s;--bdelay:.1s}
+.black-rain-drop:nth-of-type(22){--bx:95%;--bw:6px;--bh:24px;--bd:1.22s;--bdelay:.26s}
 @keyframes black-rain-fall{0%{transform:translateY(-10px);opacity:0}12%{opacity:.9}100%{transform:translateY(125%);opacity:0}}
 @keyframes light-black-flash{0%,8%{opacity:0}18%{opacity:.8}55%{opacity:.25}100%{opacity:0}}
 /* Crystal splits in two; fragments rain down at round end */
