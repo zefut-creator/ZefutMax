@@ -1196,8 +1196,7 @@ document.addEventListener('click',e=>{
     save();render();return;
   }
 
-  if(d.reloadcatalog){ liveCatalogLoading=true; liveCatalog=null; render(); refreshSharedListings();
-loadLiveCatalog(); return; }
+  if(d.reloadcatalog){ liveCatalogLoading=true; liveCatalog=null; render(); loadLiveCatalog(); return; }
   if(d.upgrader!==undefined){
     const options=(liveCatalog||[]).slice(0,12);
     openSheet('<div class="market-kicker">ZEFUTMAX TOOLS</div><h2>Апгрейдер подарков</h2><div class="desc">Демо-механика для интерфейса. Улучшение не меняет настоящий подарок.</div><div class="upgrade-preview"><div class="upgrade-orb">🎁</div><span>→</span><div class="upgrade-orb target">💎</div></div><label class="muted" for="upgradeCost">Сумма GRAM</label><input id="upgradeCost" type="number" min="1" max="10000" value="100" style="width:100%;margin:7px 0 12px"><label class="muted" for="upgradeTarget">Цель улучшения</label><select id="upgradeTarget" style="width:100%;margin:7px 0 12px">'+options.map(g=>'<option value="'+esc(g.id)+'">'+esc(g.stickerEmoji||'🎁')+' '+esc(g.id)+' · '+fmt(g.stars)+' Stars</option>').join('')+'</select><button class="btn" data-runupgrade>Показать результат</button><div class="muted" style="margin-top:10px">Используется только виртуальный баланс GRAM.</div><button class="btn secondary" data-close style="margin-top:8px">Закрыть</button>');
@@ -1334,6 +1333,7 @@ async function loadLiveCatalog(){
   }
 }
 loadLiveCatalog();
+refreshSharedListings();
 })();
 </script>
 </body>
