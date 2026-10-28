@@ -582,6 +582,7 @@ function load(){
 state=load();
 
 function save(){
+  if(state && Number.isFinite(state.bal)) state.bal=Math.max(0,round(state.bal));
   try{
     localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
   }catch(e){
@@ -663,18 +664,15 @@ function card(x){
 }
 
 function renderLiveCatalog(){
-  if(liveCatalogLoading) return '<div class="market-state"><span class="market-pulse"></span>Загружаем витрину подарков…</div>';
-  if(!liveCatalog) return '<div class="market-state"><b>NFT-витрина пока не подключена</b><p>'+esc(liveCatalogError||'Не удалось загрузить NFT-каталог.')+'</p><button class="btn secondary" data-reloadcatalog>Повторить загрузку</button><p class="muted">Обычные Telegram-подарки намеренно не показываются. Нужен источник именно коллекционных NFT.</p></div>';
-  if(!liveCatalog.length) return '<div class="market-state">Telegram вернул пустой каталог.</div>';
-  return '<section class="live-market"><div class="sectionhead market-heading"><div><div class="market-kicker">ZEFUTMAX · COLLECTION</div><h2>Витрина подарков</h2><div class="market-caption">Официальный каталог Telegram · не коллекционные NFT</div></div><div class="market-actions"><span class="market-total">'+liveCatalog.length+' видов</span><button class="btn secondary market-upgrade" data-upgrader>⚡ Апгрейдер</button></div></div>'+
+  if(liveCatalogLoading) return '<div class="market-state"><span class="market-pulse"></span>Загружаем каталог NFT-моделей и фонов…</div>';
+  if(!liveCatalog) return '<div class="market-state"><b>Каталог NFT временно недоступен</b><p>'+esc(liveCatalogError||'Не удалось загрузить модели.')+'</p><button class="btn secondary" data-reloadcatalog>Повторить загрузку</button><p class="muted">Обычные Telegram-подарки и смайлики не подставляются вместо NFT.</p></div>';
+  if(!liveCatalog.length) return '<div class="market-state">Источник не вернул доступных моделей NFT.</div>';
+  return '<section class="live-market"><div class="sectionhead market-heading"><div><div class="market-kicker">ZEFUTMAX · COLLECTIBLES</div><h2>NFT-модели и фоны</h2><div class="market-caption">Коллекционные модели Telegram · галерея атрибутов, не объявления о продаже</div></div><span class="market-total">'+liveCatalog.length+' моделей</span></div>'+
     '<div class="grid market-grid">'+liveCatalog.map((g,i)=>{
-      const imageId=g.previewFileId||g.thumbnailFileId||(g.stickerType==='static'?g.stickerFileId:null);
-      const visual=imageId
-        ? '<img src="/api/gift-image?file_id='+encodeURIComponent(imageId)+'" alt="'+esc(g.stickerEmoji||'Подарок Telegram')+'" loading="lazy" style="width:100%;height:100%;object-fit:contain;padding:15px" onerror="this.style.display=\'none\'">'
-        : '<span class="emoji market-fallback">'+esc(g.stickerEmoji||'🎁')+'</span>';
-      const stock=g.remainingCount!==null?'Осталось '+fmt(g.remainingCount):'Коллекция Telegram';
-      return '<article class="card market-card"><div class="art market-art market-art-'+(i%5)+'">'+visual+'<span class="market-rarity">'+(g.id&&String(g.id).startsWith('fallback-')?'DEMO':(g.premiumOnly?'PREMIUM':'TELEGRAM'))+'</span></div><div class="cardtop"><b>'+esc(g.stickerEmoji||'Telegram Gift')+'</b><span class="market-index">#'+esc(g.id)+'</span></div><div class="muted market-stock">'+esc(stock)+'</div><div class="market-price"><span>'+fmt(g.stars)+'</span><small>⭐ Stars</small></div><button class="btn market-details" data-giftinfo="'+esc(g.id)+'">Открыть карточку <span>↗</span></button></article>';
-    }).join('')+'</div></section>';
+      const bg=g.backdropColor ? '#'+String(g.backdropColor).replace('#','') : ['#30213f','#193d42','#45321d','#1d3153','#48232e'][i%5];
+      const visual=g.image ? '<img src="'+esc(g.image)+'" alt="'+esc(g.model||g.name)+'" loading="lazy" style="width:100%;height:100%;object-fit:contain;padding:12px" onerror="this.closest(\'.art\').innerHTML=\'<span class=&quot;muted&quot;>Модель недоступна</span>\'">' : '<span class="muted">Модель недоступна</span>';
+      return '<article class="card market-card"><div class="art market-art" style="background:'+bg+'">'+visual+'<span class="market-rarity">NFT MODEL</span></div><div class="cardtop"><b>'+esc(g.name||g.gift||'Telegram collectible')+'</b></div><div class="muted market-stock">Модель: '+esc(g.model||'—')+'</div><div class="muted market-stock">Фон: '+esc(g.backdrop||'—')+'</div></article>';
+    }).join('')+'</div><p class="note">Источник: GiftChanges API · Powered by @GiftChanges (api.changes.tg).</p></section>';
 }
 
 function renderMarket(){
@@ -1094,16 +1092,46 @@ render();
 
 async function loadLiveCatalog(){
   try{
-    const response=await fetch('/api/gifts',{headers:{Accept:'application/json'}});
-    const data=await response.json();
-    if(!response.ok) throw new Error(data.setup||data.error||'Каталог временно недоступен');
-    if(!Array.isArray(data.gifts)) throw new Error('Некорректный ответ каталога');
-    liveCatalog=data.gifts;
+    const response=await fetch('https://api.changes.tg/gifts',{headers:{Accept:'application/json'}});
+    if(!response.ok) throw new Error('Источник NFT ответил ошибкой '+response.status);
+    const payload=await response.json();
+    const giftsList=Array.isArray(payload)?payload:(payload.gifts||payload.result||payload.data||[]);
+    if(!Array.isArray(giftsList)) throw new Error('Неизвестный формат каталога');
+    const rows=[];
+    for(const item of giftsList.slice(0,24)){
+      const slug=typeof item==='string'?item:(item.name||item.slug||item.id||item.gift);
+      if(!slug) continue;
+      try{
+        const detailResponse=await fetch('https://api.changes.tg/gift/'+encodeURIComponent(slug),{headers:{Accept:'application/json'}});
+        if(!detailResponse.ok) continue;
+        const detail=await detailResponse.json();
+        const d=detail.gift||detail.data||detail;
+        const models=Array.isArray(d.models)?d.models:(Array.isArray(d.result?.models)?d.result.models:[]);
+        const backdrops=Array.isArray(d.backdrops)?d.backdrops:(Array.isArray(d.result?.backdrops)?d.result.backdrops:[]);
+        const model=models[0];
+        if(!model) continue;
+        const modelName=typeof model==='string'?model:(model.name||model.slug||model.id);
+        if(!modelName) continue;
+        const backdrop=backdrops[0];
+        const backdropName=typeof backdrop==='string'?backdrop:(backdrop?.name||backdrop?.slug||backdrop?.id||'');
+        const backdropColor=typeof backdrop==='object'?(backdrop.hex||backdrop.color||backdrop.center_color||''): '';
+        rows.push({
+          name:d.title||d.name||String(slug),
+          gift:String(slug),
+          model:String(modelName),
+          backdrop:String(backdropName||'—'),
+          backdropColor:String(backdropColor||''),
+          image:'https://api.changes.tg/model/'+encodeURIComponent(slug)+'/'+encodeURIComponent(modelName)+'.png?size=256'
+        });
+      }catch(e){}
+    }
+    liveCatalog=rows;
     liveCatalogError='';
+    if(!rows.length) liveCatalogError='Источник не вернул модели в ожидаемом формате.';
   }catch(error){
     liveCatalog=null;
-    liveCatalogError='NFT-каталог не подключён. Обычные подарки не отображаются.';
-    }finally{
+    liveCatalogError='Не удалось связаться с GiftChanges API. Попробуй обновить каталог.';
+  }finally{
     liveCatalogLoading=false;
     if(tab==='market') render();
   }
