@@ -897,7 +897,7 @@ function openFreeCase(){
     const target=winnerIndex*itemWidth-(track.parentElement.clientWidth/2-itemWidth/2);
     track.style.transition='none';track.style.transform='translateX(0)';
     track.getBoundingClientRect();
-    requestAnimationFrame(()=>{track.style.transition='transform 5.2s cubic-bezier(.08,.72,.08,1)';track.style.transform='translateX(-'+Math.max(0,target)+'px)';});
+    requestAnimationFrame(()=>{track.style.transition='transform 8.5s cubic-bezier(.12,.72,.18,1)';track.style.transform='translateX(-'+Math.max(0,target)+'px)';});
   }
   freeCaseTimer=setTimeout(()=>{
     freeCaseBusy=false;freeCaseTimer=null;
@@ -911,7 +911,7 @@ function openFreeCase(){
       save();render();
       openSheet('<div class="case-result"><div class="case-box">🎁</div><div>Редкий дроп!</div><div class="reward-big">NFT-подарок</div><b>'+esc(drop.range)+'</b><div class="desc">Это демо-награда. Сам NFT не выдан, поскольку реальная доставка ещё не подключена.</div></div><button class="btn" data-close>Забрать результат</button>');
     }
-  },5400);
+  },8900);
 }
 function renderLuckyBuy(){
   return '<div class="sectionhead"><h2>🍀 Лаки бай</h2><span class="count">Информация</span></div><p class="note">В MRKT Lucky Buy — это не случайная выдача подарка за фиксированную цену. В оригинальном сервисе пользователь предлагает цену ниже указанной стоимости подарка, а результат зависит от вероятности. Проигрыш компенсируется карточкой Lucky Buy.</p><div class="hub-banner"><div class="hub-orb">🍀</div><div><b>Lucky Buy · MRKT</b><div class="muted">Демонстрационная справка</div></div></div><div class="summary"><div><span>Ставки и списания</span><b>Отключены</b></div><div><span>Реальные подарки</span><b>Не подключены</b></div></div><button class="btn secondary" data-luckyinfo>Как это работает?</button>';
