@@ -252,6 +252,11 @@ nav button{min-height:54px}
 nav button:active{transform:scale(.97)}
 .empty{background:color-mix(in srgb,var(--panel) 48%,transparent)}
 .demo-banner{box-shadow:0 5px 18px #00000008}
+.catalog-section{margin-top:26px;padding-top:22px;border-top:1px solid var(--line)}
+.catalog-card .btn{margin-top:auto}
+.catalog-card .muted{overflow-wrap:anywhere}
+.catalog-card .cardtop{min-height:34px}
+.market-section .empty{margin-bottom:18px}
 @keyframes card-enter{from{opacity:.75;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 @keyframes sheet-enter{from{transform:translateY(14px);opacity:.8}to{transform:translateY(0);opacity:1}}
 @media(hover:none){.card:hover{transform:none;box-shadow:0 5px 16px #00000008}.card:hover .art .emoji{transform:none}}
@@ -695,68 +700,21 @@ let spinsBusy=false, spinsLast=[], spinsResult='Нажми «Крутить»', 
 let toastTimer, state;
 let liveCatalog=null, liveCatalogError='', liveCatalogLoading=true;
 
-function seed(){
-  let randomSeed=11;
-  const rnd=()=>{randomSeed=randomSeed*16807%2147483647;return randomSeed/2147483647};
-  let listings=[],id=1;
-
-  gifts.forEach((g,i)=>{
-    listings.push({id:id++,g:i,n:Math.floor(rnd()*9000)+100,p:round(g[2])});
-    listings.push({id:id++,g:i,n:Math.floor(rnd()*9000)+100,p:round(g[2]*(1.04+rnd()*.1))});
-  });
-
-  return {
-    bal:500,
-    mine:[{id:1000,g:39,n:4521,buy:6.33}],
-    mk:listings,
-    nid:1001,
-    favs:[],
-    history:[],
-    theme:'dark'
-  };
-}
-
+function seed(){return {bal:500,mine:[{id:1000,g:39,n:4521,buy:6.33}],mk:[],nid:1001,favs:[],history:[],theme:'dark'};}
 function validState(x){
-  if(!x || !Number.isFinite(x.bal) || x.bal<0 ||
-    !Array.isArray(x.mk) || !Array.isArray(x.mine) ||
-    !Array.isArray(x.favs) || !Array.isArray(x.history) ||
-    !['dark','light'].includes(x.theme) ||
-    !Number.isFinite(x.nid)) return false;
-
-  const validGift = g => Number.isInteger(g) && g>=0 && g<gifts.length;
-  const validListing = item => item && Number.isFinite(item.id) &&
-    validGift(item.g) && Number.isFinite(item.n) &&
-    Number.isFinite(item.p) && item.p>0;
-
-  return x.mk.every(item => validListing(item) &&
-      (item.own===undefined || typeof item.own==='boolean')) &&
-    x.mine.every(item => item && Number.isFinite(item.id) &&
-      validGift(item.g) && Number.isFinite(item.n)) &&
-    x.favs.every(validGift) &&
-    x.history.every(item => item && typeof item.name==='string' &&
-      Number.isFinite(item.amount) && Number.isFinite(item.at));
+ if(!x||!Number.isFinite(x.bal)||x.bal<0||!Array.isArray(x.mk)||!Array.isArray(x.mine)||!Array.isArray(x.favs)||!Array.isArray(x.history)||!['dark','light'].includes(x.theme)||!Number.isFinite(x.nid))return false;
+ const validGift=g=>Number.isInteger(g)&&g>=0&&g<gifts.length;
+ const validListing=item=>item&&(Number.isFinite(item.id)||typeof item.id==='string')&&validGift(item.g)&&Number.isFinite(item.n)&&Number.isFinite(item.p)&&item.p>0;
+ return x.mk.every(item=>validListing(item)&&(item.own===undefined||typeof item.own==='boolean'))&&x.mine.every(item=>item&&Number.isFinite(item.id)&&validGift(item.g)&&Number.isFinite(item.n))&&x.favs.every(validGift)&&x.history.every(item=>item&&typeof item.name==='string'&&Number.isFinite(item.amount)&&Number.isFinite(item.at));
 }
-
 function load(){
-  try{
-    const raw=localStorage.getItem(STORAGE_KEY);
-    if(raw){
-      const saved=JSON.parse(raw);
-      if(validState(saved)) return Object.assign(seed(),saved);
-    }
-  }catch(e){}
-  return seed();
+ try{const raw=localStorage.getItem(STORAGE_KEY);if(raw){const saved=JSON.parse(raw);if(validState(saved)){const merged=Object.assign(seed(),saved);merged.mk=merged.mk.filter(item=>item.shared===true||item.own===true);return merged;}}}catch(e){}
+ return seed();
 }
-
 state=load();
-
 function save(){
-  if(state && Number.isFinite(state.bal)) state.bal=Math.max(0,round(state.bal));
-  try{
-    localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
-  }catch(e){
-    toast('Не удалось сохранить данные на устройстве');
-  }
+ if(state&&Number.isFinite(state.bal))state.bal=Math.max(0,round(state.bal));
+ try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}catch(e){toast('Не удалось сохранить данные на устройстве');}
 }
 
 function toast(message){
@@ -844,28 +802,19 @@ function renderLiveCatalog(){
     }).join('')+'</div><p class="note">Источник: GiftChanges API · Powered by @GiftChanges (api.changes.tg).</p></section>';
 }
 
+function catalogCard(index){
+ const g=gifts[index],isFav=state.favs.includes(index);
+ return '<article class="card catalog-card">'+art(index)+'<div class="cardtop"><b>'+esc(g[1])+'</b><button class="fav '+(isFav?'on':'')+'" data-fav="'+index+'" aria-label="'+(isFav?'Убрать из избранного':'В избранное')+'">'+(isFav?'♥':'♡')+'</button></div><div class="muted">Демо-модель из каталога</div><div class="muted">'+change(index)+' · примерное изменение</div><div class="price">'+fmt(g[2])+' <small>GRAM</small></div><button class="btn" data-catalogbuy="'+index+'">Получить в демо</button></article>';
+}
 function renderMarket(){
-  let list=state.mk.filter(x=>gifts[x.g][1].toLowerCase().includes(search)||String(x.n).includes(search));
-
-  if(filter==='up') list=list.filter(x=>gifts[x.g][3]>0);
-  if(filter==='down') list=list.filter(x=>gifts[x.g][3]<0);
-  if(filter==='fav') list=list.filter(x=>state.favs.includes(x.g));
-
-  list.sort((a,b)=>{
-    if(sort==='priceDown') return b.p-a.p;
-    if(sort==='growth') return gifts[b.g][3]-gifts[a.g][3]||a.p-b.p;
-    if(sort==='name') return gifts[a.g][1].localeCompare(gifts[b.g][1]);
-    return a.p-b.p;
-  });
-
-  return `<div class="sectionhead">
-    <h2>Подарки на маркете</h2><span class="count">${list.length} лотов</span>
-  </div>
-  ${list.length?'<div class="grid">'+list.map(card).join('')+'</div>':
-    empty('🔎','Ничего не найдено','Измени запрос или фильтр.')}
-  <p class="note">Демо-режим: каталог, цены и изменение за 24 часа — примеры.
-  Баланс и операции сохраняются только в этом браузере. Реальные платежи и
-  передача Telegram-подарков не подключены.</p>`+renderLiveCatalog();
+ let listings=state.mk.filter(x=>gifts[x.g][1].toLowerCase().includes(search)||String(x.n).includes(search));
+ if(filter==='up')listings=listings.filter(x=>gifts[x.g][3]>0);
+ if(filter==='down')listings=listings.filter(x=>gifts[x.g][3]<0);
+ if(filter==='fav')listings=listings.filter(x=>state.favs.includes(x.g));
+ listings.sort((a,b)=>sort==='priceDown'?b.p-a.p:sort==='growth'?(gifts[b.g][3]-gifts[a.g][3]||a.p-b.p):sort==='name'?gifts[a.g][1].localeCompare(gifts[b.g][1]):a.p-b.p);
+ let catalog=gifts.map((g,i)=>i).filter(i=>{const g=gifts[i];if(!(g[1].toLowerCase().includes(search)||String(i+1).includes(search)))return false;if(filter==='up'&&g[3]<=0)return false;if(filter==='down'&&g[3]>=0)return false;if(filter==='fav'&&!state.favs.includes(i))return false;return true;});
+ catalog.sort((a,b)=>sort==='priceDown'?gifts[b][2]-gifts[a][2]:sort==='growth'?(gifts[b][3]-gifts[a][3]||gifts[a][2]-gifts[b][2]):sort==='name'?gifts[a][1].localeCompare(gifts[b][1]):gifts[a][2]-gifts[b][2]);
+ return '<section class="market-section"><div class="sectionhead"><div><h2>Объявления маркета</h2><div class="muted">Лоты из общей базы</div></div><span class="count">'+listings.length+' лотов</span></div>'+(listings.length?'<div class="grid">'+listings.map(card).join('')+'</div>':empty('🛍️','Пока нет активных лотов','Каталог ниже доступен в демо-режиме.'))+'</section><section class="catalog-section"><div class="sectionhead"><div><h2>Каталог подарков</h2><div class="muted">Коллекция демонстрационных моделей</div></div><span class="count">'+catalog.length+' из '+gifts.length+'</span></div>'+(catalog.length?'<div class="grid">'+catalog.map(catalogCard).join('')+'</div>':empty('🔎','Ничего не найдено','Измени запрос или фильтр.'))+'<p class="note">Каталог и цены демонстрационные. «Получить в демо» тратит только виртуальные GRAM и добавляет предмет на этом устройстве. Реальные покупки и передача Telegram-подарков не подключены.</p></section>';
 }
 
 function renderMine(){
@@ -947,10 +896,25 @@ function startRocketRound(){
  if(!Number.isFinite(n)||n<.1||n>10000){toast('Укажи сумму от 0,1 до 10 000 GRAM');return;}
  trainingStake=Math.round(n*10)/10;
  if(state.bal<trainingStake){if($('rocketStatus'))$('rocketStatus').textContent='Недостаточно виртуальных GRAM';toast('Недостаточно виртуальных GRAM');return;}
- rocketStake=trainingStake;state.bal=round(state.bal-rocketStake);log('game_bet','Ракета',-rocketStake,'Автоматический демо-раунд');save();rocketRunning=true;rocketValue=1;rocketCrashAt=4+Math.random()*6;const started=Date.now();render();
- rocketTimer=setInterval(()=>{if(!rocketRunning){clearInterval(rocketTimer);rocketTimer=null;return;}const elapsed=(Date.now()-started)/1000;rocketValue=Math.min(99,Math.exp(elapsed*.13));const mult=$('rocketMult'),status=$('rocketStatus'),icon=$('rocketIcon'),phase=$('rocketPhase'),progress=$('rocketProgress'),craft=$('rocketIcon');if(mult)mult.innerHTML=rocketValue.toFixed(2)+'<small>×</small>';if(status)status.textContent='Полёт идёт — забери результат до крушения';if(phase)phase.textContent='IN FLIGHT';if(progress)progress.style.width=Math.min(100,rocketValue*8)+'%';if(craft){craft.style.left=Math.min(78,22+elapsed*5)+'%';craft.style.bottom=Math.min(75,13+elapsed*6)+'%';}
- if(elapsed>=rocketCrashAt){rocketRunning=false;clearInterval(rocketTimer);rocketTimer=null;if(status)status.textContent='Крушение! Следующий запуск через 10 секунд';if(icon)icon.textContent='💥';let left=10;if(phase)phase.textContent='RESTART IN 10';const cd=setInterval(()=>{if(playMode!=='rocket'){clearInterval(cd);return;}left--;const p=$('rocketPhase'),s=$('rocketStatus');if(p)p.textContent='RESTART IN '+left;if(s)s.textContent='Следующий запуск через '+left+' сек.';if(left<=0){clearInterval(cd);startRocketRound();}},1000);log('game_loss','Ракета',-rocketStake,'Крушение · демо-ставка '+fmt(rocketStake)+' GRAM');save();}},80);
+ rocketStake=trainingStake;state.bal=round(state.bal-rocketStake);log('game_bet','Ракета',-rocketStake,'Демо-раунд');save();
+ rocketRunning=true;rocketValue=1;rocketCrashAt=4+Math.random()*6;const started=Date.now();render();
+ rocketTimer=setInterval(()=>{
+  if(!rocketRunning){clearInterval(rocketTimer);rocketTimer=null;return;}
+  const elapsed=(Date.now()-started)/1000,mult=$('rocketMult'),status=$('rocketStatus'),icon=$('rocketIcon'),phase=$('rocketPhase'),progress=$('rocketProgress'),craft=$('rocketIcon');
+  rocketValue=Math.min(99,Math.exp(elapsed*.13));
+  if(mult)mult.innerHTML=rocketValue.toFixed(2)+'<small>×</small>';if(status)status.textContent='Полёт идёт — забери результат до крушения';if(phase)phase.textContent='IN FLIGHT';if(progress)progress.style.width=Math.min(100,rocketValue*8)+'%';
+  if(craft){craft.style.left=Math.min(78,22+elapsed*5)+'%';craft.style.bottom=Math.min(75,13+elapsed*6)+'%';}
+  if(elapsed>=rocketCrashAt){
+   rocketRunning=false;clearInterval(rocketTimer);rocketTimer=null;
+   if(status)status.textContent='Крушение. Нажми «Запустить снова», чтобы начать новый раунд.';if(icon)icon.textContent='💥';if(phase)phase.textContent='ROUND ENDED';if(progress)progress.style.width='100%';
+   const button=document.querySelector('[data-rocket]');if(button){button.disabled=false;button.textContent='ЗАПУСТИТЬ СНОВА';}
+   log('game_loss','Ракета',-rocketStake,'Крушение · демо-ставка '+fmt(rocketStake)+' GRAM');save();
+   const balance=$('rocketBalance');if(balance)balance.innerHTML=fmt(state.bal)+' <small>GRAM</small>';
+   const best=$('rocketBest');if(best)best.textContent=rocketBest.toFixed(2)+'×';
+  }
+ },80);
 }
+
 function renderPlay(){
   const games=[
     ['💣','Мины','Открывай клетки и тренируй внимательность.','mines'],
@@ -959,7 +923,7 @@ function renderPlay(){
     ['🎰','SPINS','Комбинации символов, множители и виртуальные награды.','spins'],
   ];
   if(playMode==='mines') return '<div class="sectionhead"><h2>💣 Мины</h2><span class="count">Демо-режим</span></div><div class="gameboard">'+Array.from({length:25},(_,i)=>'<button class="gamecell '+(minesStarted&&openedCells.has(i)?'revealed':'')+'" data-cell="'+i+'" '+(!minesStarted||openedCells.has(i)||minesOver?'disabled':'')+'>'+((minesStarted&&(openedCells.has(i)||minesOver&&minesSet.has(i)))?(minesSet.has(i)?'💣':'✦'):'?')+'</button>').join('')+'</div><div class="summary"><div><span>Статус</span><b>'+(minesOver?(minesCashed?'Результат зафиксирован':'Раунд завершён'):(minesStarted?'Игра идёт':'Готов к запуску'))+'</b></div><div><span>Множитель</span><b>'+minesMultiplier.toFixed(2)+'×</b></div><div><span>Демо-результат</span><b>'+fmt(trainingStake*minesMultiplier)+' GRAM</b></div></div><div class="sectionhead" style="margin-top:18px"><h2>Настройки игры</h2></div><label class="inputlabel" for="trainingStakeInput">Демо-ставка в GRAM (0,1–10 000)</label><input id="trainingStakeInput" type="number" min="0.1" max="10000" step="0.1" value="'+trainingStake+'" '+(minesStarted&&!minesOver?'disabled':'')+' style="width:100%;margin:6px 0 10px"><label class="inputlabel" for="mineCountSelect">Количество мин</label><select id="mineCountSelect" style="width:100%;margin:6px 0 10px" '+(minesStarted&&!minesOver?'disabled':'')+'>'+[1,3,5,8,10,12,15,20].map(n=>'<option value="'+n+'" '+(n===minesCount?'selected':'')+'>'+n+' мин</option>').join('')+'</select>'+(minesOver?'<button class="btn" data-newmines>Новая игра</button>':minesStarted?'<button class="btn" data-cashout '+(openedCells.size===0?'disabled':'')+'>Сохранить демо-результат · '+fmt(trainingStake*minesMultiplier)+' GRAM</button>':'<button class="btn" data-startmines>Начать игру</button>')+'<button class="btn secondary" style="margin-top:8px" data-playback>← Вернуться в Play Hub</button>';
-  if(playMode==='rocket') return '<div class="game-topline"><button class="back-link" data-playback>‹ Игровой центр</button><span class="live-pill"><i></i> DEMO ROUND</span></div><div class="game-hero rocket-hero"><div class="hero-copy"><span class="eyebrow">ZEFUTMAX ORIGINAL</span><h2>ROCKET <span>RUN</span></h2><p>Поймай момент. Зафиксируй результат до завершения полёта.</p></div><div class="rocket-emblem"><div class="rocket-ring">🚀</div><span class="orbit-dot"></span></div></div><div class="rocket-stats"><div><span>Демо-баланс</span><b id="rocketBalance">'+fmt(state.bal)+' <small>GRAM</small></b></div><div><span>Лучший полёт</span><b id="rocketBest">'+rocketBest.toFixed(2)+'×</b></div></div><label class="inputlabel" for="rocketStakeInput">РАЗМЕР ДЕМО-РАУНДА</label><div class="stake-control"><input id="rocketStakeInput" type="number" min="0.1" max="10000" step="0.1" value="'+trainingStake+'" '+(rocketRunning?'disabled':'')+'><span>GRAM</span><button type="button" data-stake="half" '+(rocketRunning?'disabled':'')+'>½</button><button type="button" data-stake="double" '+(rocketRunning?'disabled':'')+'>2×</button></div><div class="rocket-console '+(rocketRunning?'is-running':'')+'"><div class="console-top"><span><i class="status-light"></i> FLIGHT MONITOR</span><span id="rocketPhase">'+(rocketRunning?'IN FLIGHT':'READY')+'</span></div><div class="flight-path"><div class="flight-grid"></div><div class="flight-trail" id="rocketTrail"></div><div class="rocket-craft" id="rocketIcon">🚀</div></div><div class="rocket-number" id="rocketMult">'+rocketValue.toFixed(2)+'<small>×</small></div><strong class="flight-status" id="rocketStatus">'+(rocketRunning?'Ракета летит — успей остановить!':'Системы готовы к запуску')+'</strong><div class="flight-progress"><i id="rocketProgress" style="width:'+(rocketRunning?Math.min(100,rocketValue*8):0)+'%"></i></div></div><button class="btn rocket-action" data-rocket>'+(rocketRunning?'Забрать результат':'АВТОЗАПУСК РАКЕТЫ')+'</button><p class="game-disclaimer">Только демо-GRAM. Результат виртуальный, реальных денег и выплат нет.</p><button class="btn secondary" data-playback>← Все игры</button>';
+  if(playMode==='rocket') return '<div class="game-topline"><button class="back-link" data-playback>‹ Игровой центр</button><span class="live-pill"><i></i> DEMO ROUND</span></div><div class="game-hero rocket-hero"><div class="hero-copy"><span class="eyebrow">ZEFUTMAX ORIGINAL</span><h2>ROCKET <span>RUN</span></h2><p>Поймай момент. Зафиксируй результат до завершения полёта.</p></div><div class="rocket-emblem"><div class="rocket-ring">🚀</div><span class="orbit-dot"></span></div></div><div class="rocket-stats"><div><span>Демо-баланс</span><b id="rocketBalance">'+fmt(state.bal)+' <small>GRAM</small></b></div><div><span>Лучший полёт</span><b id="rocketBest">'+rocketBest.toFixed(2)+'×</b></div></div><label class="inputlabel" for="rocketStakeInput">РАЗМЕР ДЕМО-РАУНДА</label><div class="stake-control"><input id="rocketStakeInput" type="number" min="0.1" max="10000" step="0.1" value="'+trainingStake+'" '+(rocketRunning?'disabled':'')+'><span>GRAM</span><button type="button" data-stake="half" '+(rocketRunning?'disabled':'')+'>½</button><button type="button" data-stake="double" '+(rocketRunning?'disabled':'')+'>2×</button></div><div class="rocket-console '+(rocketRunning?'is-running':'')+'"><div class="console-top"><span><i class="status-light"></i> FLIGHT MONITOR</span><span id="rocketPhase">'+(rocketRunning?'IN FLIGHT':'READY')+'</span></div><div class="flight-path"><div class="flight-grid"></div><div class="flight-trail" id="rocketTrail"></div><div class="rocket-craft" id="rocketIcon">🚀</div></div><div class="rocket-number" id="rocketMult">'+rocketValue.toFixed(2)+'<small>×</small></div><strong class="flight-status" id="rocketStatus">'+(rocketRunning?'Ракета летит — успей остановить!':'Системы готовы к запуску')+'</strong><div class="flight-progress"><i id="rocketProgress" style="width:'+(rocketRunning?Math.min(100,rocketValue*8):0)+'%"></i></div></div><button class="btn rocket-action" data-rocket>'+(rocketRunning?'Забрать результат':'ЗАПУСТИТЬ РАКЕТУ')+'</button><p class="game-disclaimer">Только демо-GRAM. Результат виртуальный, реальных денег и выплат нет.</p><button class="btn secondary" data-playback>← Все игры</button>';
   if(playMode==='spins') return '<div class="game-topline"><button class="back-link" data-playback>‹ Игровой центр</button><span class="live-pill"><i></i> DEMO SPINS</span></div><div class="game-hero spins-hero"><div class="hero-copy"><span class="eyebrow">ZEFUTMAX ORIGINAL</span><h2>SPIN <span>CLUB</span></h2><p>Собирай комбинации символов и открывай редкие результаты.</p></div><div class="arena-mark">🎰<span>SPIN</span></div></div><div class="rocket-stats"><div><span>Демо-баланс</span><b id="spinsBalance">'+fmt(state.bal)+' <small>GRAM</small></b></div><div><span>Последний выигрыш</span><b id="spinsWin">'+fmt(spinsWin)+' GRAM</b></div></div><label class="inputlabel" for="spinsStakeInput">ВИРТУАЛЬНАЯ СТАВКА</label><div class="stake-control"><input id="spinsStakeInput" type="number" min="0.1" max="10000" step="0.1" value="'+trainingStake+'" '+(spinsBusy?'disabled':'')+'><span>GRAM</span><button type="button" data-spinstake="half" '+(spinsBusy?'disabled':'')+'>½</button><button type="button" data-spinstake="double" '+(spinsBusy?'disabled':'')+'>2×</button></div><div class="spins-machine '+(spinsBusy?'spins-busy':'')+'"><div class="console-top"><span><i class="status-light"></i> REEL MACHINE</span><span>'+(spinsBusy?'SPINNING':'READY')+'</span></div><div class="spins-reels">'+(spinsLast.length?spinsLast:['🍊','⭐','💎']).map((s,i)=>'<div class="spins-reel" style="animation-delay:'+i*.08+'s">'+s+'</div>').join('')+'</div><div class="spins-result" id="spinsResult">'+spinsResult+'</div></div><button class="btn spins-action" data-spins '+(spinsBusy?'disabled':'')+'>'+(spinsBusy?'КРУТИМ…':'КРУТИТЬ БАРАБАНЫ')+'</button><div class="spins-paytable"><div class="sectionhead"><h3>ТАБЛИЦА КОМБИНАЦИЙ</h3><span class="count">× к ставке</span></div>'+[['🎰 🎰 🎰','Супер-спин','×50'],['💎 💎 💎','Кристальный джекпот','×25'],['7️⃣ 7️⃣ 7️⃣','Счастливая семёрка','×15'],['👑 👑 👑','Королевская тройка','×10'],['🔥 🔥 🔥','Огненный заряд','×9'],['🔔 🔔 🔔','Три колокольчика','×8'],['⭐ ⭐ ⭐','Три звезды','×7'],['🍀 🍀 🍀','Клевер удачи','×6'],['🪙 🪙 🪙','Золотые монеты','×5.5'],['🎁 🎁 🎁','Подарки','×5'],['🚀 🚀 🚀','Ракетный набор','×4'],['🍊 🍊 🍊','Три апельсина','×3'],['💎 💎 ⭐','Кристаллы и звезда','×2.5'],['👑 👑 ⭐','Корона со звездой','×2.5'],['🚀 🚀 ⭐','Две ракеты и звезда','×2'],['🎁 🎁 🍀','Два подарка и клевер','×2'],['🔔 🔔 🪙','Колокольчики и монета','×2'],['🔥 🔥 💎','Огонь и кристалл','×2'],['Любые 2 одинаковых','Пара символов','×1.5'],['Все разные + ⭐','Звезда среди разных','×1.2']].map(x=>'<div class="spins-payrow"><b>'+x[0]+'</b><span>'+x[1]+'</span><strong>'+x[2]+'</strong></div>').join('')+'</div><p class="game-disclaimer">Демо-механика с виртуальными GRAM. Комбинации генерируются локально; реальные деньги и выплаты отсутствуют.</p><button class="btn secondary" data-playback>← Все игры</button>';
   if(playMode==='pvp') return '<div class="game-topline"><button class="back-link" data-playback>‹ Игровой центр</button><span class="live-pill"><i></i> PRACTICE</span></div><div class="game-hero pvp-hero"><div class="hero-copy"><span class="eyebrow">ZEFUTMAX ARENA</span><h2>DUEL <span>ARENA</span></h2><p>Тренировочный матч против соперника-бота.</p></div><div class="arena-mark">⚔️<span>VS</span></div></div><div class="arena-scoreboard"><div class="arena-player"><div class="player-avatar user-avatar">YOU</div><b>ТЫ</b><strong id="youScore">0</strong><span>PLAYER 01</span></div><div class="arena-vs">VS<div>BEST OF 1</div></div><div class="arena-player"><div class="player-avatar bot-avatar">🤖</div><b>БОТ-СОПЕРНИК</b><strong id="botScore">0</strong><span>CPU · LEVEL 01</span></div></div><div class="arena-info"><div><span>ФОРМАТ</span><b>Быстрый раунд</b></div><div><span>СТАТУС</span><b id="pvpStatus">Ожидает старта</b></div><div><span>ВЫИГРЫШ</span><b id="pvpReward">— GRAM</b></div></div><div class="arena-challenge"><label class="inputlabel" for="pvpStakeInput">ВИРТУАЛЬНАЯ СТАВКА · GRAM</label><div class="stake-control"><input id="pvpStakeInput" type="number" min="0.1" max="10000" step="0.1" value="'+trainingStake+'"><span>GRAM</span><button type="button" data-pvpstake="half">½</button><button type="button" data-pvpstake="double">2×</button></div><div class="muted" style="margin:8px 0 14px">Демо-баланс: '+fmt(state.bal)+' GRAM · победа возвращает ставку и начисляет такой же виртуальный выигрыш.</div><span class="eyebrow">READY CHECK</span><h3>Кто победит?</h3><p>Ставка списывается только с виртуального баланса. Бот — тренировочный, не реальный игрок.</p><button class="btn pvp-action" data-pvp>НАЧАТЬ ДУЭЛЬ</button><div class="arena-result" id="pvpResult">Выбери ставку и начни раунд</div></div><p class="game-disclaimer">Только виртуальные демо-GRAM, без денежных ставок, выплат и реальных игроков.</p><button class="btn secondary" data-playback>← Все игры</button>';
   return '<div class="sectionhead"><h2>Play Hub</h2><span class="count">Игровой центр</span></div><div class="hub-banner"><div class="hub-orb">✦</div><div><b>Играй в тренировочных режимах</b><div class="muted">Чёрный · оранжевый · без ставок</div></div></div><div class="gamecards">'+games.map(g=>'<button class="gamecard" data-play="'+g[3]+'"><span class="gameicon">'+g[0]+'</span><b>'+g[1]+'</b><span class="muted">'+g[2]+'</span><span class="game-open">Открыть →</span></button>').join('')+'</div><p class="note">Это первая демо-версия Play Hub. Игры работают локально: без реальных денег, ставок, выплат и онлайн-матчмейкинга.</p>';
@@ -1142,54 +1106,24 @@ function updateSale(){
 }
 
 function listMine(id){
-  const input=$('priceInput');
-  const p=Number(input?.value);
-  const x=find(state.mine,id);
-
-  if(!x||!Number.isFinite(p)||p<=0){
-    toast('Укажи корректную цену больше нуля');
-    haptic('error');
-    return;
-  }
-
-  state.mine=state.mine.filter(y=>y.id!==x.id);
-  const localListing={id:++state.nid,g:x.g,n:x.n,p:round(p),own:true};
-  state.mk.push(localListing);
-  log('listing',gifts[x.g][1],0,'Лот выставлен');
-  save();
-  closeSheet();
-  setTab('mine');
-  mineTab='listed';
-  render();
-  toast('Публикую лот в общий маркет…');
-  sharedRequest('rpc/create_market_listing',{
-    method:'POST',
-    body:JSON.stringify({p_gift_name:gifts[x.g][1],p_serial:Number(x.n),p_price:round(p),p_seller_id:sellerId,p_seller_balance:round(state.bal)})
-  }).then(async result=>{
-    state.mk=state.mk.filter(y=>y.id!==localListing.id);
-    await refreshSharedListings();
-    await refreshSharedWallet();
-    save(); render(); toast('Лот выставлен в общий маркет');
-  }).catch(e=>{
-    console.warn(e);
-    state.mk=state.mk.filter(y=>y.id!==localListing.id);
-    state.mine.push({id:++state.nid,g:x.g,n:x.n,buy:x.buy||0});
-    save(); render(); toast('Не удалось выставить: запусти SQL-настройку маркета');
-  });
+ const input=$('priceInput'),p=Number(input?.value),x=find(state.mine,id);
+ if(!x||!Number.isFinite(p)||p<=0||p>100000000){toast('Укажи корректную цену больше нуля');haptic('error');return;}
+ const localListing={id:++state.nid,g:x.g,n:x.n,p:round(p),own:true};state.mk.push(localListing);state.mine=state.mine.filter(y=>y.id!==x.id);
+ log('listing',gifts[x.g][1],0,'Лот выставлен · ожидание синхронизации');save();closeSheet();mineTab='listed';setTab('mine');toast('Публикую лот в общий маркет…');
+ sharedRequest('rpc/create_market_listing',{method:'POST',body:JSON.stringify({p_gift_name:gifts[x.g][1],p_serial:Number(x.n),p_price:round(p),p_seller_id:sellerId,p_seller_balance:round(state.bal)})}).then(async result=>{
+  state.mk=state.mk.filter(y=>String(y.id)!==String(localListing.id));await refreshSharedListings();await refreshSharedWallet();save();render();toast(result?.ok?'Лот опубликован в общем маркете':'Лот опубликован');
+ }).catch(e=>{
+  console.warn('Listing publish failed:',e);state.mk=state.mk.filter(y=>y.id!==localListing.id);state.mine.push({id:x.id,g:x.g,n:x.n,buy:x.buy||0});log('listing_error',gifts[x.g][1],0,'Публикация не удалась');save();render();toast('Не удалось выставить лот: '+String(e?.message||e).slice(0,100));
+ });
 }
 
-function unlist(id){
-  const x=find(state.mk,id);
-  if(!x||!x.own) return;
-
-  state.mk=state.mk.filter(y=>y.id!==x.id);
-  state.mine.push({id:++state.nid,g:x.g,n:x.n,buy:x.p});
-  log('unlist',gifts[x.g][1],0,'Лот снят с продажи');
-  save(); render();
-  if(x.shared && x.dbId){
-    sharedRequest('rpc/cancel_market_listing',{method:'POST',body:JSON.stringify({p_listing_id:Number(x.dbId),p_seller_id:sellerId})})
-      .then(()=>refreshSharedListings()).catch(e=>{console.warn(e);toast('Не удалось снять лот: запусти SQL-настройку маркета');});
-  } else toast('Лот снят');
+async function unlist(id){
+ const x=find(state.mk,id);if(!x||!x.own)return;
+ if(x.shared&&x.dbId){try{await sharedRequest('rpc/cancel_market_listing',{method:'POST',body:JSON.stringify({p_listing_id:Number(x.dbId),p_seller_id:sellerId})});}catch(e){console.warn('Unlist failed:',e);toast('Не удалось снять лот: '+String(e?.message||e).slice(0,100));return;}}
+ state.mk=state.mk.filter(y=>String(y.id)!==String(x.id));
+ if(!x.shared)state.mine.push({id:++state.nid,g:x.g,n:x.n,buy:x.p});
+ log('unlist',gifts[x.g][1],0,'Лот снят с продажи');save();render();toast('Лот снят');
+ if(x.shared){await refreshSharedListings();await refreshSharedWallet();}
 }
 
 async function doBuy(id){
@@ -1239,7 +1173,7 @@ document.addEventListener('click',e=>{
   if(b.id==='mineTab') return setTab('mine');
   if(b.id==='playTab'){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode='';return setTab('play');}
   if(b.id==='profileTab') return setTab('profile');
-  if(d.play!==undefined){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode=d.play;playRound=0;if(d.play==='mines'){minesStarted=false;minesOver=false;minesCashed=false;openedCells.clear();minesMultiplier=1;}if(d.play==='rocket'){rocketValue=1;rocketCrashAt=0;}render();if(d.play==='rocket')setTimeout(startRocketRound,150);return;}
+  if(d.play!==undefined){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode=d.play;playRound=0;if(d.play==='mines'){minesStarted=false;minesOver=false;minesCashed=false;openedCells.clear();minesMultiplier=1;}if(d.play==='rocket'){rocketValue=1;rocketCrashAt=0;}render();return;}
   if(d.playback!==undefined){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode='';minesStarted=false;minesOver=false;minesCashed=false;openedCells.clear();setTab('play');return;}
 
   if(d.cashout!==undefined){if(minesOver||!minesStarted||openedCells.size===0)return;minesOver=true;minesCashed=true;const payout=round(trainingStake*minesMultiplier);state.bal=round(state.bal+payout);log('game_win','Мины',payout,'Возврат демо-ставки × '+minesMultiplier.toFixed(2));save();haptic('success');toast('Забрал '+fmt(payout)+' GRAM · демо-баланс');render();return;}
@@ -1253,7 +1187,10 @@ document.addEventListener('click',e=>{
     render();return;
   }
   if(d.stake){if(rocketRunning)return;const input=$('rocketStakeInput');let n=Number(input?.value??trainingStake);if(!Number.isFinite(n)||n<=0)n=trainingStake;n=d.stake==='half'?Math.max(.1,Math.round(n/2*10)/10):Math.min(10000,Math.round(n*2*10)/10);trainingStake=n;if(input)input.value=n;return;}
-  if(d.rocket!==undefined){if(rocketRunning){rocketRunning=false;if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}const payout=round(rocketStake*rocketValue);state.bal=round(state.bal+payout);log('game_win','Ракета',payout,'Зафиксировано на '+rocketValue.toFixed(2)+'× · демо');save();rocketBest=Math.max(rocketBest,rocketValue);haptic('success');toast('Зафиксировано: '+fmt(payout)+' виртуальных GRAM');render();return;}return;}
+  if(d.rocket!==undefined){
+   if(rocketRunning){rocketRunning=false;if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}const payout=round(rocketStake*rocketValue);state.bal=round(state.bal+payout);log('game_win','Ракета',payout,'Зафиксировано на '+rocketValue.toFixed(2)+'× · демо');save();rocketBest=Math.max(rocketBest,rocketValue);haptic('success');toast('Зафиксировано: '+fmt(payout)+' виртуальных GRAM');render();return;}
+   startRocketRound();return;
+  }
   if(d.spinstake){const input=$('spinsStakeInput');let n=Number(input?.value??trainingStake);if(!Number.isFinite(n)||n<=0)n=trainingStake;n=d.spinstake==='half'?Math.max(.1,Math.round(n/2*10)/10):Math.min(10000,Math.round(n*2*10)/10);trainingStake=n;if(input)input.value=n;return;}
   if(d.spins!==undefined){if(spinsBusy)return;const input=$('spinsStakeInput'),n=Number(input?.value??trainingStake);if(!Number.isFinite(n)||n<.1||n>10000){toast('Укажи ставку от 0,1 до 10 000 GRAM');return;}const stake=Math.round(n*10)/10;if(state.bal<stake){toast('Недостаточно виртуальных GRAM');return;}trainingStake=stake;state.bal=round(state.bal-stake);log('game_bet','Spins',-stake,'Виртуальная ставка');save();spinsBusy=true;spinsWin=0;spinsResult='Барабаны вращаются…';spinsLast=['🎁','⭐','🚀'];render();let ticks=0;const anim=setInterval(()=>{if(playMode!=='spins'){clearInterval(anim);spinsBusy=false;return;}spinsLast=Array.from({length:3},()=>['🍊','⭐','💎','7️⃣','👑','🎁','🚀','🎰','🍀','🔔','🪙','🔥'][Math.floor(Math.random()*12)]);ticks++;render();if(ticks>=9){clearInterval(anim);spinsBusy=false;const symbols=['🍊','⭐','💎','7️⃣','👑','🎁','🚀','🎰','🍀','🔔','🪙','🔥'];const wins=[['🎰🎰🎰',50,'СУПЕР-СПИН!'],['💎💎💎',25,'КРИСТАЛЬНЫЙ ДЖЕКПОТ!'],['7️⃣7️⃣7️⃣',15,'СЧАСТЛИВАЯ СЕМЁРКА!'],['👑👑👑',10,'КОРОЛЕВСКАЯ ТРОЙКА!'],['🔥🔥🔥',9,'ОГНЕННЫЙ ЗАРЯД!'],['🔔🔔🔔',8,'ТРИ КОЛОКОЛЬЧИКА!'],['⭐⭐⭐',7,'ТРИ ЗВЕЗДЫ!'],['🍀🍀🍀',6,'КЛЕВЕР УДАЧИ!'],['🪙🪙🪙',5.5,'ЗОЛОТЫЕ МОНЕТЫ!'],['🎁🎁🎁',5,'ПОДАРКИ!'],['🚀🚀🚀',4,'РАКЕТНЫЙ НАБОР!'],['🍊🍊🍊',3,'ТРИ АПЕЛЬСИНА!'],['💎💎⭐',2.5,'КРИСТАЛЛЫ И ЗВЕЗДА!'],['👑👑⭐',2.5,'КОРОНА СО ЗВЕЗДОЙ!'],['🚀🚀⭐',2,'ДВЕ РАКЕТЫ И ЗВЕЗДА!'],['🎁🎁🍀',2,'ДВА ПОДАРКА И КЛЕВЕР!'],['🔔🔔🪙',2,'КОЛОКОЛЬЧИКИ И МОНЕТА!'],['🔥🔥💎',2,'ОГОНЬ И КРИСТАЛЛ!']];const pick=a=>a[Math.floor(Math.random()*a.length)];const roll=Math.random();let forced=null;if(roll<.004)forced=wins[0];else if(roll<.012)forced=wins[1];else if(roll<.026)forced=wins[2];else if(roll<.05)forced=wins[3];else if(roll<.13)forced=pick(wins.slice(4,12));else if(roll<.25)forced=pick(wins.slice(12));if(forced)spinsLast=Array.from(forced[0].matchAll(/🎰|💎|7️⃣|👑|🔥|🔔|⭐|🍀|🪙|🎁|🚀|🍊/g),m=>m[0]);else spinsLast=Array.from({length:3},()=>pick(symbols));const key=spinsLast.join('');let mult=0,label='Комбинация не собрана';const combo=wins.find(x=>x[0]===key);if(combo){mult=combo[1];label=combo[2];}else if(new Set(spinsLast).size===2){mult=1.5;label='Пара символов!';}else if(new Set(spinsLast).size===3&&spinsLast.includes('⭐')){mult=1.2;label='Звезда среди разных!';}spinsWin=round(stake*mult);if(spinsWin>0){state.bal=round(state.bal+spinsWin);log('game_win','Spins',spinsWin,label+' · ×'+mult+' · демо');}else log('game_loss','Spins',-stake,'Без выигрышной комбинации');spinsResult=mult?label+' · '+mult+'× · '+fmt(spinsWin)+' GRAM':'Нет совпадения — попробуй ещё раз';save();render();}},110);return;}
   if(d.pvpstake){const input=$('pvpStakeInput');let n=Number(input?.value??trainingStake);if(!Number.isFinite(n)||n<=0)n=trainingStake;n=d.pvpstake==='half'?Math.max(.1,Math.round(n/2*10)/10):Math.min(10000,Math.round(n*2*10)/10);trainingStake=n;if(input)input.value=n;return;}
@@ -1320,6 +1257,12 @@ document.addEventListener('click',e=>{
     return;
   }
 
+  if(d.catalogbuy!==undefined){
+    const index=Number(d.catalogbuy);if(!Number.isInteger(index)||index<0||index>=gifts.length)return;
+    const gift=gifts[index],price=round(gift[2]);if(state.bal<price){toast('Недостаточно виртуальных GRAM');return;}
+    state.bal=round(state.bal-price);state.mine.push({id:++state.nid,g:index,n:Math.floor(10000+Math.random()*90000),buy:price});
+    log('catalog_buy',gift[1],-price,'Получение из демонстрационного каталога');save();render();haptic('success');toast(gift[1]+' добавлен в коллекцию · демо');return;
+  }
   if(d.lucky) return lbOpen(d.lucky);
   if(d.lbgo) return lbGo(d.lbgo);
   if(d.buy) return confirmBuy(d.buy);
@@ -1424,7 +1367,7 @@ async function loadLiveCatalog(){
     let queue=items.map(v=>({slug:String(nm(v)||''),title:typeof v==='object'?(v.title||v.name||''):''})).filter(v=>v.slug);
     if(!queue.length) queue=known.map(v=>({slug:v[0],title:v[1]}));
     const rows=[];
-    for(const it of queue.slice(0,36)){
+    for(const it of queue.slice(0,12)){
       try{
         const rs=await Promise.all([
           fetch('https://api.changes.tg/gift/'+encodeURIComponent(it.slug)),
