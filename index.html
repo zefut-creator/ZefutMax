@@ -462,6 +462,7 @@ const esc = s => String(s).replace(/[&<>"']/g,c=>({
 let tab='market', filter='all', mineTab='owned', search='', sort='priceUp';
 let playMode=''; let playRound=0; let rocketTimer=null; let rocketValue=1; let rocketRunning=false; let rocketCrashAt=0; let rocketBest=1;
 let minesCount=3, minesSet=new Set(), openedCells=new Set(), minesOver=false;
+let spinStake=10, spinSymbols=['🍒','🍋','⭐','🍒','💎','🍋','⭐','🍒','💎'], spinLast='Нажми «Крутить».';
 let spinSymbols=['🍒','🍋','⭐','💎','🔔','🍇'], spinBoard=['🍒','⭐','🍋','🍒','💎','⭐','🔔','🍋','🍇'], spinLastWin=0, spinRounds=0;
 let trainingStake=10, rocketStake=10, minesMultiplier=1, minesCashed=false, minesStarted=false;
 let toastTimer, state;
@@ -719,10 +720,12 @@ function renderPlay(){
     ['💣','Мины','Открывай клетки и тренируй внимательность.','mines'],
     ['🚀','Ракетка','Следи за полётом ракеты и останови раунд в любой момент.','rocket'],
     ['⚔️','PvP Арена','Тренировочный матч против демо-соперника.','pvp'],
+    ['🎰','Spins','Совпадения, каскады и множители.','spins'],
     ['🎰','Spins','Совпадения, каскады и бонусные символы.','spins']
   ];
   if(playMode==='mines') return '<div class="sectionhead"><h2>💣 Мины</h2><span class="count">Демо-режим</span></div><div class="gameboard">'+Array.from({length:25},(_,i)=>'<button class="gamecell '+(minesStarted&&openedCells.has(i)?'revealed':'')+'" data-cell="'+i+'" '+(!minesStarted||openedCells.has(i)||minesOver?'disabled':'')+'>'+((minesStarted&&(openedCells.has(i)||minesOver&&minesSet.has(i)))?(minesSet.has(i)?'💣':'✦'):'?')+'</button>').join('')+'</div><div class="summary"><div><span>Статус</span><b>'+(minesOver?(minesCashed?'Результат зафиксирован':'Раунд завершён'):(minesStarted?'Игра идёт':'Готов к запуску'))+'</b></div><div><span>Множитель</span><b>'+minesMultiplier.toFixed(2)+'×</b></div><div><span>Демо-результат</span><b>'+fmt(trainingStake*minesMultiplier)+' GRAM</b></div></div><div class="sectionhead" style="margin-top:18px"><h2>Настройки игры</h2></div><label class="inputlabel" for="trainingStakeInput">Демо-ставка в GRAM (0,1–10 000)</label><input id="trainingStakeInput" type="number" min="0.1" max="10000" step="0.1" value="'+trainingStake+'" '+(minesStarted&&!minesOver?'disabled':'')+' style="width:100%;margin:6px 0 10px"><label class="inputlabel" for="mineCountSelect">Количество мин</label><select id="mineCountSelect" style="width:100%;margin:6px 0 10px" '+(minesStarted&&!minesOver?'disabled':'')+'>'+[1,3,5,8,10,12,15,20].map(n=>'<option value="'+n+'" '+(n===minesCount?'selected':'')+'>'+n+' мин</option>').join('')+'</select>'+(minesOver?'<button class="btn" data-newmines>Новая игра</button>':minesStarted?'<button class="btn" data-cashout '+(openedCells.size===0?'disabled':'')+'>Сохранить демо-результат · '+fmt(trainingStake*minesMultiplier)+' GRAM</button>':'<button class="btn" data-startmines>Начать игру</button>')+'<button class="btn secondary" style="margin-top:8px" data-playback>← Вернуться в Play Hub</button>';
   if(playMode==='spins') return '<div class="sectionhead"><h2>🎰 Spins</h2><span class="count">Демо-режим</span></div><div class="summary"><div><span>Баланс</span><b>'+fmt(state.bal)+' GRAM</b></div><div><span>Последний результат</span><b>'+fmt(spinLastWin)+' GRAM</b></div><div><span>Раундов</span><b>'+spinRounds+'</b></div></div><div class="spinboard">'+spinBoard.map((s,i)=>'<div class="spinsymbol">'+s+'</div>').join('')+'</div><p class="note">Совпадения по горизонтали или вертикали от 3 символов дают демо-выигрыш; новые символы падают на их место, создавая каскады.</p><label class="inputlabel" for="spinStakeInput">Демо-ставка в GRAM</label><input id="spinStakeInput" type="number" min="0.1" max="10000" step="0.1" value="'+trainingStake+'" style="width:100%;margin:6px 0 10px"><button class="btn" data-spin>Крутить</button><button class="btn secondary" data-playback style="margin-top:8px">← Все режимы</button>';
+  if(playMode==='spins') return '<div class="sectionhead"><h2>🎰 Spins</h2><span class="count">Демо-режим</span></div><div class="gameboard spinboard">'+spinSymbols.map((x,i)=>'<div class="gamecell revealed spin-symbol">'+x+'</div>').join('')+'</div><div class="summary"><div><span>Последний раунд</span><b>'+spinLast+'</b></div><div><span>Баланс</span><b>'+fmt(state.bal)+' GRAM</b></div></div><label class="inputlabel" for="spinStakeInput">Демо-ставка в GRAM</label><input id="spinStakeInput" type="number" min="0.1" max="10000" step="0.1" value="'+spinStake+'" style="width:100%;margin:6px 0 10px"><p class="note">Совпадение 3 символов — возврат ×2, 4 и более — ×4; без совпадения ставка остаётся в демо-раунде. Только виртуальные GRAM.</p><button class="btn" data-spin>Крутить</button><button class="btn secondary" data-playback style="margin-top:8px">← Все режимы</button>';
   if(playMode==='rocket') return '<div class="sectionhead"><h2>🚀 Ракета</h2><span class="count">Демо-раунд</span></div><label class="inputlabel" for="rocketStakeInput">Демо-ставка в GRAM</label><input id="rocketStakeInput" type="number" min="0.1" max="10000" step="0.1" value="'+trainingStake+'" '+(rocketRunning?'disabled':'')+' style="width:100%;margin:6px 0 10px"><div class="summary"><div><span>Баланс</span><b>'+fmt(state.bal)+' GRAM</b></div><div><span>Ставка раунда</span><b>'+fmt(trainingStake)+' GRAM</b></div></div><div class="rocket-stage"><div class="rocket-icon" id="rocketIcon">🚀</div><strong id="rocketStatus">Готов к старту</strong><div class="rocket-mult" id="rocketMult">1.00×</div><div class="rocket-sub">Лучший результат: <b id="rocketBest">'+rocketBest.toFixed(2)+'×</b></div></div><p class="note">При запуске ставка списывается с виртуального баланса. Забери результат до завершения полёта; если ракета упадёт, демо-ставка сгорит. GRAM не имеют денежной стоимости.</p><button class="btn" data-rocket>Запустить ракету</button><button class="btn secondary" data-playback style="margin-top:8px">← Все режимы</button>';
   if(playMode==='pvp') return '<div class="sectionhead"><h2>⚔️ PvP Арена</h2><span class="count">Демо-матч</span></div><div class="pvp-box"><div class="fighter">🟠<b>Ты</b><strong id="youScore">0</strong></div><div class="versus">VS</div><div class="fighter">🤖<b>Бот-соперник</b><strong id="botScore">0</strong></div></div><p class="note">Локальная тренировка против компьютера. Другие игроки пока не подключены; матч не влияет на баланс.</p><button class="btn" data-pvp>Начать раунд</button><button class="btn secondary" data-playback>← Все режимы</button>';
   return '<div class="sectionhead"><h2>Play Hub</h2><span class="count">Игровой центр</span></div><div class="hub-banner"><div class="hub-orb">✦</div><div><b>Играй в тренировочных режимах</b><div class="muted">Чёрный · оранжевый · без ставок</div></div></div><div class="gamecards">'+games.map(g=>'<button class="gamecard" data-play="'+g[3]+'"><span class="gameicon">'+g[0]+'</span><b>'+g[1]+'</b><span class="muted">'+g[2]+'</span><span class="game-open">Открыть →</span></button>').join('')+'</div><p class="note">Это первая демо-версия Play Hub. Игры работают локально: без реальных денег, ставок, выплат и онлайн-матчмейкинга.</p>';
@@ -961,6 +964,22 @@ document.addEventListener('click',e=>{
     save();render();
     document.querySelectorAll('.spinsymbol').forEach((el,i)=>{if(wins.has(i))el.classList.add('win')});
     return;
+  }
+  if(d.spin!==undefined){
+    const input=$('spinStakeInput'),parsed=Number(input?.value??spinStake);
+    if(!Number.isFinite(parsed)||parsed<0.1||parsed>10000){toast('Укажи ставку от 0,1 до 10 000 GRAM');return;}
+    spinStake=Math.round(parsed*10)/10;
+    if(state.bal<spinStake){toast('Недостаточно виртуальных GRAM');return;}
+    state.bal=round(state.bal-spinStake);
+    const symbols=['🍒','🍋','🍇','⭐','💎','🔔','7️⃣'];
+    spinSymbols=Array.from({length:9},()=>symbols[Math.floor(Math.random()*symbols.length)]);
+    const counts={};spinSymbols.forEach(x=>counts[x]=(counts[x]||0)+1);
+    const max=Math.max(...Object.values(counts));
+    const payout=max>=4?round(spinStake*4):max>=3?round(spinStake*2):0;
+    if(payout)state.bal=round(state.bal+payout);
+    const net=round(payout-spinStake);
+    spinLast=max>=4?'Совпадение ×4 · '+fmt(payout)+' GRAM':max>=3?'Совпадение ×2 · '+fmt(payout)+' GRAM':'Нет совпадений · −'+fmt(spinStake)+' GRAM';
+    log('game_bet','Spins',-spinStake,'Демо-ставка');if(payout)log('game_win','Spins',payout,'Выплата за совпадение ×'+(max>=4?'4':'2'));save();haptic(payout?'success':'light');render();return;
   }
   if(d.pvp!==undefined){const you=Math.floor(Math.random()*4)+1;const bot=Math.floor(Math.random()*4)+1;$('youScore').textContent=you;$('botScore').textContent=bot;b.textContent=you===bot?'Ничья · ещё раунд':you>bot?'Победа в тренировке · ещё раунд':'Соперник выиграл · ещё раунд';return;}
 
