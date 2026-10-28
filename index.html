@@ -563,8 +563,24 @@ function log(type,name,amount,detail=''){
   state.history=state.history.slice(0,100);
 }
 
+function stopRocketOnNavigate(){
+  if(!rocketRunning) return;
+  rocketRunning=false;
+  if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}
+  log('game_loss','Ракетка',0,'Раунд прерван переходом в другой раздел · ставка потеряна: '+fmt(rocketStake)+' GRAM');
+  save();
+  rocketCooldownUntil=Date.now()+10000;
+  if(rocketCooldownTimer) clearInterval(rocketCooldownTimer);
+  rocketCooldownTimer=setInterval(()=>{
+    const seconds=Math.max(0,Math.ceil((rocketCooldownUntil-Date.now())/1000));
+    const btn=document.querySelector('[data-rocket]');
+    if(btn){btn.textContent=seconds?'Новый запуск через '+seconds+' сек.':'Запустить снова';btn.disabled=seconds>0;}
+    if(seconds<=0){clearInterval(rocketCooldownTimer);rocketCooldownTimer=null;}
+  },250);
+}
+
 function setTab(next){
-  if(next!=='play' && rocketTimer){clearInterval(rocketTimer);rocketTimer=null;rocketRunning=false;}
+  if(next!=='play') stopRocketOnNavigate();
   tab=next;
   $('luckyTab')?.classList.toggle('active',next==='lucky');
   $('marketTab').classList.toggle('active',next==='market');
@@ -881,12 +897,12 @@ document.addEventListener('click',e=>{
 
   if(b.id==='marketTab') return setTab('market');
   if(b.id==='mineTab') return setTab('mine');
-  if(b.id==='playTab'){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode='';return setTab('play');}
+  if(b.id==='playTab'){stopRocketOnNavigate();playMode='';return setTab('play');}
   if(b.id==='profileTab') return setTab('profile');
   if(b.id==='luckyTab') return setTab('lucky');
   if(d.luckyinfo!==undefined){openSheet('<h2>Lucky Buy в MRKT</h2><div class="desc">Это не покупка случайного подарка за фиксированные 25 GRAM. В оригинальном MRKT пользователь предлагает цену ниже цены подарка; шанс зависит от предложения. При проигрыше предусмотрена компенсация карточкой Lucky Buy. В этом проекте ставки, списания баланса и выдача случайных подарков отключены — функция показана только как справка.</div><button class="btn secondary" data-close>Понятно</button>');return;}
-  if(d.play!==undefined){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode=d.play;playRound=0;if(d.play==='mines'){minesStarted=false;minesOver=false;minesCashed=false;openedCells.clear();minesMultiplier=1;}if(d.play==='rocket'){rocketValue=1;rocketCrashAt=0;}render();return;}
-  if(d.playback!==undefined){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode='';minesStarted=false;minesOver=false;minesCashed=false;openedCells.clear();setTab('play');return;}
+  if(d.play!==undefined){stopRocketOnNavigate();playMode=d.play;playRound=0;if(d.play==='mines'){minesStarted=false;minesOver=false;minesCashed=false;openedCells.clear();minesMultiplier=1;}if(d.play==='rocket'){rocketValue=1;rocketCrashAt=0;}render();return;}
+  if(d.playback!==undefined){stopRocketOnNavigate();playMode='';minesStarted=false;minesOver=false;minesCashed=false;openedCells.clear();setTab('play');return;}
   if(d.cashout!==undefined){if(minesOver||!minesStarted||openedCells.size===0)return;minesOver=true;minesCashed=true;const payout=round(trainingStake*minesMultiplier);state.bal=round(state.bal+payout);log('game_win','Мины',payout,'Возврат демо-ставки × '+minesMultiplier.toFixed(2));save();haptic('success');toast('Забрал '+fmt(payout)+' GRAM · демо-баланс');render();return;}
   if(d.newmines!==undefined){minesStarted=false;minesOver=false;minesCashed=false;openedCells.clear();minesSet.clear();minesMultiplier=1;render();return;}
   if(d.startmines!==undefined){const input=$('trainingStakeInput');const mineSelect=$('mineCountSelect');if(input){const n=Number(input.value);if(Number.isFinite(n)&&n>=0.1&&n<=10000)trainingStake=Math.round(n*10)/10;else{toast('Укажи значение от 0,1 до 10 000 GRAM');return;}}if(mineSelect)minesCount=Number(mineSelect.value)||3;if(state.bal<trainingStake){toast('Недостаточно GRAM на демо-балансе');return;}state.bal=round(state.bal-trainingStake);log('game_bet','Мины',-trainingStake,'Демо-ставка · '+minesCount+' мин');save();startMines();haptic('light');render();return;}
