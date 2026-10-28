@@ -543,6 +543,16 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
 .bs-main{font-size:16px;padding:14px}
 .bs-topup{background:#ffd60a;color:#111}
 .bs-topup i{color:#111}
+.mk-art{background:radial-gradient(circle at 50% 45%,var(--mk-c1) 0%,var(--mk-c2) 100%)}
+.mk-art:before{display:none}
+.mk-p{position:absolute;font-style:normal;opacity:.13;filter:grayscale(.4) brightness(1.6);pointer-events:none;user-select:none}
+.mk-glow{position:absolute;width:62%;aspect-ratio:1;border-radius:50%;left:19%;top:17%;
+  background:radial-gradient(circle,#ffffff44 0%,#ffffff00 70%)}
+.mk-art .emoji{font-size:72px;filter:drop-shadow(0 8px 12px #0007) saturate(1.1)}
+.bs-card .mk-art .emoji{font-size:58px}
+.mk-buy{gap:6px}
+.mk-price{min-width:0;padding:9px 4px;font-size:13px;white-space:nowrap;overflow:hidden}
+.mk-cart,.mk-buy .lucky-mini{flex:0 0 38px;width:38px;min-width:38px;padding:0}
 </style>
 </head>
 <body>
@@ -795,11 +805,22 @@ function empty(icon,title,desc){
     <b>${esc(title)}</b><div style="margin-top:6px;font-size:12px">${esc(desc)}</div></div>`;
 }
 
-const MK_HUES=[205,28,150,275,340,48,185,0];
+const MK_BG=[['#6f7d5c','#394331'],['#d9904f','#9a5322'],['#42928c','#1f5857'],['#4b84c4','#25497f'],
+  ['#8b57c8','#47267f'],['#c85c80','#7d2848'],['#4eaf6c','#256b3a'],['#d6a73c','#85611a'],['#5b6fd0','#2c357f'],['#c9684a','#7c3320']];
+const MK_PAT=[[8,10,-18,22],[50,6,12,26],[86,14,-8,20],[24,32,20,24],[68,34,-14,28],[6,58,10,22],
+  [44,52,-22,20],[90,56,16,24],[26,80,-10,26],[64,82,18,22],[92,88,-20,20],[10,90,14,18]];
+function mkPattern(index){
+  const e=gifts[index][0];
+  return MK_PAT.map(([x,y,r,sz])=>`<i class="mk-p" style="left:${x}%;top:${y}%;font-size:${sz}px;transform:rotate(${r}deg)">${e}</i>`).join('');
+}
+function mkBgStyle(index){
+  const c=MK_BG[index%MK_BG.length];
+  return `--mk-c1:${c[0]};--mk-c2:${c[1]}`;
+}
 function mkArt(index){
-  const g=gifts[index], h=MK_HUES[index%MK_HUES.length];
-  return `<div class="mk-art" style="--mk-c1:hsl(${h} 70% 62%);--mk-c2:hsl(${h} 65% 38%)" aria-label="${esc(g[1])}">
-    <span class="emoji">${g[0]}</span><span class="mk-badge">Minted</span>`;
+  const g=gifts[index];
+  return `<div class="mk-art" style="${mkBgStyle(index)}" aria-label="${esc(g[1])}">
+    ${mkPattern(index)}<span class="mk-glow"></span><span class="emoji">${g[0]}</span><span class="mk-badge">Minted</span>`;
 }
 
 function card(x){
@@ -812,7 +833,7 @@ function card(x){
       <div class="mk-num">#${x.n} · ${change(x.g)}</div>
       ${x.own
         ? '<button class="btn secondary mk-own" data-unlist="'+x.id+'">Снять лот</button>'
-        : '<div class="mk-buy"><button class="mk-price" data-buynow="'+x.id+'" aria-label="Купить за '+fmt(x.p)+'"><i>◆</i>'+fmt(x.p)+'</button>'+(inCart(x.id)
+        : '<div class="mk-buy"><button class="mk-price" data-buynow="'+x.id+'" aria-label="Купить за '+fmt(x.p)+'"><i>◆</i>'+fmt(x.p>=1000?Math.round(x.p):x.p)+'</button>'+(inCart(x.id)
           ? '<button class="mk-cart in" data-cartremove="'+x.id+'" aria-label="Убрать из корзины">🗑️</button>'
           : '<button class="mk-cart" data-cart="'+x.id+'" aria-label="В корзину">🛒</button>')+'<button class="lucky-mini" data-lucky="'+x.id+'" aria-label="Lucky Buy" title="Lucky Buy"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff" aria-hidden="true"><circle cx="12" cy="7.5" r="4.2"/><circle cx="7" cy="14" r="4.2"/><circle cx="17" cy="14" r="4.2"/><path d="M12 13v8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button></div>'}
     </div>
@@ -1190,9 +1211,8 @@ function confirmBuy(id){
   if(!x||x.own) return;
   const g=gifts[x.g];
   const enough=state.bal>=x.p;
-  const h=MK_HUES[x.g%MK_HUES.length];
 
-  openSheet(`<div class="bs-card"><div class="mk-art" style="--mk-c1:hsl(${h} 70% 62%);--mk-c2:hsl(${h} 65% 38%)"><span class="emoji">${g[0]}</span></div>
+  openSheet(`<div class="bs-card"><div class="mk-art" style="${mkBgStyle(x.g)}">${mkPattern(x.g)}<span class="mk-glow"></span><span class="emoji">${g[0]}</span></div>
       <div class="bs-info"><b>${esc(g[1])}</b><span>#${x.n}</span></div></div>
     <h2 class="bs-title">Купить этот предмет?</h2>
     <div class="bs-price"><i>◆</i>${fmt(x.p)}</div>
