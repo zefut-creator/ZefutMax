@@ -464,7 +464,7 @@ let playMode=''; let playRound=0; let rocketTimer=null; let rocketValue=1; let r
 let minesCount=3, minesSet=new Set(), openedCells=new Set(), minesOver=false;
 let spinStake=10, spinSymbols=['🍒','🍋','⭐','🍒','💎','🍋','⭐','🍒','💎'], spinLast='Нажми «Крутить».';
 let spinSymbols=['🍒','🍋','⭐','💎','🔔','🍇'], spinBoard=['🍒','⭐','🍋','🍒','💎','⭐','🔔','🍋','🍇'], spinLastWin=0, spinRounds=0;
-let trainingStake=10, rocketStake=10, minesMultiplier=1, minesCashed=false, minesStarted=false;
+let trainingStake=10, rocketStake=10, minesMultiplier=1, minesCashed=false, minesStarted=false;\nlet spinSymbols=['🍒','⭐','💎'];let spinMessage='Готово к вращению.';
 let toastTimer, state;
 let liveCatalog=null, liveCatalogError='', liveCatalogLoading=true;
 
@@ -715,11 +715,12 @@ function startMines(){
   while(minesSet.size<minesCount) minesSet.add(Math.floor(Math.random()*25));
 }
 
-function renderPlay(){
+function renderPlay(){\n  if(playMode==='spins') return '<div class="sectionhead"><h2>🎰 Spins</h2><span class="count">Демо-режим</span></div><p class="note">Три барабана: совпадения дают виртуальные GRAM.</p><label class="inputlabel" for="spinStakeInput">Демо-ставка в GRAM</label><input id="spinStakeInput" type="number" min="0.1" max="10000" step="0.1" value="'+trainingStake+'" style="width:100%;margin:6px 0 10px"><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0">'+spinSymbols.map(x=>'<div class="gamecell" style="font-size:36px;min-height:76px;display:grid;place-items:center">'+x+'</div>').join('')+'</div><div class="summary"><div><span>Баланс</span><b>'+fmt(state.bal)+' GRAM</b></div><div><span>Последний результат</span><b>'+spinMessage+'</b></div></div><button class="btn" data-spin>Крутить</button><button class="btn secondary" data-playback style="margin-top:8px">← Все режимы</button>';\n
   const games=[
     ['💣','Мины','Открывай клетки и тренируй внимательность.','mines'],
     ['🚀','Ракетка','Следи за полётом ракеты и останови раунд в любой момент.','rocket'],
     ['⚔️','PvP Арена','Тренировочный матч против демо-соперника.','pvp'],
+    ['🎰','Spins','Совпадения символов и множители.','spins'],
     ['🎰','Spins','Совпадения, каскады и множители.','spins'],
     ['🎰','Spins','Совпадения, каскады и бонусные символы.','spins']
   ];
@@ -981,7 +982,7 @@ document.addEventListener('click',e=>{
     spinLast=max>=4?'Совпадение ×4 · '+fmt(payout)+' GRAM':max>=3?'Совпадение ×2 · '+fmt(payout)+' GRAM':'Нет совпадений · −'+fmt(spinStake)+' GRAM';
     log('game_bet','Spins',-spinStake,'Демо-ставка');if(payout)log('game_win','Spins',payout,'Выплата за совпадение ×'+(max>=4?'4':'2'));save();haptic(payout?'success':'light');render();return;
   }
-  if(d.pvp!==undefined){const you=Math.floor(Math.random()*4)+1;const bot=Math.floor(Math.random()*4)+1;$('youScore').textContent=you;$('botScore').textContent=bot;b.textContent=you===bot?'Ничья · ещё раунд':you>bot?'Победа в тренировке · ещё раунд':'Соперник выиграл · ещё раунд';return;}
+  if(d.spin!==undefined){const input=$('spinStakeInput');const parsed=Number(input?.value??trainingStake);if(!Number.isFinite(parsed)||parsed<0.1||parsed>10000){toast('Укажи ставку от 0,1 до 10 000 GRAM');return;}trainingStake=Math.round(parsed*10)/10;if(state.bal<trainingStake){toast('Недостаточно GRAM на демо-балансе');return;}state.bal=round(state.bal-trainingStake);log('game_bet','Spins',-trainingStake,'Демо-ставка');spinSymbols=['🍒','⭐','💎','🔔','🍀','7️⃣'].sort(()=>Math.random()-.5).slice(0,3);const counts={};spinSymbols.forEach(x=>counts[x]=(counts[x]||0)+1);const max=Math.max(...Object.values(counts));const mult=max===3?5:max===2?1.5:0;const payout=round(trainingStake*mult);if(payout){state.bal=round(state.bal+payout);log('game_win','Spins',payout,'Совпадение × '+mult.toFixed(2));spinMessage='×'+mult.toFixed(2)+' · +'+fmt(payout)+' GRAM';toast('Выигрыш демо-GRAM: '+fmt(payout));}else{log('game_loss','Spins',0,'Совпадений нет');spinMessage='Нет совпадений';toast('В этот раз без совпадений');}save();haptic(payout?'success':'light');render();return;}\n  if(d.pvp!==undefined){const you=Math.floor(Math.random()*4)+1;const bot=Math.floor(Math.random()*4)+1;$('youScore').textContent=you;$('botScore').textContent=bot;b.textContent=you===bot?'Ничья · ещё раунд':you>bot?'Победа в тренировке · ещё раунд':'Соперник выиграл · ещё раунд';return;}
 
   if(b.id==='theme'){
     state.theme=state.theme==='dark'?'light':'dark';
