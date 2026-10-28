@@ -531,6 +531,69 @@ const gifts = [
 ["🐍","Snake Box",3.63,0]
 ];
 
+const SUPABASE_URL = 'https://pfmoxznzegwqjunayvph.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_zvdqQkAzOl9wTVE9E5SeCw_29U0CYOC';
+const SUPABASE_TABLE = 'market_listings';
+const SHARED_MIGRATION_KEY = 'zefutmax_shared_migrated_v1';
+const sellerId = (() => {
+  const telegramId = tg?.initDataUnsafe?.user?.id;
+  if (telegramId) return 'tg:' + String(telegramId);
+  let id = localStorage.getItem('zefutmax_seller_id');
+  if (!id) {
+    id = 'web:' + (crypto?.randomUUID?.() || (Date.now() + '-' + Math.random().toString(36).slice(2)));
+    localStorage.setItem('zefutmax_seller_id', id);
+  }
+  return id;
+})();
+const supabaseHeaders = () => ({
+  apikey: SUPABASE_KEY,
+  Authorization: 'Bearer ' + SUPABASE_KEY,
+  'Content-Type': 'application/json'
+});
+async function sharedRequest(path, options={}) {
+  const response = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
+    ...options,
+    headers: {...supabaseHeaders(), ...(options.headers||{})}
+  });
+  if (!response.ok) throw new Error('Supabase ' + response.status + ': ' + (await response.text()).slice(0,180));
+  return response.status === 204 ? null : response.json().catch(()=>null);
+}
+async function publishSharedListing(giftIndex, serial, price) {
+  const rows = await sharedRequest(SUPABASE_TABLE, {
+    method:'POST',
+    headers:{Prefer:'return=representation'},
+    body:JSON.stringify({gift_name:gifts[giftIndex][1],price:round(price),seller_id:sellerId})
+  });
+  return Array.isArray(rows) && rows[0] ? rows[0] : null;
+}
+async function refreshSharedListings() {
+  try {
+    if (!localStorage.getItem(SHARED_MIGRATION_KEY)) {
+      const localOwn = state.mk.filter(x=>x.own);
+      for (const x of localOwn) {
+        await publishSharedListing(x.g, x.n, x.p);
+      }
+      localStorage.setItem(SHARED_MIGRATION_KEY, '1');
+    }
+    const rows = await sharedRequest(SUPABASE_TABLE + '?select=id,gift_name,price,seller_id,created_at&order=created_at.desc');
+    if (!Array.isArray(rows)) return;
+    const shared = rows.map(row => {
+      const giftIndex = gifts.findIndex(g=>g[1]===row.gift_name);
+      if (giftIndex < 0) return null;
+      return {id: 'sb-' + row.id, dbId:row.id, g:giftIndex, n:Number(row.id), p:round(row.price), own:String(row.seller_id)===sellerId, shared:true};
+    }).filter(Boolean);
+    const localNonShared = state.mk.filter(x=>!x.shared);
+    state.mk = [...localNonShared.filter(x=>!x.own), ...shared];
+    save();
+    if (tab==='market' || tab==='mine') render();
+  } catch (e) {
+    console.warn('Shared market unavailable:', e);
+    if (!window.__zefutSharedToastShown) {
+      window.__zefutSharedToastShown = true;
+      toast('Общий маркет пока не подключён: проверь настройки Supabase');
+    }
+  }
+}
 const STORAGE_KEY = 'zefutmax_market_v2';
 const round = n => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
 const fmt = n => Number(n).toLocaleString('ru-RU',{maximumFractionDigits:2});
@@ -1004,14 +1067,22 @@ function listMine(id){
   }
 
   state.mine=state.mine.filter(y=>y.id!==x.id);
-  state.mk.push({id:++state.nid,g:x.g,n:x.n,p:round(p),own:true});
-  log('listing',gifts[x.g][1],0,'Демо-лот выставлен');
+  const localListing={id:++state.nid,g:x.g,n:x.n,p:round(p),own:true};
+  state.mk.push(localListing);
+  log('listing',gifts[x.g][1],0,'Лот выставлен');
   save();
   closeSheet();
   setTab('mine');
   mineTab='listed';
   render();
-  toast('Демо-лот выставлен');
+  toast('Публикую лот в общий маркет…');
+  publishSharedListing(x.g,x.n,p).then(row=>{
+    if(row){
+      state.mk=state.mk.filter(y=>y.id!==localListing.id);
+      state.mk.push({id:'sb-'+row.id,dbId:row.id,g:x.g,n:Number(row.id),p:round(row.price),own:true,shared:true});
+      save(); render(); toast('Лот опубликован для всех');
+    }
+  }).catch(e=>{console.warn(e);toast('Лот сохранён только на этом устройстве: ошибка общего маркета');});
 }
 
 function unlist(id){
@@ -1021,9 +1092,11 @@ function unlist(id){
   state.mk=state.mk.filter(y=>y.id!==x.id);
   state.mine.push({id:++state.nid,g:x.g,n:x.n,buy:x.p});
   log('unlist',gifts[x.g][1],0,'Лот снят с продажи');
-  save();
-  render();
-  toast('Лот снят');
+  save(); render();
+  if(x.shared && x.dbId){
+    sharedRequest(SUPABASE_TABLE+'?id=eq.'+encodeURIComponent(x.dbId)+'&seller_id=eq.'+encodeURIComponent(sellerId),{method:'DELETE'})
+      .then(()=>refreshSharedListings()).catch(e=>{console.warn(e);toast('Снятие не синхронизировалось: нужны права DELETE в Supabase');});
+  } else toast('Лот снят');
 }
 
 function doBuy(id){
@@ -1038,11 +1111,11 @@ function doBuy(id){
   state.mk=state.mk.filter(y=>y.id!==x.id);
   state.mine.push({id:++state.nid,g:x.g,n:x.n,buy:x.p});
   log('buy',gifts[x.g][1],-x.p,'Демо-покупка');
-  save();
-  closeSheet();
-  render();
-  haptic('success');
-  toast('Подарок добавлен в демо-коллекцию');
+  save(); closeSheet(); render(); haptic('success');
+  if(x.shared && x.dbId){
+    sharedRequest(SUPABASE_TABLE+'?id=eq.'+encodeURIComponent(x.dbId),{method:'DELETE'})
+      .then(()=>refreshSharedListings()).catch(e=>{console.warn(e);toast('Демо-покупка локальная; общий лот остался в базе');});
+  } else toast('Подарок добавлен в демо-коллекцию');
 }
 
 function editListing(id){
@@ -1123,7 +1196,8 @@ document.addEventListener('click',e=>{
     save();render();return;
   }
 
-  if(d.reloadcatalog){ liveCatalogLoading=true; liveCatalog=null; render(); loadLiveCatalog(); return; }
+  if(d.reloadcatalog){ liveCatalogLoading=true; liveCatalog=null; render(); refreshSharedListings();
+loadLiveCatalog(); return; }
   if(d.upgrader!==undefined){
     const options=(liveCatalog||[]).slice(0,12);
     openSheet('<div class="market-kicker">ZEFUTMAX TOOLS</div><h2>Апгрейдер подарков</h2><div class="desc">Демо-механика для интерфейса. Улучшение не меняет настоящий подарок.</div><div class="upgrade-preview"><div class="upgrade-orb">🎁</div><span>→</span><div class="upgrade-orb target">💎</div></div><label class="muted" for="upgradeCost">Сумма GRAM</label><input id="upgradeCost" type="number" min="1" max="10000" value="100" style="width:100%;margin:7px 0 12px"><label class="muted" for="upgradeTarget">Цель улучшения</label><select id="upgradeTarget" style="width:100%;margin:7px 0 12px">'+options.map(g=>'<option value="'+esc(g.id)+'">'+esc(g.stickerEmoji||'🎁')+' '+esc(g.id)+' · '+fmt(g.stars)+' Stars</option>').join('')+'</select><button class="btn" data-runupgrade>Показать результат</button><div class="muted" style="margin-top:10px">Используется только виртуальный баланс GRAM.</div><button class="btn secondary" data-close style="margin-top:8px">Закрыть</button>');
