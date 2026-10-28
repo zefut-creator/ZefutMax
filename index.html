@@ -526,6 +526,7 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
 .mk-price i{font-style:normal;color:var(--accent)}
 .mk-cart{width:44px;border-radius:12px;border:0;background:var(--accent);color:#fff;font-size:17px;cursor:pointer}
 .mk-own{margin-top:auto}
+.mk-cart.in{background:var(--green);color:#052;font-weight:800}
 </style>
 </head>
 <body>
@@ -668,6 +669,7 @@ function seed(){
     mk:listings,
     nid:1001,
     favs:[],
+    cart:[],
     history:[],
     theme:'dark'
   };
@@ -677,6 +679,7 @@ function validState(x){
   if(!x || !Number.isFinite(x.bal) || x.bal<0 ||
     !Array.isArray(x.mk) || !Array.isArray(x.mine) ||
     !Array.isArray(x.favs) || !Array.isArray(x.history) ||
+    (x.cart!==undefined && !(Array.isArray(x.cart) && x.cart.every(Number.isFinite))) ||
     !['dark','light'].includes(x.theme) ||
     !Number.isFinite(x.nid)) return false;
 
@@ -797,7 +800,7 @@ function card(x){
       <div class="mk-num">#${x.n} · ${change(x.g)}</div>
       ${x.own
         ? '<button class="btn secondary mk-own" data-unlist="'+x.id+'">Снять лот</button>'
-        : '<div class="mk-buy"><div class="mk-price"><i>◆</i>'+fmt(x.p)+'</div><button class="mk-cart" data-buy="'+x.id+'" aria-label="Купить">🛒</button><button class="lucky-mini" data-lucky="'+x.id+'" aria-label="Lucky Buy" title="Lucky Buy"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff" aria-hidden="true"><circle cx="12" cy="7.5" r="4.2"/><circle cx="7" cy="14" r="4.2"/><circle cx="17" cy="14" r="4.2"/><path d="M12 13v8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button></div>'}
+        : '<div class="mk-buy"><div class="mk-price"><i>◆</i>'+fmt(x.p)+'</div><button class="mk-cart'+(inCart(x.id)?' in':'')+'" data-cart="'+x.id+'" aria-label="В корзину">'+(inCart(x.id)?'✓':'🛒')+'</button><button class="lucky-mini" data-lucky="'+x.id+'" aria-label="Lucky Buy" title="Lucky Buy"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff" aria-hidden="true"><circle cx="12" cy="7.5" r="4.2"/><circle cx="7" cy="14" r="4.2"/><circle cx="17" cy="14" r="4.2"/><path d="M12 13v8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button></div>'}
     </div>
   </article>`;
 }
@@ -856,6 +859,22 @@ function renderMine(){
         <div class="actions"><button class="btn" data-sell="${x.id}">Продать</button></div>
       </div>`).join(''):
       empty('🎁','Подарков пока нет','Добавь подарок в коллекцию из маркета.');
+  }else if(mineTab==='cart'){
+    const items=cleanCart().map(id=>find(state.mk,id)).filter(Boolean);
+    const sum=round(items.reduce((a,x)=>a+x.p,0));
+    body=items.length?items.map(x=>`
+      <div class="listrow">
+        ${art(x.g)}
+        <div class="info"><b>${esc(gifts[x.g][1])}</b>
+          <div class="muted">#${x.n} · ${fmt(x.p)} GRAM</div>
+        </div>
+        <div class="actions">
+          <button class="btn" data-cartbuy="${x.id}">Купить</button>
+          <button class="btn secondary" data-cartremove="${x.id}">Убрать</button>
+        </div>
+      </div>`).join('')+`<div class="summary" style="margin-top:12px"><div><span>Итого</span><b>${fmt(sum)} GRAM</b></div><div><span>Баланс</span><b>${fmt(state.bal)} GRAM</b></div></div>
+      <button class="btn" data-cartbuyall style="margin-top:10px">Купить всё · ${fmt(sum)} GRAM</button>`:
+      empty('🛒','Корзина пуста','Нажми на корзину у подарка на маркете, чтобы добавить его сюда.');
   }else{
     body=listings.length?listings.map(x=>`
       <div class="listrow">
@@ -880,6 +899,7 @@ function renderMine(){
     <div class="tabs">
       <button class="tab ${mineTab==='owned'?'active':''}" data-minetab="owned">В коллекции</button>
       <button class="tab ${mineTab==='listed'?'active':''}" data-minetab="listed">На продаже</button>
+      <button class="tab ${mineTab==='cart'?'active':''}" data-minetab="cart">Корзина${cleanCart().length?' ('+cleanCart().length+')':''}</button>
     </div>${body}`;
 }
 
@@ -1227,6 +1247,41 @@ function unlist(id){
   toast('Лот снят');
 }
 
+function cleanCart(){
+  state.cart=(state.cart||[]).filter(id=>state.mk.some(y=>y.id===id&&!y.own));
+  return state.cart;
+}
+function inCart(id){return (state.cart||[]).includes(Number(id))}
+
+function addToCart(id){
+  const x=find(state.mk,id);
+  if(!x||x.own) return;
+  if(inCart(x.id)){toast('Уже в корзине');return;}
+  state.cart=[...(state.cart||[]),x.id];
+  save();render();haptic('success');
+  toast('Добавлено в корзину');
+}
+
+function removeFromCart(id){
+  state.cart=(state.cart||[]).filter(c=>c!==Number(id));
+  save();render();
+}
+
+function buyAllCart(){
+  const items=cleanCart().map(id=>find(state.mk,id)).filter(Boolean);
+  const total=round(items.reduce((a,x)=>a+x.p,0));
+  if(!items.length) return;
+  if(state.bal<total){toast('Недостаточно средств');return;}
+  items.forEach(x=>{
+    state.bal=round(state.bal-x.p);
+    state.mk=state.mk.filter(y=>y.id!==x.id);
+    state.mine.push({id:++state.nid,g:x.g,n:x.n,buy:x.p});
+    log('buy',gifts[x.g][1],-x.p,'Демо-покупка из корзины');
+  });
+  cleanCart();save();render();haptic('success');
+  toast('Куплено: '+items.length+' шт. Подарки в коллекции');
+}
+
 function doBuy(id){
   const x=find(state.mk,id);
   if(!x||x.own||!Number.isFinite(x.p)||x.p<=0) return;
@@ -1239,6 +1294,7 @@ function doBuy(id){
   state.mk=state.mk.filter(y=>y.id!==x.id);
   state.mine.push({id:++state.nid,g:x.g,n:x.n,buy:x.p});
   log('buy',gifts[x.g][1],-x.p,'Демо-покупка');
+  cleanCart();
   save();
   closeSheet();
   render();
@@ -1395,6 +1451,10 @@ document.addEventListener('click',e=>{
     return;
   }
 
+  if(d.cart) return addToCart(d.cart);
+  if(d.cartbuy) return doBuy(d.cartbuy);
+  if(d.cartremove) return removeFromCart(d.cartremove);
+  if(d.cartbuyall!==undefined) return buyAllCart();
   if(d.buy) return confirmBuy(d.buy);
   if(d.confirmbuy) return doBuy(d.confirmbuy);
   if(d.close!==undefined) return closeSheet();
