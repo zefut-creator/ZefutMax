@@ -413,6 +413,12 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
 .rl-arrow{position:absolute;left:50%;width:20px;height:14px;margin-left:-10px;background:var(--text);z-index:2}
 .rl-arrow.top{top:0;clip-path:polygon(0 0,100% 0,50% 100%)}
 .rl-arrow.bottom{bottom:0;clip-path:polygon(50% 0,0 100%,100% 100%)}
+  /* Маленькая кнопка Lucky Buy */
+.buyrow{display:flex;gap:6px;margin-top:auto}
+.buyrow .btn{flex:1;margin-top:0}
+.lucky-mini{flex:none;width:42px;border:0;border-radius:12px;background:#3fb5a5;display:grid;place-items:center;padding:0}
+.lucky-mini:active{transform:scale(.94)}
+.lucky-mini:hover{filter:brightness(1.1)}
 
 </style>
 </head>
@@ -673,7 +679,7 @@ function card(x){
     <div class="price">${fmt(x.p)} <small>GRAM</small></div>
     ${x.own
       ? '<button class="btn secondary" data-unlist="'+x.id+'">Снять лот</button>'
-      : '<button class="btn" data-buy="'+x.id+'">Купить</button><button class="btn lucky-btn" data-lucky="'+x.id+'">🍀 Lucky Buy</button>'}
+      : '<div class="buyrow"><button class="btn" data-buy="'+x.id+'">Купить</button><button class="lucky-mini" data-lucky="'+x.id+'" aria-label="Lucky Buy" title="Lucky Buy"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff" aria-hidden="true"><circle cx="12" cy="7.5" r="4.2"/><circle cx="7" cy="14" r="4.2"/><circle cx="17" cy="14" r="4.2"/><path d="M12 13v8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button></div>'}
   </article>`;
 }
 
