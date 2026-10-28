@@ -399,6 +399,29 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
 .upgrade-orb.target{border-color:#9e75ff77;background:radial-gradient(circle,#9e75ff35,transparent 70%),var(--panel2)}
 .upgrade-preview>span{color:var(--accent);font-size:22px;font-weight:900}
 
+
+/* Compact NFT-first view: keep the collectible grid in the first screen */
+header{padding-top:calc(7px + env(safe-area-inset-top));padding-bottom:6px}
+header .subhead,header .topactions,header .toolbar,header .filters,
+.demo-banner,nav{display:none!important}
+header .top{justify-content:flex-start}
+header .brand .logo{width:34px;height:34px;border-radius:10px}
+header .brand .logo svg{width:27px;height:27px}
+h1{font-size:17px}
+main{padding:8px 10px 16px}
+.live-market{margin-top:0}
+.market-heading{margin:0 0 8px;align-items:center}
+.market-heading h2{font-size:17px;margin:0}
+.market-caption,.market-kicker{display:none}
+.market-grid{gap:8px}
+.market-card{padding:6px;border-radius:13px}
+.market-art{border-radius:10px}
+.market-price{font-size:16px;margin:6px 0 7px}
+.market-details{padding:7px;border-radius:9px}
+.market-state{margin:8px 0;padding:12px;font-size:12px}
+.market-tools{display:none!important}
+@media(min-width:560px){main{padding:12px 16px}.market-grid{gap:10px}}
+
 </style>
 </head>
 <body>
