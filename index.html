@@ -583,13 +583,17 @@ async function refreshSharedWallet() {
 }
 async function refreshSharedListings() {
   try {
-    if (!localStorage.getItem(SHARED_MIGRATION_KEY)) {
-      const localOwn = state.mk.filter(x=>x.own);
-      for (const x of localOwn) {
-        await publishSharedListing(x.g, x.n, x.p);
+    // Publish locally saved own listings that are not yet in the shared database.
+    // Do this even if an older app version already set the migration flag.
+    const localOwn = state.mk.filter(x=>x.own && !x.shared && !x.dbId);
+    for (const x of localOwn) {
+      const row = await publishSharedListing(x.g, x.n, x.p);
+      if (row) {
+        state.mk = state.mk.filter(y=>String(y.id)!==String(x.id));
+        save();
       }
-      localStorage.setItem(SHARED_MIGRATION_KEY, '1');
     }
+    localStorage.setItem(SHARED_MIGRATION_KEY, '1');
     const rows = await sharedRequest(SUPABASE_TABLE + '?select=id,gift_name,price,seller_id,created_at&order=created_at.desc');
     if (!Array.isArray(rows)) return;
     const shared = rows.map(row => {
