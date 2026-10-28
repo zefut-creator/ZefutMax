@@ -408,6 +408,16 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
   .gamecell{touch-action:manipulation;contain:layout paint}
   .crystal-half,.crystal-inner-bomb,.crystal-rain-shard{backface-visibility:hidden;will-change:transform,opacity}
 }
+/* Restore visible falling crystal shards; explicit inline positions avoid selector collisions */
+.crystal-rain-shard{position:absolute;z-index:4;top:-12%;left:var(--sx);width:var(--sw);height:var(--sh);background:linear-gradient(135deg,#fff4bd,#ff9a1c 58%,#a93a13);clip-path:polygon(50% 0,100% 38%,62% 100%,0 64%);filter:drop-shadow(0 0 5px #ff9a22);opacity:0;animation:crystal-shard-fall var(--sd) cubic-bezier(.2,.65,.3,1) var(--delay) both}
+.crystal-rain-shard:nth-child(1){--sx:5%;--sw:12px;--sh:22px;--sd:1.1s;--delay:0s}
+.crystal-rain-shard:nth-child(2){--sx:16%;--sw:8px;--sh:17px;--sd:1.25s;--delay:.06s}
+.crystal-rain-shard:nth-child(3){--sx:27%;--sw:14px;--sh:24px;--sd:1.05s;--delay:.12s}
+.crystal-rain-shard:nth-child(4){--sx:38%;--sw:9px;--sh:19px;--sd:1.3s;--delay:.03s}
+.crystal-rain-shard:nth-child(5){--sx:49%;--sw:13px;--sh:23px;--sd:1.18s;--delay:.15s}
+.crystal-rain-shard:nth-child(6){--sx:61%;--sw:8px;--sh:16px;--sd:1.32s;--delay:.08s}
+.crystal-rain-shard:nth-child(7){--sx:73%;--sw:12px;--sh:21px;--sd:1.12s;--delay:.2s}
+.crystal-rain-shard:nth-child(8){--sx:86%;--sw:10px;--sh:18px;--sd:1.28s;--delay:.1s}
 /* Light-theme black raindrops during the end-of-round effect */
 :root[data-theme="light"] .blast-overlay{background:linear-gradient(180deg,#f8f7fbe8,#e8e4eee8)}
 :root[data-theme="light"] .crystal-rain-shard{display:none}
