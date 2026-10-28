@@ -1100,22 +1100,8 @@ async function loadLiveCatalog(){
     liveCatalog=data.gifts;
     liveCatalogError='';
   }catch(error){
-    // Offline fallback: keep the gift showcase populated even if Telegram API
-    // or the Vercel environment variable is not configured yet. Values below
-    // are illustrative and are clearly labelled as a demo catalog.
-    liveCatalog=[
-      {id:'fallback-1',stars:15,stickerEmoji:'🎁',premiumOnly:false,remainingCount:null,previewFileId:null,thumbnailFileId:null,stickerFileId:null,stickerType:'static'},
-      {id:'fallback-2',stars:25,stickerEmoji:'🌹',premiumOnly:false,remainingCount:null,previewFileId:null,thumbnailFileId:null,stickerFileId:null,stickerType:'static'},
-      {id:'fallback-3',stars:50,stickerEmoji:'💝',premiumOnly:false,remainingCount:null,previewFileId:null,thumbnailFileId:null,stickerFileId:null,stickerType:'static'},
-      {id:'fallback-4',stars:50,stickerEmoji:'🎂',premiumOnly:false,remainingCount:null,previewFileId:null,thumbnailFileId:null,stickerFileId:null,stickerType:'static'},
-      {id:'fallback-5',stars:100,stickerEmoji:'🐱',premiumOnly:false,remainingCount:null,previewFileId:null,thumbnailFileId:null,stickerFileId:null,stickerType:'static'},
-      {id:'fallback-6',stars:100,stickerEmoji:'🧸',premiumOnly:false,remainingCount:null,previewFileId:null,thumbnailFileId:null,stickerFileId:null,stickerType:'static'},
-      {id:'fallback-7',stars:100,stickerEmoji:'💐',premiumOnly:false,remainingCount:null,previewFileId:null,thumbnailFileId:null,stickerFileId:null,stickerType:'static'},
-      {id:'fallback-8',stars:250,stickerEmoji:'🚀',premiumOnly:false,remainingCount:null,previewFileId:null,thumbnailFileId:null,stickerFileId:null,stickerType:'static'},
-      {id:'fallback-9',stars:500,stickerEmoji:'💎',premiumOnly:true,remainingCount:null,previewFileId:null,thumbnailFileId:null,stickerFileId:null,stickerType:'static'},
-      {id:'fallback-10',stars:1000,stickerEmoji:'👑',premiumOnly:true,remainingCount:null,previewFileId:null,thumbnailFileId:null,stickerFileId:null,stickerType:'static'}
-    ];
-    liveCatalogError='Демо-каталог: цены примерные, данные Telegram API пока недоступны.';
+    liveCatalog=null;
+    liveCatalogError=error?.message||'Не удалось загрузить каталог NFT-подарков Telegram.';
   }finally{
     liveCatalogLoading=false;
     if(tab==='market') render();
