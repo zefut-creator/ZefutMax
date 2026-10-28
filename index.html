@@ -1093,7 +1093,7 @@ function listMine(id){
   toast('Публикую лот в общий маркет…');
   sharedRequest('rpc/create_market_listing',{
     method:'POST',
-    body:JSON.stringify({p_gift_name:gifts[x.g][1],p_serial:Number(x.n),p_price:round(p),p_seller_id:sellerId})
+    body:JSON.stringify({p_gift_name:gifts[x.g][1],p_serial:Number(x.n),p_price:round(p),p_seller_id:sellerId,p_seller_balance:round(state.bal)})
   }).then(async result=>{
     state.mk=state.mk.filter(y=>y.id!==localListing.id);
     await refreshSharedListings();
