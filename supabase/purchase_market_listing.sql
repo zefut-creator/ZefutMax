@@ -136,7 +136,7 @@ grant execute on function public.cancel_market_listing(bigint,text) to anon, aut
 grant execute on function public.purchase_market_listing(bigint,text,numeric) to anon, authenticated;
 
 
--- Create a shared listing and initialize the seller's shared wallet.
+-- Create/cancel shared listings and initialize the seller's shared wallet.
 create or replace function public.create_market_listing(
   p_gift_name text,
   p_serial bigint,
@@ -146,10 +146,10 @@ create or replace function public.create_market_listing(
 ) returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = ''
 as $$
 declare
-  listing_id bigint;
+  new_listing_id bigint;
 begin
   if p_seller_id is null or length(trim(p_seller_id)) < 3 then
     raise exception 'Invalid seller';
@@ -157,25 +157,72 @@ begin
   if p_gift_name is null or length(trim(p_gift_name)) = 0 then
     raise exception 'Invalid gift';
   end if;
-  if p_price is null or p_price <= 0 then
-    raise exception 'Price must be greater than zero';
+  if p_serial is null or p_serial < 0 then
+    raise exception 'Invalid serial';
+  end if;
+  if p_price is null or p_price <= 0 or p_price > 100000000 then
+    raise exception 'Price must be between 0 and 100000000';
   end if;
 
   insert into public.wallet_balances(user_id, balance)
-  values (p_seller_id, greatest(0, coalesce(p_seller_balance, 500)))
+  values (p_seller_id, greatest(0, round(coalesce(p_seller_balance, 500), 2)))
   on conflict (user_id) do nothing;
 
   insert into public.market_listings(gift_name, price, seller_id)
-  values (p_gift_name, round(p_price, 2), p_seller_id)
-  returning id into listing_id;
+  values (trim(p_gift_name), round(p_price, 2), p_seller_id)
+  returning id into new_listing_id;
 
-  return jsonb_build_object('ok', true, 'listing_id', listing_id);
+  delete from public.owned_gifts og
+  where og.id = (
+    select candidate.id
+    from public.owned_gifts candidate
+    where candidate.owner_id = p_seller_id
+      and candidate.gift_name = trim(p_gift_name)
+      and candidate.serial = p_serial
+    order by candidate.id
+    limit 1
+  );
+
+  return jsonb_build_object('ok', true, 'listing_id', new_listing_id, 'price', round(p_price, 2));
+end;
+$$;
+
+create or replace function public.cancel_market_listing(
+  p_listing_id bigint,
+  p_seller_id text
+) returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  listing public.market_listings%rowtype;
+begin
+  if p_seller_id is null or length(trim(p_seller_id)) < 3 then
+    raise exception 'Invalid seller';
+  end if;
+
+  select * into listing
+  from public.market_listings
+  where id = p_listing_id and seller_id = p_seller_id
+  for update;
+
+  if not found then
+    raise exception 'Listing not found or not yours';
+  end if;
+
+  delete from public.market_listings where id = listing.id;
+  insert into public.owned_gifts(owner_id, gift_name, serial, purchase_price)
+  values (listing.seller_id, listing.gift_name, listing.id, listing.price);
+
+  return jsonb_build_object('ok', true, 'listing_id', listing.id);
 end;
 $$;
 
 revoke all on function public.create_market_listing(text, bigint, numeric, text, numeric) from public;
+revoke all on function public.cancel_market_listing(bigint, text) from public;
 grant execute on function public.create_market_listing(text, bigint, numeric, text, numeric) to anon, authenticated;
-
+grant execute on function public.cancel_market_listing(bigint, text) to anon, authenticated;
 
 -- Update the price of a listing, only for its seller.
 create or replace function public.update_market_listing(
