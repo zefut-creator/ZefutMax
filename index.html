@@ -566,6 +566,7 @@ function log(type,name,amount,detail=''){
 function setTab(next){
   if(next!=='play' && rocketTimer){clearInterval(rocketTimer);rocketTimer=null;rocketRunning=false;}
   tab=next;
+  $('luckyTab')?.classList.toggle('active',next==='lucky');
   $('marketTab').classList.toggle('active',next==='market');
   $('mineTab').classList.toggle('active',next==='mine');
   $('playTab').classList.toggle('active',next==='play');
@@ -680,6 +681,10 @@ function renderMine(){
     </div>${body}`;
 }
 
+function renderLuckyBuy(){
+  return '<div class="sectionhead"><h2>🍀 Лаки бай</h2><span class="count">Демо-режим</span></div><p class="note">Покупай случайный подарок за виртуальные GRAM. Стоимость покупки — 25 GRAM. Это локальная демо-функция, реальные подарки не выдаются.</p><div class="summary"><div><span>Баланс</span><b>'+fmt(state.bal)+' GRAM</b></div><div><span>Цена попытки</span><b>25 GRAM</b></div></div><div class="hub-banner"><div class="hub-orb">🍀</div><div><b>Попробуй удачу</b><div class="muted">Случайный подарок из каталога</div></div></div><button class="btn" data-luckybuy>Купить случайный подарок · 25 GRAM</button><button class="btn secondary" data-luckyinfo style="margin-top:8px">Как это работает?</button>';
+}
+
 function renderHistory(){
   if(!state.history.length){
     return `<div class="sectionhead"><h2>История операций</h2></div>
@@ -745,7 +750,7 @@ function render(){
     'content','#050505');
   $('theme').textContent=state.theme==='dark'?'☀️':'🌙';
   $('theme').setAttribute('aria-label',state.theme==='dark'?'Включить светлую тему':'Включить тёмную тему');
-  $('main').innerHTML=tab==='market'?renderMarket():tab==='mine'?renderMine():tab==='profile'?renderProfile():renderPlay();
+  $('main').innerHTML=tab==='market'?renderMarket():tab==='mine'?renderMine():tab==='profile'?renderProfile():tab==='lucky'?renderLuckyBuy():renderPlay();
 }
 
 function find(arr,id){
@@ -878,6 +883,20 @@ document.addEventListener('click',e=>{
   if(b.id==='mineTab') return setTab('mine');
   if(b.id==='playTab'){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode='';return setTab('play');}
   if(b.id==='profileTab') return setTab('profile');
+  if(b.id==='luckyTab') return setTab('lucky');
+  if(d.luckybuy!==undefined){
+    const price=25;
+    if(state.bal<price){toast('Недостаточно виртуальных GRAM');return;}
+    const g=Math.floor(Math.random()*gifts.length);
+    state.bal=round(state.bal-price);
+    const item={id:state.nid++,g,n:Math.floor(Math.random()*9000)+100};
+    state.mine.unshift(item);
+    log('lucky_buy','Лаки бай: '+gifts[g][1],-price,'Случайный подарок получен за '+fmt(price)+' GRAM');
+    save();haptic('success');render();
+    openSheet('<h2>🍀 Тебе выпал подарок!</h2>'+art(g)+'<div class="summary"><div><span>Подарок</span><b>'+esc(gifts[g][1])+'</b></div><div><span>Номер</span><b>#'+item.n+'</b></div><div><span>Потрачено</span><b>25 GRAM</b></div><div><span>Баланс</span><b>'+fmt(state.bal)+' GRAM</b></div></div><p class="note">Подарок добавлен в «Мои подарки». Это только демо, реальный Telegram-подарок не передаётся.</p><button class="btn secondary" data-close>Закрыть</button>');
+    return;
+  }
+  if(d.luckyinfo!==undefined){openSheet('<h2>Как работает Лаки бай</h2><div class="desc">За 25 виртуальных GRAM система выбирает случайный подарок из каталога и добавляет его в коллекцию. Это локальная демо-механика без реальных денег и передачи подарков.</div><button class="btn secondary" data-close>Понятно</button>');return;}
   if(d.play!==undefined){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode=d.play;playRound=0;if(d.play==='mines'){minesStarted=false;minesOver=false;minesCashed=false;openedCells.clear();minesMultiplier=1;}if(d.play==='rocket'){rocketValue=1;rocketCrashAt=0;}render();return;}
   if(d.playback!==undefined){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode='';minesStarted=false;minesOver=false;minesCashed=false;openedCells.clear();setTab('play');return;}
   if(d.cashout!==undefined){if(minesOver||!minesStarted||openedCells.size===0)return;minesOver=true;minesCashed=true;const payout=round(trainingStake*minesMultiplier);state.bal=round(state.bal+payout);log('game_win','Мины',payout,'Возврат демо-ставки × '+minesMultiplier.toFixed(2));save();haptic('success');toast('Забрал '+fmt(payout)+' GRAM · демо-баланс');render();return;}
