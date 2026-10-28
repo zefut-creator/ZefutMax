@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru" data-theme="dark">
 <head>
@@ -11,17 +12,17 @@
 <style>
 :root{
   color-scheme:dark;
-  --bg:#10091f;--panel:#171027;--panel2:#21143b;
-  --line:#3a2a55;--text:#f7f1ff;--muted:#b8a9ca;
+  --bg:#050505;--panel:#101010;--panel2:#191919;
+  --line:#303030;--text:#f7f7f7;--muted:#a3a3a3;
   --accent:#ff9f1c;--green:#4ce0a0;--red:#ff8193;
-  --gradient:linear-gradient(135deg,#9b5de5,#ff8a00);
+  --gradient:linear-gradient(135deg,#ffad1f,#ff7a18);
   --shadow:0 12px 32px #0003
 }
 :root[data-theme="light"]{
   color-scheme:light;
-  --bg:#f7f1ff;--panel:#ffffff;--panel2:#eee4ff;
-  --line:#d9c8f0;--text:#21162b;--muted:#716879;
-  --accent:#ff8a00;--green:#16865b;--red:#c83756;
+  --bg:#f7f5fb;--panel:#ffffff;--panel2:#f0eaf8;
+  --line:#ded6e8;--text:#21162b;--muted:#716879;
+  --accent:#8b45d6;--green:#16865b;--red:#c83756;
   --gradient:linear-gradient(135deg,#9b5de5,#ff8a00);
   --shadow:0 12px 32px #4b286010
 }
@@ -252,11 +253,6 @@ nav button{min-height:54px}
 nav button:active{transform:scale(.97)}
 .empty{background:color-mix(in srgb,var(--panel) 48%,transparent)}
 .demo-banner{box-shadow:0 5px 18px #00000008}
-.catalog-section{margin-top:26px;padding-top:22px;border-top:1px solid var(--line)}
-.catalog-card .btn{margin-top:auto}
-.catalog-card .muted{overflow-wrap:anywhere}
-.catalog-card .cardtop{min-height:34px}
-.market-section .empty{margin-bottom:18px}
 @keyframes card-enter{from{opacity:.75;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 @keyframes sheet-enter{from{transform:translateY(14px);opacity:.8}to{transform:translateY(0);opacity:1}}
 @media(hover:none){.card:hover{transform:none;box-shadow:0 5px 16px #00000008}.card:hover .art .emoji{transform:none}}
@@ -266,9 +262,9 @@ nav button:active{transform:scale(.97)}
 }
 
 
-/* Unified purple-orange identity in both themes */
-.logo{background:var(--gradient);border:1px solid color-mix(in srgb,var(--accent) 55%,var(--line));border-radius:14px;color:#fff}
-:root[data-theme="light"] .logo{background:var(--gradient);border-color:#8b45d6}
+/* Play Hub + monochrome orange identity */
+.logo{background:#080808;border:1px solid #ff8a00;border-radius:14px}
+:root[data-theme="light"] .logo{background:#fff;border-color:#8b45d6}
 :root[data-theme="light"] .hub-banner,:root[data-theme="light"] .profile-hero{background:linear-gradient(120deg,#fff,#f0eaf8)}
 :root[data-theme="light"] .gameicon{background:#f0eaf8}
 :root[data-theme="light"] .gameboard .gamecell{background:#fff;border-color:#ded6e8;color:#8b45d6}
@@ -341,59 +337,6 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
 @keyframes premium-sheet-in{from{opacity:0;transform:translateY(14px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes premium-nav-pop{0%{transform:scale(.94)}70%{transform:scale(1.04)}100%{transform:scale(1)}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
-/* Rocket + PvP full visual redesign */
-.game-topline{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}.back-link{border:0;background:transparent;color:var(--muted);padding:7px 0;font-weight:750;font-size:12px}.live-pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:7px 10px;color:var(--muted);font-size:9px;font-weight:900;letter-spacing:1px}.live-pill i,.status-light{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;box-shadow:0 0 10px var(--green)}
-.game-hero{position:relative;display:flex;align-items:center;justify-content:space-between;gap:8px;overflow:hidden;padding:22px 17px;border:1px solid #34302b;border-radius:21px;background:radial-gradient(ellipse at 80% 10%,#ff8a0030,transparent 55%),linear-gradient(125deg,#171717,#090909);margin-bottom:13px;min-height:166px}.hero-copy{position:relative;z-index:1;max-width:66%}.eyebrow{display:block;color:var(--accent);font-size:9px;font-weight:950;letter-spacing:2px}.hero-copy h2{font-size:clamp(24px,7vw,34px);line-height:1.02;letter-spacing:-1px;margin:9px 0}.hero-copy h2 span{color:var(--accent)}.hero-copy p{font-size:11px;color:#aaa;line-height:1.5;margin:0;max-width:255px}
-.rocket-emblem{width:100px;height:100px;flex:none;display:grid;place-items:center;position:relative}.rocket-ring{width:77px;height:77px;display:grid;place-items:center;font-size:43px;border-radius:50%;border:1px solid #ff8a005e;background:radial-gradient(circle,#ff8a0029,#ff8a0008 65%,transparent 70%);box-shadow:0 0 35px #ff8a0018;animation:rocket-ring-pulse 2.7s ease-in-out infinite}.orbit-dot{position:absolute;top:7px;right:10px;width:8px;height:8px;background:var(--accent);border-radius:50%;box-shadow:0 0 13px var(--accent)}
-.rocket-stats{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0 17px}.rocket-stats>div,.arena-info>div{padding:12px;background:var(--panel);border:1px solid var(--line);border-radius:14px;min-width:0}.rocket-stats span,.arena-info span{display:block;color:var(--muted);font-size:9px;letter-spacing:.7px;margin-bottom:6px}.rocket-stats b{font-size:16px;overflow-wrap:anywhere}.rocket-stats small{font-size:9px;color:var(--muted)}
-.stake-control{display:flex;gap:6px;align-items:center;margin:7px 0 13px;padding:5px;background:var(--panel);border:1px solid var(--line);border-radius:14px}.stake-control input{flex:1;width:30px;border:0;background:transparent;box-shadow:none!important;padding:8px;font-weight:850}.stake-control>span{font-size:10px;color:var(--muted);font-weight:850}.stake-control button{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:9px;padding:8px 10px;font-weight:850;font-size:11px}
-.rocket-console{position:relative;overflow:hidden;background:#080a0d;border:1px solid #2a2b2f;border-radius:20px;padding:13px;margin-bottom:12px;text-align:center}.console-top{display:flex;justify-content:space-between;align-items:center;color:#8d929b;font-size:9px;font-weight:900;letter-spacing:1px}.console-top>span:first-child{display:flex;align-items:center;gap:7px}#rocketPhase{color:var(--accent)}.flight-path{position:relative;height:145px;overflow:hidden;margin:5px -3px 0}.flight-grid{position:absolute;inset:0;background-image:linear-gradient(#ffffff09 1px,transparent 1px),linear-gradient(90deg,#ffffff09 1px,transparent 1px);background-size:25px 25px;transform:perspective(100px) rotateX(13deg);transform-origin:bottom}.flight-trail{position:absolute;left:17%;bottom:8%;width:62%;height:65%;border-top:3px solid var(--accent);border-right:3px solid var(--accent);border-radius:0 100% 0 0;transform:rotate(-18deg);opacity:.65;filter:drop-shadow(0 0 7px #ff8a00);transition:height .2s,width .2s}.rocket-craft{position:absolute;left:22%;bottom:13%;font-size:35px;filter:drop-shadow(0 0 12px #ff8a0070);transition:left .15s,bottom .15s;transform:rotate(-22deg)}.rocket-number{font-size:51px;font-weight:950;line-height:1.05;letter-spacing:-2px;color:#fff;font-variant-numeric:tabular-nums;text-shadow:0 0 24px #ff8a0028}.rocket-number small{font-size:20px;color:var(--accent);margin-left:3px}.flight-status{display:block;font-size:11px;color:#b9bbc1;margin:9px 0 13px}.flight-progress{height:4px;border-radius:9px;background:#25262a;overflow:hidden}.flight-progress i{display:block;height:100%;background:var(--gradient);transition:width .1s}.rocket-console.is-running .rocket-craft{animation:rocket-fly .65s ease-in-out infinite alternate}.rocket-action{min-height:52px;letter-spacing:.6px}.game-disclaimer{font-size:10px;line-height:1.55;color:var(--muted);text-align:center;margin:12px 8px}
-.pvp-hero{background:radial-gradient(ellipse at 80% 45%,#ff8a0028,transparent 45%),linear-gradient(125deg,#171717,#090909)}.arena-mark{position:relative;flex:none;width:92px;height:92px;display:grid;place-items:center;font-size:45px;border:1px solid #ff8a005e;border-radius:25px;background:#ff8a0010;transform:rotate(6deg)}.arena-mark span{position:absolute;right:-5px;bottom:-6px;background:var(--accent);color:#090909;font-size:9px;font-weight:950;padding:5px 7px;border-radius:7px}
-.arena-scoreboard{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:9px;padding:18px 10px;background:var(--panel);border:1px solid var(--line);border-radius:19px}.arena-player{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}.player-avatar{width:54px;height:54px;border-radius:17px;display:grid;place-items:center;font-size:13px;font-weight:950;border:1px solid var(--line)}.user-avatar{background:#ff8a001c;border-color:#ff8a0060;color:var(--accent)}.bot-avatar{background:#1b1b1b;font-size:28px}.arena-player>b{font-size:10px;max-width:100%;text-align:center;overflow-wrap:anywhere}.arena-player>strong{font-size:34px;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}.arena-player>span{font-size:8px;color:var(--muted);letter-spacing:1px}.arena-vs{text-align:center;font-size:19px;font-weight:950;color:var(--accent)}.arena-vs div{font-size:7px;color:var(--muted);letter-spacing:1px;margin-top:5px;white-space:nowrap}.arena-info{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.arena-info>div:last-child{grid-column:1/-1}.arena-info b{font-size:11px}.arena-challenge{padding:17px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(135deg,var(--panel),color-mix(in srgb,var(--accent) 5%,var(--panel)));margin-top:12px}.arena-challenge h3{font-size:21px;margin:6px 0}.arena-challenge p{font-size:11px;color:var(--muted);line-height:1.55;margin:0 0 13px}.pvp-action{min-height:48px}.arena-result{text-align:center;font-size:11px;color:var(--muted);margin-top:12px}
-@keyframes rocket-ring-pulse{0%,100%{transform:scale(1);box-shadow:0 0 25px #ff8a0015}50%{transform:scale(1.04);box-shadow:0 0 38px #ff8a0030}}@keyframes rocket-fly{from{transform:translate(0,3px) rotate(-22deg)}to{transform:translate(6px,-8px) rotate(-15deg)}}@media(max-width:390px){.game-hero{padding:17px 13px;min-height:150px}.rocket-emblem{width:77px;height:77px}.rocket-ring{width:64px;height:64px;font-size:35px}.hero-copy{max-width:68%}.arena-scoreboard{gap:5px;padding:15px 6px}.player-avatar{width:46px;height:46px}.arena-player>strong{font-size:29px}}@media(prefers-reduced-motion:reduce){.rocket-ring,.rocket-craft{animation:none!important}}
-
-.spins-hero{background:radial-gradient(ellipse at 80% 30%,#ff8a0030,transparent 48%),linear-gradient(130deg,#17100a,#090a0d 65%)}.spins-machine{background:#090a0d;border:1px solid #333036;border-radius:18px;padding:14px;margin:14px 0}.spins-reels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:18px 0}.spins-reel{display:flex;align-items:center;justify-content:center;min-height:92px;background:linear-gradient(180deg,#202126,#111216);border:1px solid #3c3329;border-radius:13px;font-size:clamp(32px,9vw,48px);box-shadow:inset 0 0 20px #ff8a000c}.spins-busy .spins-reel{animation:spins-pulse .22s ease-in-out infinite alternate}.spins-result{text-align:center;font-size:13px;font-weight:850;color:#f6a23a;min-height:20px}.spins-action{min-height:52px}.spins-paytable{background:#0c0d10;border:1px solid #28292e;border-radius:16px;padding:12px;margin:16px 0}.spins-paytable .sectionhead h3{font-size:13px}.spins-payrow{display:grid;grid-template-columns:1.1fr 1fr auto;align-items:center;gap:8px;padding:10px 2px;border-bottom:1px solid #ffffff0c;font-size:11px}.spins-payrow:last-child{border-bottom:0}.spins-payrow b{font-size:12px;white-space:nowrap}.spins-payrow span{color:var(--muted)}.spins-payrow strong{color:var(--accent);white-space:nowrap}@keyframes spins-pulse{from{transform:translateY(-3px);filter:brightness(1)}to{transform:translateY(3px);filter:brightness(1.5)}}
-.spins-paytable{box-shadow:0 14px 40px #0003}.spins-payrow{grid-template-columns:minmax(88px,1.05fr) minmax(0,1.4fr) auto;min-height:38px}.spins-payrow:nth-child(-n+5) strong{color:#ffd27a}.spins-reel{transition:border-color .2s,box-shadow .2s}.spins-busy .spins-reel{border-color:#ff8a00;box-shadow:0 0 20px #ff8a0022}.spins-action{letter-spacing:.06em;font-weight:900;box-shadow:0 8px 24px #ff8a0020}.spins-action:not(:disabled):active{transform:scale(.99)}@media(max-width:430px){.spins-payrow{grid-template-columns:1fr auto;gap:3px 8px}.spins-payrow span{grid-column:1;grid-row:2}.spins-payrow strong{grid-column:2;grid-row:1 / span 2}}
-
-/* Premium marketplace storefront */
-.live-market{margin-top:30px}
-.market-heading{align-items:flex-end;margin-bottom:16px}
-.market-heading h2{font-size:22px;letter-spacing:-.7px;margin-top:3px}
-.market-kicker{font-size:9px;letter-spacing:2px;font-weight:900;color:var(--accent)}
-.market-caption{font-size:11px;color:var(--muted);margin-top:4px}
-.market-total{font-size:11px;font-weight:800;padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:var(--panel)}
-.market-grid{gap:12px}
-.market-card{padding:8px;border-radius:19px;background:linear-gradient(160deg,var(--panel),color-mix(in srgb,var(--panel) 84%,var(--accent) 16%));border-color:color-mix(in srgb,var(--line) 75%,var(--accent) 25%);overflow:hidden}
-.market-art{aspect-ratio:1;border-radius:14px;position:relative;background:radial-gradient(circle at 50% 38%,#ffb84a30,transparent 58%),linear-gradient(145deg,#25201a,#111 68%)}
-.market-art:after{content:"";position:absolute;inset:0;border:1px solid #ffffff0d;border-radius:inherit;pointer-events:none}
-.market-art-1{background:radial-gradient(circle at 50% 38%,#9e75ff40,transparent 58%),linear-gradient(145deg,#211a30,#101014 68%)}
-.market-art-2{background:radial-gradient(circle at 50% 38%,#59d7c340,transparent 58%),linear-gradient(145deg,#142a29,#101414 68%)}
-.market-art-3{background:radial-gradient(circle at 50% 38%,#ff759c40,transparent 58%),linear-gradient(145deg,#301a27,#130f13 68%)}
-.market-art-4{background:radial-gradient(circle at 50% 38%,#69a9ff40,transparent 58%),linear-gradient(145deg,#17253a,#101116 68%)}
-.market-art img{filter:drop-shadow(0 9px 12px #0005);position:relative;z-index:1}
-.market-rarity{position:absolute;left:7px;top:7px;z-index:2;font-size:8px;font-weight:900;letter-spacing:.7px;padding:5px 7px;border-radius:7px;background:#090909b8;color:#fff;border:1px solid #ffffff18}
-.market-index{font-size:9px;color:var(--muted);font-weight:800;white-space:nowrap}
-.market-stock{margin-top:5px;min-height:16px}
-.market-price{display:flex;align-items:baseline;gap:5px;margin:10px 0 11px;font-size:19px;font-weight:950;letter-spacing:-.6px}
-.market-price small{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:0}
-.market-details{display:flex;align-items:center;justify-content:space-between;background:var(--panel2);color:var(--text);border:1px solid var(--line);font-size:11px;padding:10px}
-.market-details span{font-size:16px;color:var(--accent)}
-.market-state{margin:18px 0;padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--muted);font-size:13px}
-.market-pulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:9px;box-shadow:0 0 12px var(--accent)}
-@media(min-width:600px){.market-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(min-width:850px){.market-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
-
-
-.market-tools{margin-top:16px;padding:15px;display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:17px;background:var(--panel)}
-.market-tools .btn{width:auto;min-width:100px}
-.market-state{margin:18px 0;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--muted);font-size:13px}
-.market-state .btn{margin-top:12px}
-.upgrade-preview{display:flex;align-items:center;justify-content:center;gap:18px;margin:20px 0}
-.upgrade-orb{width:82px;height:82px;display:grid;place-items:center;border:1px solid #ffb84a55;border-radius:22px;background:radial-gradient(circle,#ffb84a35,transparent 70%),var(--panel2);font-size:36px}
-.upgrade-orb.target{border-color:#9e75ff77;background:radial-gradient(circle,#9e75ff35,transparent 70%),var(--panel2)}
-.upgrade-preview>span{color:var(--accent);font-size:22px;font-weight:900}
-
-
 </style>
 </head>
 <body>
@@ -502,147 +445,8 @@ const gifts = [
 ["⚔️","Light Sword",6.33,-1.9],
 ["🎂","Homemade Cake",5.29,3.7],
 ["🍦","Ice Cream",3.98,1.5],
-["🐍","Snake Box",3.63,0],
-["🎁","Holiday Surprise",3.2,1.4],
-["🧸","Winter Teddy",4.1,0.8],
-["🍓","Berry Box",4.6,2.1],
-["🌙","Moon Pendant",5.2,-0.4],
-["⭐","Lucky Star",6.1,1.7],
-["🎈","Party Balloon",4.4,0.5],
-["🍰","Birthday Cake",7.3,2.6],
-["🪄","Magic Wand",8.9,1.2],
-["🦋","Butterfly",9.4,3.1],
-["🌈","Rainbow",10.2,2.3],
-["🪙","Golden Coin",11.5,0.9],
-["🧿","Blue Eye",12.7,-0.6],
-["🌻","Sunflower",13.4,1.8],
-["🦄","Unicorn",14.9,2.9],
-["🐼","Panda",15.6,1.1],
-["🐳","Blue Whale",16.8,-0.3],
-["🦊","Fox",17.5,2.2],
-["🐙","Octopus",18.2,0.7],
-["🍉","Watermelon",19.4,1.4],
-["🍋","Lemon",20.1,-0.8],
-["🍇","Grape Cluster",21.6,2.5],
-["🥥","Coconut",22.8,0.6],
-["🌺","Tropical Flower",23.7,1.9],
-["🪷","Lotus",24.9,2.4],
-["🧁","Cupcake",26.2,1.3],
-["🍭","Lollipop",27.5,0.4],
-["🍬","Candy Box",28.8,1.8],
-["☕","Coffee Cup",30.4,-0.5],
-["🫖","Tea Set",31.7,0.9],
-["🎧","Headphones",33.2,2.1],
-["📷","Retro Camera",34.8,1.6],
-["🎮","Game Controller",36.5,3.2],
-["🛹","Skateboard",38.1,0.8],
-["🚀","Rocket",40.7,2.7],
-["🛸","UFO",42.3,1.5],
-["💿","Music Disc",44.9,-0.4],
-["🎹","Piano Key",47.6,1.2],
-["🎸","Electric Guitar",50.2,2.8],
-["🎻","Violin",53.4,0.7],
-["🏀","Basketball",56.1,1.9],
-["⚽","Football",58.7,2.2],
-["🥇","Gold Medal",62.4,1.1],
-["🧩","Puzzle Piece",66.8,0.3],
-["🔮","Crystal Ball",71.5,2.6],
-["🪬","Lucky Charm",76.2,1.4],
-["🗝️","Mystery Key",81.9,-0.7],
-["📦","Mystery Box",88.3,2.5],
-["🪄","Enchanted Staff",94.7,1.8],
-["👑","Royal Crown",105.5,3.4],
-["🪽","Angel Wings",119.8,2.7],
-["🐉","Dragon",138.6,4.1],
-["🦁","Golden Lion",159.2,2.2],
-["💫","Cosmic Spark",184.5,3.6],
-["🌌","Galaxy Orb",216.7,1.9],
-["🪐","Planet Ring",248.9,2.8],
-["💎","Royal Diamond",295.4,3.3],
-["🏰","Crystal Castle",348.8,2.1],
-["🐲","Ancient Dragon",426.5,4.4],
-["🌟","Supernova",512.7,3.8],
-["🧬","Quantum Core",638.4,2.6],
-["🔱","Ocean Trident",785.9,3.1],
-["🪙","Emperor's Coin",960.2,2.9],
-["🦚","Celestial Peacock",1185.6,4.2],
-["🌠","Falling Star",1490.8,3.7],
-["💠","Prismatic Heart",1875.3,4.5]
+["🐍","Snake Box",3.63,0]
 ];
-
-const SUPABASE_URL = 'https://pfmoxznzegwqjunayvph.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_zvdqQkAzOl9wTVE9E5SeCw_29U0CYOC';
-const SUPABASE_TABLE = 'market_listings';
-const SHARED_MIGRATION_KEY = 'zefutmax_shared_migrated_v1';
-const sellerId = (() => {
-  const telegramId = tg?.initDataUnsafe?.user?.id;
-  if (telegramId) return 'tg:' + String(telegramId);
-  let id = localStorage.getItem('zefutmax_seller_id');
-  if (!id) {
-    id = 'web:' + (crypto?.randomUUID?.() || (Date.now() + '-' + Math.random().toString(36).slice(2)));
-    localStorage.setItem('zefutmax_seller_id', id);
-  }
-  return id;
-})();
-const supabaseHeaders = () => ({
-  apikey: SUPABASE_KEY,
-  Authorization: 'Bearer ' + SUPABASE_KEY,
-  'Content-Type': 'application/json'
-});
-async function sharedRequest(path, options={}) {
-  const response = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
-    ...options,
-    headers: {...supabaseHeaders(), ...(options.headers||{})}
-  });
-  if (!response.ok) throw new Error('Supabase ' + response.status + ': ' + (await response.text()).slice(0,180));
-  return response.status === 204 ? null : response.json().catch(()=>null);
-}
-async function publishSharedListing(giftIndex, serial, price) {
-  const rows = await sharedRequest(SUPABASE_TABLE, {
-    method:'POST',
-    headers:{Prefer:'return=representation'},
-    body:JSON.stringify({gift_name:gifts[giftIndex][1],serial:Number(serial),price:round(price),seller_id:sellerId})
-  });
-  return Array.isArray(rows) && rows[0] ? rows[0] : null;
-}
-async function refreshSharedWallet() {
-  try {
-    const rows = await sharedRequest('wallet_balances?select=balance&user_id=eq.' + encodeURIComponent(sellerId));
-    if (Array.isArray(rows) && rows.length) state.bal = round(rows[0].balance);
-    const owned = await sharedRequest('owned_gifts?select=id,gift_name,serial,purchase_price&owner_id=eq.' + encodeURIComponent(sellerId) + '&order=id.desc');
-    if (Array.isArray(owned)) {
-      const serverMine = owned.map(row => {
-        const gi = gifts.findIndex(g => g[1] === row.gift_name);
-        return gi < 0 ? null : {id: -Number(row.id), dbId:row.id, g:gi, n:Number(row.serial)||Number(row.id), buy:round(row.purchase_price||0), shared:true};
-      }).filter(Boolean);
-      state.mine = [...state.mine.filter(x=>!x.shared), ...serverMine];
-    }
-    save();
-  } catch (e) { console.warn('Shared wallet unavailable:', e); }
-}
-async function refreshSharedListings() {
-  try {
-    const rows = await sharedRequest(SUPABASE_TABLE + '?select=id,gift_name,serial,price,seller_id,created_at&order=created_at.desc');
-    if (!Array.isArray(rows)) return;
-    const shared = rows.map(row => {
-      const giftIndex = gifts.findIndex(g => g[1] === row.gift_name);
-      if (giftIndex < 0) return null;
-      return {id:'sb-'+row.id,dbId:row.id,g:giftIndex,n:Number(row.serial)||Number(row.id),p:round(row.price),own:String(row.seller_id)===sellerId,shared:true};
-    }).filter(Boolean);
-    // Preserve the user's local drafts, but never auto-publish them during polling.
-    // The explicit create_market_listing RPC is the only publishing path.
-    const drafts = state.mk.filter(x => x.own === true && !x.shared && !x.dbId);
-    state.mk = [...shared, ...drafts];
-    save();
-    if (tab === 'market' || tab === 'mine') render();
-  } catch (e) {
-    console.warn('Shared market unavailable:', e);
-    if (!window.__zefutSharedToastShown) {
-      window.__zefutSharedToastShown = true;
-      toast('Общий маркет пока не подключён: проверь настройки Supabase');
-    }
-  }
-}
 
 const STORAGE_KEY = 'zefutmax_market_v2';
 const round = n => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
@@ -652,26 +456,73 @@ const esc = s => String(s).replace(/[&<>"']/g,c=>({
 }[c]));
 
 let tab='market', filter='all', mineTab='owned', search='', sort='priceUp';
-let freeTapCount=0;
-let minesBombs=[];let minesRevealed=[];let pvpScore=[0,0];let pvpResult='Сделай первый ход.';let rocketResult='1.00';let rocketMessage='Ракета готова к запуску.';let spinResult=['🍒','⭐','💎'];let spinMessage='Нажми «Крутить», чтобы начать.';
-let playMode='';
+let playMode=''; let playRound=0; let rocketTimer=null; let rocketValue=1; let rocketRunning=false; let rocketCrashAt=0; let rocketBest=1;
+let minesCount=3, minesSet=new Set(), openedCells=new Set(), minesOver=false;
+let trainingStake=10, rocketStake=10, minesMultiplier=1, minesCashed=false, minesStarted=false;
 let toastTimer, state;
+let liveCatalog=null, liveCatalogError='', liveCatalogLoading=true;
 
-function seed(){return {bal:500,mine:[{id:1000,g:39,n:4521,buy:6.33}],mk:[],nid:1001,favs:[],history:[],theme:'dark'};}
+function seed(){
+  let randomSeed=11;
+  const rnd=()=>{randomSeed=randomSeed*16807%2147483647;return randomSeed/2147483647};
+  let listings=[],id=1;
+
+  gifts.forEach((g,i)=>{
+    listings.push({id:id++,g:i,n:Math.floor(rnd()*9000)+100,p:round(g[2])});
+    listings.push({id:id++,g:i,n:Math.floor(rnd()*9000)+100,p:round(g[2]*(1.04+rnd()*.1))});
+  });
+
+  return {
+    bal:500,
+    mine:[{id:1000,g:39,n:4521,buy:6.33}],
+    mk:listings,
+    nid:1001,
+    favs:[],
+    history:[],
+    theme:'dark'
+  };
+}
+
 function validState(x){
- if(!x||!Number.isFinite(x.bal)||x.bal<0||!Array.isArray(x.mk)||!Array.isArray(x.mine)||!Array.isArray(x.favs)||!Array.isArray(x.history)||!['dark','light'].includes(x.theme)||!Number.isFinite(x.nid))return false;
- const validGift=g=>Number.isInteger(g)&&g>=0&&g<gifts.length;
- const validListing=item=>item&&(Number.isFinite(item.id)||typeof item.id==='string')&&validGift(item.g)&&Number.isFinite(item.n)&&Number.isFinite(item.p)&&item.p>0;
- return x.mk.every(item=>validListing(item)&&(item.own===undefined||typeof item.own==='boolean'))&&x.mine.every(item=>item&&Number.isFinite(item.id)&&validGift(item.g)&&Number.isFinite(item.n))&&x.favs.every(validGift)&&x.history.every(item=>item&&typeof item.name==='string'&&Number.isFinite(item.amount)&&Number.isFinite(item.at));
+  if(!x || !Number.isFinite(x.bal) || x.bal<0 ||
+    !Array.isArray(x.mk) || !Array.isArray(x.mine) ||
+    !Array.isArray(x.favs) || !Array.isArray(x.history) ||
+    !['dark','light'].includes(x.theme) ||
+    !Number.isFinite(x.nid)) return false;
+
+  const validGift = g => Number.isInteger(g) && g>=0 && g<gifts.length;
+  const validListing = item => item && Number.isFinite(item.id) &&
+    validGift(item.g) && Number.isFinite(item.n) &&
+    Number.isFinite(item.p) && item.p>0;
+
+  return x.mk.every(item => validListing(item) &&
+      (item.own===undefined || typeof item.own==='boolean')) &&
+    x.mine.every(item => item && Number.isFinite(item.id) &&
+      validGift(item.g) && Number.isFinite(item.n)) &&
+    x.favs.every(validGift) &&
+    x.history.every(item => item && typeof item.name==='string' &&
+      Number.isFinite(item.amount) && Number.isFinite(item.at));
 }
+
 function load(){
- try{const raw=localStorage.getItem(STORAGE_KEY);if(raw){const saved=JSON.parse(raw);if(validState(saved)){const merged=Object.assign(seed(),saved);merged.mk=merged.mk.filter(item=>item.shared===true||item.own===true);return merged;}}}catch(e){}
- return seed();
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const saved=JSON.parse(raw);
+      if(validState(saved)) return Object.assign(seed(),saved);
+    }
+  }catch(e){}
+  return seed();
 }
+
 state=load();
+
 function save(){
- if(state&&Number.isFinite(state.bal))state.bal=Math.max(0,round(state.bal));
- try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}catch(e){toast('Не удалось сохранить данные на устройстве');}
+  try{
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+  }catch(e){
+    toast('Не удалось сохранить данные на устройстве');
+  }
 }
 
 function toast(message){
@@ -712,6 +563,7 @@ function log(type,name,amount,detail=''){
 }
 
 function setTab(next){
+  if(next!=='play' && rocketTimer){clearInterval(rocketTimer);rocketTimer=null;rocketRunning=false;}
   tab=next;
   $('marketTab').classList.toggle('active',next==='market');
   $('mineTab').classList.toggle('active',next==='mine');
@@ -742,23 +594,46 @@ function card(x){
     <div class="price">${fmt(x.p)} <small>GRAM</small></div>
     ${x.own
       ? '<button class="btn secondary" data-unlist="'+x.id+'">Снять лот</button>'
-      : '<div class="buyrow"><button class="btn" data-buy="'+x.id+'">Купить</button></div>'}
+      : '<button class="btn" data-buy="'+x.id+'">Купить</button>'}
   </article>`;
 }
 
-function catalogCard(index){
- const g=gifts[index],isFav=state.favs.includes(index);
- return '<article class="card catalog-card">'+art(index)+'<div class="cardtop"><b>'+esc(g[1])+'</b><button class="fav '+(isFav?'on':'')+'" data-fav="'+index+'" aria-label="'+(isFav?'Убрать из избранного':'В избранное')+'">'+(isFav?'♥':'♡')+'</button></div><div class="muted">Демо-модель из каталога</div><div class="muted">'+change(index)+' · примерное изменение</div><div class="price">'+fmt(g[2])+' <small>GRAM</small></div><button class="btn" data-catalogbuy="'+index+'">Добавить в демо-коллекцию</button></article>';
+function renderLiveCatalog(){
+  if(liveCatalogLoading) return '<div class="note">Загружаем официальный каталог Telegram…</div>';
+  if(!liveCatalog) return '<div class="note">Официальный каталог пока недоступен. '+esc(liveCatalogError||'Проверь настройку TELEGRAM_BOT_TOKEN в Vercel.')+'</div>';
+  if(!liveCatalog.length) return '<div class="note">Telegram не вернул доступных подарков.</div>';
+  return '<div class="sectionhead" style="margin-top:28px"><h2>Официальные подарки Telegram</h2><span class="count">'+liveCatalog.length+' типов · цены в Stars</span></div>'+
+    '<div class="grid">'+liveCatalog.map(g=>{
+      const visual=g.stickerFileId && g.stickerType==='static'
+        ? '<img src="/api/gift-image?file_id='+encodeURIComponent(g.stickerFileId)+'" alt="Стикер подарка Telegram" loading="lazy" style="width:100%;height:100%;object-fit:contain;padding:18px" onerror="this.style.display=\'none\'">'
+        : '<span class="emoji">🎁</span>';
+      const stock=g.remainingCount!==null?'Осталось: '+fmt(g.remainingCount):'Доступен у бота';
+      return '<article class="card"><div class="art">'+visual+'</div><div class="cardtop"><b>'+esc(g.stickerEmoji||'Telegram Gift')+'</b></div><div class="muted">'+esc(stock)+(g.premiumOnly?' · Premium':'')+'</div><div class="price">'+fmt(g.stars)+' <small>Stars</small></div><button class="btn secondary" data-giftinfo="'+esc(g.id)+'">Подробнее</button></article>';
+    }).join('')+'</div><p class="note">Данные из официального Telegram Bot API. Это подарки, которые бот может отправлять, а не лоты вторичного рынка. Покупка и отправка через этот каталог пока не включены.</p>';
 }
+
 function renderMarket(){
- let listings=state.mk.filter(x=>gifts[x.g][1].toLowerCase().includes(search)||String(x.n).includes(search));
- if(filter==='up')listings=listings.filter(x=>gifts[x.g][3]>0);
- if(filter==='down')listings=listings.filter(x=>gifts[x.g][3]<0);
- if(filter==='fav')listings=listings.filter(x=>state.favs.includes(x.g));
- listings.sort((a,b)=>sort==='priceDown'?b.p-a.p:sort==='growth'?(gifts[b.g][3]-gifts[a.g][3]||a.p-b.p):sort==='name'?gifts[a.g][1].localeCompare(gifts[b.g][1]):a.p-b.p);
- let catalog=gifts.map((g,i)=>i).filter(i=>{const g=gifts[i];if(!(g[1].toLowerCase().includes(search)||String(i+1).includes(search)))return false;if(filter==='up'&&g[3]<=0)return false;if(filter==='down'&&g[3]>=0)return false;if(filter==='fav'&&!state.favs.includes(i))return false;return true;});
- catalog.sort((a,b)=>sort==='priceDown'?gifts[b][2]-gifts[a][2]:sort==='growth'?(gifts[b][3]-gifts[a][3]||gifts[a][2]-gifts[b][2]):sort==='name'?gifts[a][1].localeCompare(gifts[b][1]):gifts[a][2]-gifts[b][2]);
- return '<section class="market-section"><div class="sectionhead"><div><h2>Объявления маркета</h2><div class="muted">Лоты из общей базы</div></div><span class="count">'+listings.length+' лотов</span></div>'+(listings.length?'<div class="grid">'+listings.map(card).join('')+'</div>':empty('🛍️','Пока нет активных лотов','Каталог ниже доступен в демо-режиме.'))+'</section><section class="catalog-section"><div class="sectionhead"><div><h2>Каталог подарков</h2><div class="muted">Коллекция демонстрационных моделей</div></div><span class="count">'+catalog.length+' из '+gifts.length+'</span></div>'+(catalog.length?'<div class="grid">'+catalog.map(catalogCard).join('')+'</div>':empty('🔎','Ничего не найдено','Измени запрос или фильтр.'))+'<p class="note">Каталог и цены демонстрационные. Добавление списывает виртуальные GRAM и сохраняет подарок только на этом устройстве. Реальные покупки и передача Telegram-подарков не подключены.</p></section>';
+  let list=state.mk.filter(x=>gifts[x.g][1].toLowerCase().includes(search)||String(x.n).includes(search));
+
+  if(filter==='up') list=list.filter(x=>gifts[x.g][3]>0);
+  if(filter==='down') list=list.filter(x=>gifts[x.g][3]<0);
+  if(filter==='fav') list=list.filter(x=>state.favs.includes(x.g));
+
+  list.sort((a,b)=>{
+    if(sort==='priceDown') return b.p-a.p;
+    if(sort==='growth') return gifts[b.g][3]-gifts[a.g][3]||a.p-b.p;
+    if(sort==='name') return gifts[a.g][1].localeCompare(gifts[b.g][1]);
+    return a.p-b.p;
+  });
+
+  return `<div class="sectionhead">
+    <h2>Подарки на маркете</h2><span class="count">${list.length} лотов</span>
+  </div>
+  ${list.length?'<div class="grid">'+list.map(card).join('')+'</div>':
+    empty('🔎','Ничего не найдено','Измени запрос или фильтр.')}
+  <p class="note">Демо-режим: каталог, цены и изменение за 24 часа — примеры.
+  Баланс и операции сохраняются только в этом браузере. Реальные платежи и
+  передача Telegram-подарков не подключены.</p>`+renderLiveCatalog();
 }
 
 function renderMine(){
@@ -825,23 +700,27 @@ function renderHistory(){
       </div>`).join('');
 }
 
-function renderPlay(){
-  const back='<div class="game-topline"><button class="back-link" data-playback>‹ Все игры</button><span class="live-pill"><i></i> DEMO</span></div>';
-  if(playMode==='mines'){
-    const cells=Array.from({length:25},(_,i)=>'<button class="gamecell" data-minecell="'+i+'">'+(minesRevealed.includes(i)?(minesBombs.includes(i)?'💣':'💎'):'?')+'</button>').join('');
-    return back+'<div class="game-hero"><div class="hero-copy"><span class="eyebrow">ZEFUTMAX MINI</span><h2>MINES</h2><p>Открывай клетки и ищи драгоценности.</p></div><div class="arena-mark">💣</div></div><div class="gameboard">'+cells+'</div><p class="muted">Найдено: '+minesRevealed.filter(i=>!minesBombs.includes(i)).length+' · Демо-режим без реальных ставок.</p><button class="btn" data-minesreset>Новая игра</button>';
-  }
-  if(playMode==='pvp'){
-    return back+'<div class="game-hero pvp-hero"><div class="hero-copy"><span class="eyebrow">ARENA</span><h2>PVP <span>DUEL</span></h2><p>Тренировочный поединок против бота.</p></div><div class="arena-mark">⚔️</div></div><div class="arena-scoreboard"><div class="arena-player"><div class="player-avatar user-avatar">YOU</div><b>Ты</b><strong>'+pvpScore[0]+'</strong><span>ПОБЕДЫ</span></div><div class="arena-vs">VS<div>BEST OF 1</div></div><div class="arena-player"><div class="player-avatar bot-avatar">🤖</div><b>Бот</b><strong>'+pvpScore[1]+'</strong><span>ПОБЕДЫ</span></div></div><div class="arena-challenge"><h3>Выбери ход</h3><p>Камень, ножницы или бумага. Результат раунда — против случайного бота.</p><div class="gamecards"><button class="gamecard" data-duel="rock">🪨 Камень</button><button class="gamecard" data-duel="paper">📄 Бумага</button><button class="gamecard" data-duel="scissors">✂️ Ножницы</button></div><div class="arena-result">'+esc(pvpResult)+'</div></div>';
-  }
-  if(playMode==='rocket'){
-    return back+'<div class="game-hero"><div class="hero-copy"><span class="eyebrow">FLIGHT</span><h2>ROCKET <span>RUN</span></h2><p>Запусти ракету и наблюдай за полётом.</p></div><div class="rocket-emblem"><div class="rocket-ring">🚀</div></div></div><div class="rocket-console"><div class="console-top"><span>ПОСЛЕДНИЙ ПОЛЁТ</span><span id="rocketPhase">DEMO</span></div><div class="flight-path"><div class="flight-grid"></div><div class="flight-trail"></div><div class="rocket-craft">'+(rocketResult?'💥':'🚀')+'</div></div><div class="rocket-number">'+rocketResult+'<small>x</small></div><p class="flight-status">'+esc(rocketMessage)+'</p></div><button class="btn rocket-action" data-rocket>🚀 ЗАПУСТИТЬ</button><p class="game-disclaimer">Демо-анимация. Баланс не меняется, реальных ставок и выплат нет.</p>';
-  }
-  if(playMode==='spins'){
-    return back+'<div class="game-hero spins-hero"><div class="hero-copy"><span class="eyebrow">LUCKY MACHINE</span><h2>SPIN <span>CLUB</span></h2><p>Крути барабаны и смотри комбинацию.</p></div><div class="arena-mark">🎰</div></div><div class="spins-machine"><div class="spins-reels"><div class="spins-reel">'+spinResult[0]+'</div><div class="spins-reel">'+spinResult[1]+'</div><div class="spins-reel">'+spinResult[2]+'</div></div><div class="spins-result">'+esc(spinMessage)+'</div></div><button class="btn spins-action" data-spin>КРУТИТЬ</button><p class="game-disclaimer">Демо-режим без ставок, списания GRAM или выплат.</p>';
-  }
-  return '<div class="sectionhead"><h2>Play Hub</h2><span class="count">Мини-игры</span></div><div class="hub-banner"><div class="hub-orb">✦</div><div><b>Игровой центр</b><div class="muted">Мины · PvP · Ракетка · Спин</div></div></div><div class="gamecards"><button class="gamecard" data-play="mines"><span class="gameicon">💣</span><b>Мины</b><span class="muted">Открывай клетки и ищи кристаллы.</span><span class="game-open">Играть →</span></button><button class="gamecard" data-play="pvp"><span class="gameicon">⚔️</span><b>PvP</b><span class="muted">Дуэль против бота.</span><span class="game-open">Играть →</span></button><button class="gamecard" data-play="rocket"><span class="gameicon">🚀</span><b>Ракетка</b><span class="muted">Запусти ракету.</span><span class="game-open">Играть →</span></button><button class="gamecard" data-play="spins"><span class="gameicon">🎰</span><b>Спин</b><span class="muted">Крути три барабана.</span><span class="game-open">Играть →</span></button></div><p class="note">Игры работают в демо-режиме и не меняют баланс.</p>';
+function startMines(){
+  const select=$('mineCountSelect');
+  if(select) minesCount=Number(select.value)||minesCount;
+  minesCount=Math.max(1,Math.min(24,Math.floor(minesCount)));
+  minesSet=new Set();openedCells=new Set();minesOver=false;minesMultiplier=1;minesCashed=false;
+  minesStarted=true;
+  while(minesSet.size<minesCount) minesSet.add(Math.floor(Math.random()*25));
 }
+
+function renderPlay(){
+  const games=[
+    ['💣','Мины','Открывай клетки и тренируй внимательность.','mines'],
+    ['🚀','Ракетка','Следи за полётом ракеты и останови раунд в любой момент.','rocket'],
+    ['⚔️','PvP Арена','Тренировочный матч против демо-соперника.','pvp']
+  ];
+  if(playMode==='mines') return '<div class="sectionhead"><h2>💣 Мины</h2><span class="count">Демо-режим</span></div><div class="gameboard">'+Array.from({length:25},(_,i)=>'<button class="gamecell '+(minesStarted&&openedCells.has(i)?'revealed':'')+'" data-cell="'+i+'" '+(!minesStarted||openedCells.has(i)||minesOver?'disabled':'')+'>'+((minesStarted&&(openedCells.has(i)||minesOver&&minesSet.has(i)))?(minesSet.has(i)?'💣':'✦'):'?')+'</button>').join('')+'</div><div class="summary"><div><span>Статус</span><b>'+(minesOver?(minesCashed?'Результат зафиксирован':'Раунд завершён'):(minesStarted?'Игра идёт':'Готов к запуску'))+'</b></div><div><span>Множитель</span><b>'+minesMultiplier.toFixed(2)+'×</b></div><div><span>Демо-результат</span><b>'+fmt(trainingStake*minesMultiplier)+' GRAM</b></div></div><div class="sectionhead" style="margin-top:18px"><h2>Настройки игры</h2></div><label class="inputlabel" for="trainingStakeInput">Демо-ставка в GRAM (0,1–10 000)</label><input id="trainingStakeInput" type="number" min="0.1" max="10000" step="0.1" value="'+trainingStake+'" '+(minesStarted&&!minesOver?'disabled':'')+' style="width:100%;margin:6px 0 10px"><label class="inputlabel" for="mineCountSelect">Количество мин</label><select id="mineCountSelect" style="width:100%;margin:6px 0 10px" '+(minesStarted&&!minesOver?'disabled':'')+'>'+[1,3,5,8,10,12,15,20].map(n=>'<option value="'+n+'" '+(n===minesCount?'selected':'')+'>'+n+' мин</option>').join('')+'</select>'+(minesOver?'<button class="btn" data-newmines>Новая игра</button>':minesStarted?'<button class="btn" data-cashout '+(openedCells.size===0?'disabled':'')+'>Сохранить демо-результат · '+fmt(trainingStake*minesMultiplier)+' GRAM</button>':'<button class="btn" data-startmines>Начать игру</button>')+'<button class="btn secondary" style="margin-top:8px" data-playback>← Вернуться в Play Hub</button>';
+  if(playMode==='rocket') return '<div class="sectionhead"><h2>🚀 Ракета</h2><span class="count">Демо-раунд</span></div><label class="inputlabel" for="rocketStakeInput">Демо-ставка в GRAM</label><input id="rocketStakeInput" type="number" min="0.1" max="10000" step="0.1" value="'+trainingStake+'" '+(rocketRunning?'disabled':'')+' style="width:100%;margin:6px 0 10px"><div class="summary"><div><span>Баланс</span><b>'+fmt(state.bal)+' GRAM</b></div><div><span>Ставка раунда</span><b>'+fmt(trainingStake)+' GRAM</b></div></div><div class="rocket-stage"><div class="rocket-icon" id="rocketIcon">🚀</div><strong id="rocketStatus">Готов к старту</strong><div class="rocket-mult" id="rocketMult">1.00×</div><div class="rocket-sub">Лучший результат: <b id="rocketBest">'+rocketBest.toFixed(2)+'×</b></div></div><p class="note">При запуске ставка списывается с виртуального баланса. Забери результат до завершения полёта; если ракета упадёт, демо-ставка сгорит. GRAM не имеют денежной стоимости.</p><button class="btn" data-rocket>Запустить ракету</button><button class="btn secondary" data-playback style="margin-top:8px">← Все режимы</button>';
+  if(playMode==='pvp') return '<div class="sectionhead"><h2>⚔️ PvP Арена</h2><span class="count">Демо-матч</span></div><div class="pvp-box"><div class="fighter">🟠<b>Ты</b><strong id="youScore">0</strong></div><div class="versus">VS</div><div class="fighter">🤖<b>Бот-соперник</b><strong id="botScore">0</strong></div></div><p class="note">Локальная тренировка против компьютера. Другие игроки пока не подключены; матч не влияет на баланс.</p><button class="btn" data-pvp>Начать раунд</button><button class="btn secondary" data-playback>← Все режимы</button>';
+  return '<div class="sectionhead"><h2>Play Hub</h2><span class="count">Игровой центр</span></div><div class="hub-banner"><div class="hub-orb">✦</div><div><b>Играй в тренировочных режимах</b><div class="muted">Чёрный · оранжевый · без ставок</div></div></div><div class="gamecards">'+games.map(g=>'<button class="gamecard" data-play="'+g[3]+'"><span class="gameicon">'+g[0]+'</span><b>'+g[1]+'</b><span class="muted">'+g[2]+'</span><span class="game-open">Открыть →</span></button>').join('')+'</div><p class="note">Это первая демо-версия Play Hub. Игры работают локально: без реальных денег, ставок, выплат и онлайн-матчмейкинга.</p>';
+}
+
 function renderProfile(){
   const user=tg?.initDataUnsafe?.user||null;
   const fullName=user?[user.first_name,user.last_name].filter(Boolean).join(' '):'Гость';
@@ -861,15 +740,12 @@ function renderProfile(){
 function render(){
   $('bal').textContent=fmt(state.bal);
   document.documentElement.dataset.theme=state.theme;
-  const chromeColor=state.theme==='dark'?'#050505':'#f7f5fb';
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content',chromeColor);
-  try{if(tg){tg.setHeaderColor(chromeColor);tg.setBackgroundColor(chromeColor);}}catch(e){}
+  document.querySelector('meta[name="theme-color"]')?.setAttribute(
+    'content','#050505');
   $('theme').textContent=state.theme==='dark'?'☀️':'🌙';
   $('theme').setAttribute('aria-label',state.theme==='dark'?'Включить светлую тему':'Включить тёмную тему');
   $('main').innerHTML=tab==='market'?renderMarket():tab==='mine'?renderMine():tab==='profile'?renderProfile():renderPlay();
 }
-
-
 
 function find(arr,id){
   return arr.find(x=>String(x.id)===String(id));
@@ -923,60 +799,61 @@ function sellSheet(id){
 
 function updateSale(){
   const p=Number($('priceInput')?.value);
-  const valid=Number.isFinite(p)&&p>=0.01&&p<=100000000;
-  const summary=$('saleSummary');
-  if(!summary)return;
-  summary.innerHTML=`<div><span>Комиссия (расчёт 5%)</span><b>${valid?fmt(p*.05):'—'} GRAM</b></div>
-    <div><span>После комиссии</span><b>${valid?fmt(p*.95):'—'} GRAM</b></div>`;
-  const submit=document.querySelector('[data-list]');
-  if(submit)submit.disabled=!valid;
+  $('saleSummary').innerHTML=`<div><span>Комиссия (расчёт 5%)</span><b>${p>0?fmt(p*.05):'—'} GRAM</b></div>
+    <div><span>После комиссии</span><b>${p>0?fmt(p*.95):'—'} GRAM</b></div>`;
 }
 
 function listMine(id){
- const input=$('priceInput'),p=Number(input?.value),x=find(state.mine,id);
- if(!x||!Number.isFinite(p)||p<=0||p>100000000){toast('Укажи цену от 0,01 до 100 000 000 GRAM');haptic('error');return;}
- const localListing={id:++state.nid,g:x.g,n:x.n,p:round(p),own:true};state.mk.push(localListing);state.mine=state.mine.filter(y=>y.id!==x.id);
- log('listing',gifts[x.g][1],0,'Лот выставлен · ожидание синхронизации');save();closeSheet();mineTab='listed';setTab('mine');toast('Публикую лот в общий маркет…');
- sharedRequest('rpc/create_market_listing',{method:'POST',body:JSON.stringify({p_gift_name:gifts[x.g][1],p_serial:Number(x.n),p_price:round(p),p_seller_id:sellerId,p_seller_balance:round(state.bal)})}).then(async result=>{
-  state.mk=state.mk.filter(y=>String(y.id)!==String(localListing.id));await refreshSharedListings();await refreshSharedWallet();save();render();toast(result?.ok?'Лот опубликован в общем маркете':'Лот опубликован');
- }).catch(e=>{
-  console.warn('Listing publish failed:',e);state.mk=state.mk.filter(y=>y.id!==localListing.id);state.mine.push({id:x.id,g:x.g,n:x.n,buy:x.buy||0});log('listing_error',gifts[x.g][1],0,'Публикация не удалась');save();render();toast('Не удалось выставить лот: '+String(e?.message||e).slice(0,100));
- });
+  const input=$('priceInput');
+  const p=Number(input?.value);
+  const x=find(state.mine,id);
+
+  if(!x||!Number.isFinite(p)||p<=0){
+    toast('Укажи корректную цену больше нуля');
+    haptic('error');
+    return;
+  }
+
+  state.mine=state.mine.filter(y=>y.id!==x.id);
+  state.mk.push({id:++state.nid,g:x.g,n:x.n,p:round(p),own:true});
+  log('listing',gifts[x.g][1],0,'Демо-лот выставлен');
+  save();
+  closeSheet();
+  setTab('mine');
+  mineTab='listed';
+  render();
+  toast('Демо-лот выставлен');
 }
 
-async function unlist(id){
- const x=find(state.mk,id);if(!x||!x.own)return;
- if(x.shared&&x.dbId){try{await sharedRequest('rpc/cancel_market_listing',{method:'POST',body:JSON.stringify({p_listing_id:Number(x.dbId),p_seller_id:sellerId})});}catch(e){console.warn('Unlist failed:',e);toast('Не удалось снять лот: '+String(e?.message||e).slice(0,100));return;}}
- state.mk=state.mk.filter(y=>String(y.id)!==String(x.id));
- if(!x.shared)state.mine.push({id:++state.nid,g:x.g,n:x.n,buy:x.p});
- log('unlist',gifts[x.g][1],0,'Лот снят с продажи');save();render();toast('Лот снят');
- if(x.shared){await refreshSharedListings();await refreshSharedWallet();}
+function unlist(id){
+  const x=find(state.mk,id);
+  if(!x||!x.own) return;
+
+  state.mk=state.mk.filter(y=>y.id!==x.id);
+  state.mine.push({id:++state.nid,g:x.g,n:x.n,buy:x.p});
+  log('unlist',gifts[x.g][1],0,'Лот снят с продажи');
+  save();
+  render();
+  toast('Лот снят');
 }
 
-async function doBuy(id){
+function doBuy(id){
   const x=find(state.mk,id);
   if(!x||x.own||!Number.isFinite(x.p)||x.p<=0) return;
-  if(state.bal<x.p){ toast('Недостаточно средств'); return; }
-  if(!x.shared || !x.dbId){ toast('Этот демо-лот нельзя купить между аккаунтами'); return; }
-  const buyButton=document.querySelector('[data-buy="'+String(id).replace(/"/g,'')+'"]');
-  if(buyButton) buyButton.disabled=true;
-  try {
-    await sharedRequest('rpc/purchase_market_listing',{
-      method:'POST',
-      body:JSON.stringify({p_listing_id:Number(x.dbId),p_buyer_id:sellerId,p_buyer_balance:round(state.bal)})
-    });
-    state.mk=state.mk.filter(y=>String(y.id)!==String(x.id));
-    log('buy',gifts[x.g][1],-x.p,'Покупка общего NFT');
-    await refreshSharedListings();
-    await refreshSharedWallet();
-    save(); closeSheet(); render(); haptic('success');
-    toast('NFT куплена! Продавцу начислена оплата');
-  } catch(e) {
-    console.warn('Purchase failed:',e);
-    const detail=String(e?.message||e||'Неизвестная ошибка').replace(/\s+/g,' ').slice(0,180);
-    toast('Покупка не прошла: '+detail);
-    if(buyButton) buyButton.disabled=false;
+  if(state.bal<x.p){
+    toast('Недостаточно средств');
+    return;
   }
+
+  state.bal=round(state.bal-x.p);
+  state.mk=state.mk.filter(y=>y.id!==x.id);
+  state.mine.push({id:++state.nid,g:x.g,n:x.n,buy:x.p});
+  log('buy',gifts[x.g][1],-x.p,'Демо-покупка');
+  save();
+  closeSheet();
+  render();
+  haptic('success');
+  toast('Подарок добавлен в демо-коллекцию');
 }
 
 function editListing(id){
@@ -998,18 +875,67 @@ document.addEventListener('click',e=>{
 
   if(b.id==='marketTab') return setTab('market');
   if(b.id==='mineTab') return setTab('mine');
-  if(b.id==='playTab'){playMode='';freeTapCount=0;return setTab('play');}
+  if(b.id==='playTab'){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode='';return setTab('play');}
   if(b.id==='profileTab') return setTab('profile');
-  if(d.play!==undefined){playMode=d.play;freeTapCount=0;minesRevealed=[];minesBombs=[];render();return;}
-  if(d.playback!==undefined){playMode='';freeTapCount=0;setTab('play');return;}
-  if(d.minesreset!==undefined){minesBombs=[];while(minesBombs.length<5){const n=Math.floor(Math.random()*25);if(!minesBombs.includes(n))minesBombs.push(n);}minesRevealed=[];render();return;}
-  if(d.minecell!==undefined){const n=Number(d.minecell);if(!minesBombs.length){while(minesBombs.length<5){const z=Math.floor(Math.random()*25);if(!minesBombs.includes(z))minesBombs.push(z);}}if(!minesRevealed.includes(n))minesRevealed.push(n);render();return;}
-  if(d.duel){const opts=['rock','paper','scissors'],bot=opts[Math.floor(Math.random()*3)],win=d.duel===bot?0:((d.duel==='rock'&&bot==='scissors')||(d.duel==='paper'&&bot==='rock')||(d.duel==='scissors'&&bot==='paper'))?1:-1;if(win===1)pvpScore[0]++;else if(win===-1)pvpScore[1]++;pvpResult='Твой ход: '+({rock:'камень',paper:'бумага',scissors:'ножницы'}[d.duel])+'. Бот: '+({rock:'камень',paper:'бумага',scissors:'ножницы'}[bot])+'. '+(win===0?'Ничья.':win===1?'Ты выиграл раунд!':'Бот выиграл раунд.');render();return;}
-  if(d.rocket!==undefined){rocketResult=(1+Math.random()*8).toFixed(2);rocketMessage='Полёт завершён. Результат: '+rocketResult+'x (только визуальная демо-анимация).';render();return;}
-  if(d.spin!==undefined){const symbols=['🍒','⭐','💎','🔔','7️⃣','🍀'];spinResult=[0,1,2].map(()=>symbols[Math.floor(Math.random()*symbols.length)]);spinMessage=spinResult.every(x=>x===spinResult[0])?'Три одинаковых символа!':'Комбинация готова.';render();return;}
+  if(d.play!==undefined){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode=d.play;playRound=0;if(d.play==='mines'){minesStarted=false;minesOver=false;minesCashed=false;openedCells.clear();minesMultiplier=1;}if(d.play==='rocket'){rocketValue=1;rocketCrashAt=0;}render();return;}
+  if(d.playback!==undefined){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode='';minesStarted=false;minesOver=false;minesCashed=false;openedCells.clear();setTab('play');return;}
+  if(d.cashout!==undefined){if(minesOver||!minesStarted||openedCells.size===0)return;minesOver=true;minesCashed=true;const payout=round(trainingStake*minesMultiplier);state.bal=round(state.bal+payout);log('game_win','Мины',payout,'Возврат демо-ставки × '+minesMultiplier.toFixed(2));save();haptic('success');toast('Забрал '+fmt(payout)+' GRAM · демо-баланс');render();return;}
+  if(d.newmines!==undefined||d.startmines!==undefined){const input=$('trainingStakeInput');const mineSelect=$('mineCountSelect');if(input){const n=Number(input.value);if(Number.isFinite(n)&&n>=0.1&&n<=10000)trainingStake=Math.round(n*10)/10;else{toast('Укажи значение от 0,1 до 10 000 GRAM');return;}}if(mineSelect)minesCount=Number(mineSelect.value)||3;if(d.startmines!==undefined&&state.bal<trainingStake){toast('Недостаточно GRAM на демо-балансе');return;}if(d.startmines!==undefined){state.bal=round(state.bal-trainingStake);log('game_bet','Мины',-trainingStake,'Демо-ставка · '+minesCount+' мин');save();}startMines();haptic('light');render();return;}
+  if(d.cell!==undefined){
+    const cell=Number(d.cell);
+    if(minesOver||!minesStarted||openedCells.has(cell)) return;
+    openedCells.add(cell);
+    if(minesSet.has(cell)){minesOver=true;log('game_loss','Мины',0,'Демо-ставка потеряна: '+fmt(trainingStake)+' GRAM');save();haptic('error');toast('💥 Мина! Потеряно '+fmt(trainingStake)+' демо-GRAM');}
+    else {minesMultiplier=Math.min(3,Math.round(minesMultiplier*1.12*100)/100);haptic('light');}
+    render();return;
+  }
+  if(d.rocket!==undefined){
+    const status=$('rocketStatus'),mult=$('rocketMult'),icon=$('rocketIcon');
+    if(!status||!mult||!icon)return;
+    if(rocketRunning){
+      rocketRunning=false;
+      if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}
+      const payout=round(rocketStake*rocketValue);state.bal=round(state.bal+payout);log('game_win','Ракета',payout,'Забрал на '+rocketValue.toFixed(2)+'× · ставка '+fmt(rocketStake));save();
+      rocketBest=Math.max(rocketBest,rocketValue);
+      status.textContent='Забрал · +'+fmt(payout)+' GRAM';
+      icon.classList.remove('flying');icon.textContent='✅';
+      mult.textContent=rocketValue.toFixed(2)+'×';
+      b.textContent='Запустить снова';
+      const best=$('rocketBest');if(best)best.textContent=rocketBest.toFixed(2)+'×';
+      haptic('success');toast('Забрал '+fmt(payout)+' демо-GRAM');
+      render();
+    }else{
+      const stakeInput=$('rocketStakeInput');const parsed=Number(stakeInput?.value??trainingStake);
+      if(!Number.isFinite(parsed)||parsed<0.1||parsed>10000){toast('Укажи ставку от 0,1 до 10 000 GRAM');return;}
+      trainingStake=Math.round(parsed*10)/10;
+      if(state.bal<trainingStake){toast('Недостаточно GRAM на демо-балансе');return;}
+      rocketStake=trainingStake;state.bal=round(state.bal-rocketStake);log('game_bet','Ракета',-rocketStake,'Демо-ставка');save();render();
+      rocketRunning=true;rocketValue=1;
+      rocketCrashAt=4+Math.random()*6;
+      const started=Date.now();
+      status.textContent='Ракета летит — успей остановить!';
+      icon.textContent='🚀';icon.classList.add('flying');
+      mult.textContent='1.00×';b.textContent='Остановить и сохранить очки';
+      rocketTimer=setInterval(()=>{
+        if(!rocketRunning){clearInterval(rocketTimer);rocketTimer=null;return;}
+        const elapsed=(Date.now()-started)/1000;
+        rocketValue=Math.min(99,Math.exp(elapsed*0.13));
+        const currentMult=$('rocketMult'),currentStatus=$('rocketStatus'),rocketIcon=$('rocketIcon'),rocketButton=document.querySelector('[data-rocket]');
+        if(currentMult)currentMult.textContent=rocketValue.toFixed(2)+'×';
+        if(elapsed>=rocketCrashAt){
+          rocketRunning=false;clearInterval(rocketTimer);rocketTimer=null;
+          if(currentStatus)currentStatus.textContent='💥 Полёт завершён · ставка потеряна';
+          if(rocketIcon){rocketIcon.classList.remove('flying');rocketIcon.textContent='💥';}
+          if(rocketButton)rocketButton.textContent='Запустить снова';
+          log('game_loss','Ракета',0,'Демо-ставка потеряна: '+fmt(rocketStake)+' GRAM');save();
+          toast('Ракета упала · потеряно '+fmt(rocketStake)+' демо-GRAM');
+        }
+      },80);
+    }
+    return;
+  }
+  if(d.pvp!==undefined){const you=Math.floor(Math.random()*4)+1;const bot=Math.floor(Math.random()*4)+1;$('youScore').textContent=you;$('botScore').textContent=bot;b.textContent=you===bot?'Ничья · ещё раунд':you>bot?'Победа в тренировке · ещё раунд':'Соперник выиграл · ещё раунд';return;}
 
-  if(d.tap!==undefined){freeTapCount=Math.min(20,freeTapCount+1);render();return;}
-  if(d.resettap!==undefined){freeTapCount=0;render();return;}
   if(b.id==='theme'){
     state.theme=state.theme==='dark'?'light':'dark';
     save();render();return;
@@ -1047,37 +973,14 @@ document.addEventListener('click',e=>{
     save();render();return;
   }
 
-
-  if(d.catalogbuy!==undefined){
-    const giftIndex=Number(d.catalogbuy);
-    const gift=gifts[giftIndex];
-    if(!gift){toast('Подарок не найден');return;}
-    const price=round(gift[2]);
-    const enough=state.bal>=price;
-    openSheet(`${art(giftIndex)}<h2>${esc(gift[1])}</h2>
-      <div class="desc">Покупка из виртуального каталога</div>
-      <div class="summary">
-        <div><span>Демо-цена</span><b>${fmt(price)} GRAM</b></div>
-        <div><span>Текущий баланс</span><b>${fmt(state.bal)} GRAM</b></div>
-        <div><span>Останется</span><b>${fmt(Math.max(0,state.bal-price))} GRAM</b></div>
-      </div>
-      ${enough
-        ? `<button class="btn" data-confirmcatalogbuy="${giftIndex}">Купить</button>`
-        : '<p style="color:var(--red);font-size:13px">Недостаточно виртуальных GRAM.</p>'}
-      <button class="btn secondary" data-close>Отмена</button>`);
+  if(d.giftinfo){
+    const gift=liveCatalog?.find(x=>String(x.id)===String(d.giftinfo));
+    if(gift){
+      openSheet('<h2>Официальный подарок Telegram</h2><div class="desc">ID: '+esc(gift.id)+'</div><div class="summary"><div><span>Цена отправки ботом</span><b>'+fmt(gift.stars)+' Stars</b></div><div><span>Тип стикера</span><b>'+esc(gift.stickerType)+'</b></div><div><span>Остаток</span><b>'+(gift.remainingCount===null?'Не указан':fmt(gift.remainingCount))+'</b></div></div><p class="note">Это информационная карточка. Реальная покупка или передача не выполняется.</p><button class="btn secondary" data-close>Закрыть</button>');
+    }
     return;
   }
-  if(d.confirmcatalogbuy!==undefined){
-    const giftIndex=Number(d.confirmcatalogbuy);
-    const gift=gifts[giftIndex];
-    if(!gift){toast('Подарок не найден');closeSheet();return;}
-    const price=round(gift[2]);
-    if(!Number.isFinite(price)||price<=0||state.bal<price){toast('Недостаточно виртуальных GRAM');return;}
-    state.bal=round(state.bal-price);
-    state.mine.unshift({id:++state.nid,g:giftIndex,n:Math.floor(Date.now()/1000),buy:price});
-    log('catalog_buy',gift[1],-price,'Покупка из виртуального каталога');
-    save();closeSheet();render();haptic('success');toast('Покупка успешна — подарок в коллекции');return;
-  }
+
   if(d.buy) return confirmBuy(d.buy);
   if(d.confirmbuy) return doBuy(d.confirmbuy);
   if(d.close!==undefined) return closeSheet();
@@ -1089,37 +992,12 @@ document.addEventListener('click',e=>{
   if(d.saveprice){
     const x=find(state.mk,d.saveprice);
     const p=Number($('editPrice')?.value);
-    if(!x||!x.own||!Number.isFinite(p)||p<=0||p>100000000){
-      toast('Укажи цену от 0,01 до 100 000 000 GRAM');
+    if(!x||!x.own||!Number.isFinite(p)||p<=0){
+      toast('Укажи корректную цену');
       return;
     }
-    const newPrice=round(p);
-    b.disabled=true;
-    b.textContent='Сохраняю…';
-    (async()=>{
-      try{
-        if(x.shared && x.dbId){
-          await sharedRequest('rpc/update_market_listing',{
-            method:'POST',
-            body:JSON.stringify({
-              p_listing_id:Number(x.dbId),
-              p_seller_id:sellerId,
-              p_new_price:newPrice
-            })
-          });
-          await refreshSharedListings();
-        }else{
-          x.p=newPrice;
-          save();
-        }
-        closeSheet();render();toast('Цена обновлена');
-      }catch(err){
-        console.warn('Price update failed:',err);
-        b.disabled=false;b.textContent='Сохранить';
-        toast('Не удалось сохранить цену. Проверь подключение базы и SQL-настройку.');
-      }
-    })();
-    return;
+    x.p=round(p);
+    save();closeSheet();render();toast('Цена обновлена');return;
   }
 
   if(d.minetab){
@@ -1142,10 +1020,7 @@ document.addEventListener('click',e=>{
 
 $('q').addEventListener('input',e=>{
   search=e.target.value.trim().toLowerCase();
-  const start=e.target.selectionStart;
   render();
-  const next=$('q');
-  if(next){next.focus({preventScroll:true});try{next.setSelectionRange(start,start);}catch(_){}}
 });
 
 $('sort').addEventListener('change',e=>{
@@ -1163,14 +1038,23 @@ document.addEventListener('keydown',e=>{
 
 render();
 
-refreshSharedListings();
-refreshSharedWallet();
-setInterval(() => {
-  if (document.visibilityState === 'visible') { refreshSharedListings(); refreshSharedWallet(); }
-}, 15000);
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') { refreshSharedListings(); refreshSharedWallet(); }
-});
+async function loadLiveCatalog(){
+  try{
+    const response=await fetch('/api/gifts',{headers:{Accept:'application/json'}});
+    const data=await response.json();
+    if(!response.ok) throw new Error(data.setup||data.error||'Каталог временно недоступен');
+    if(!Array.isArray(data.gifts)) throw new Error('Некорректный ответ каталога');
+    liveCatalog=data.gifts;
+    liveCatalogError='';
+  }catch(error){
+    liveCatalog=null;
+    liveCatalogError=error?.message||'Не удалось загрузить каталог';
+  }finally{
+    liveCatalogLoading=false;
+    if(tab==='market') render();
+  }
+}
+loadLiveCatalog();
 })();
 </script>
 </body>
