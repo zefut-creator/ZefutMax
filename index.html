@@ -1141,7 +1141,8 @@ async function doBuy(id){
     toast('NFT куплена! Продавцу начислена оплата');
   } catch(e) {
     console.warn('Purchase failed:',e);
-    toast('Покупка не прошла: обнови маркет и попробуй снова');
+    const detail=String(e?.message||e||'Неизвестная ошибка').replace(/\s+/g,' ').slice(0,180);
+    toast('Покупка не прошла: '+detail);
     if(buyButton) buyButton.disabled=false;
   }
 }
