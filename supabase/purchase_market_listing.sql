@@ -175,3 +175,36 @@ $$;
 
 revoke all on function public.create_market_listing(text, bigint, numeric, text, numeric) from public;
 grant execute on function public.create_market_listing(text, bigint, numeric, text, numeric) to anon, authenticated;
+
+
+-- Update the price of a listing, only for its seller.
+create or replace function public.update_market_listing(
+  p_listing_id bigint,
+  p_seller_id text,
+  p_new_price numeric
+) returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare updated_id bigint;
+begin
+  if p_new_price is null or p_new_price <= 0 then
+    raise exception 'Price must be greater than zero';
+  end if;
+
+  update public.market_listings
+  set price = round(p_new_price, 2)
+  where id = p_listing_id and seller_id = p_seller_id
+  returning id into updated_id;
+
+  if updated_id is null then
+    raise exception 'Listing not found or not yours';
+  end if;
+
+  return jsonb_build_object('ok', true, 'listing_id', updated_id, 'price', round(p_new_price, 2));
+end;
+$$;
+
+revoke all on function public.update_market_listing(bigint, text, numeric) from public;
+grant execute on function public.update_market_listing(bigint, text, numeric) to anon, authenticated;
