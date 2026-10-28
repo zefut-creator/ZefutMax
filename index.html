@@ -393,39 +393,7 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
 .upgrade-orb.target{border-color:#9e75ff77;background:radial-gradient(circle,#9e75ff35,transparent 70%),var(--panel2)}
 .upgrade-preview>span{color:var(--accent);font-size:22px;font-weight:900}
 
-/* Lucky Buy */
-.card .lucky-btn{margin-top:6px;background:transparent;border:1px solid var(--accent);color:var(--accent)}
-.lb-price{text-align:center;font-size:30px;font-weight:950;margin:6px 0}
-.lb-price small{font-size:12px;color:var(--muted)}
-.lb-box{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0}
-.lb-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.lb-chip{background:var(--panel);border:1px solid var(--line);color:var(--accent);border-radius:8px;padding:4px 9px;font-weight:900;font-size:12px}
-.lb-box input[type=range]{width:100%;padding:0;accent-color:var(--accent);border:0;background:transparent}
-.lb-skip{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0;font-size:13px}
-.sheet .lb-skip input{width:auto}
-.lb-spin{text-align:center;padding:36px 0;font-size:64px;animation:spins-pulse .25s ease-in-out infinite alternate}
-.lb-img{width:100%;height:100%;object-fit:contain;padding:8px}
-/* Lucky Buy roulette */
-.rl-wrap{position:relative;margin:16px -6px}
-.rl-view{overflow:hidden;padding:16px 0;-webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent)}
-.rl-track{display:flex;gap:10px;will-change:transform}
-.rl-tile{flex:none;width:96px;height:96px;border-radius:14px;display:grid;place-items:center;font-size:44px;border:1px solid var(--line);overflow:hidden}
-.rl-tile img{width:100%;height:100%;object-fit:contain;padding:8px}
-.rl-tile{position:relative}
-.rl-tile em{position:absolute;left:0;right:0;bottom:0;padding:12px 4px 5px;font-style:normal;font-size:9px;font-weight:850;text-align:center;color:#fff;background:linear-gradient(transparent,#000a);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rl-tile.clover{background:radial-gradient(circle at 50% 40%,#1d4a2acc,#0a1410);border-color:#2f5a3b}
-.rl-tile.clover span{font-size:40px;opacity:.9}
-.rl-arrow{position:absolute;left:50%;width:20px;height:14px;margin-left:-10px;background:var(--text);z-index:2}
-.rl-arrow.top{top:0;clip-path:polygon(0 0,100% 0,50% 100%)}
-.rl-arrow.bottom{bottom:0;clip-path:polygon(50% 0,0 100%,100% 100%)}
-  /* Маленькая кнопка Lucky Buy */
-.buyrow{display:flex;gap:6px;margin-top:auto}
-.buyrow .btn{flex:1;margin-top:0}
-.lucky-mini{flex:none;width:42px;border:0;border-radius:12px;background:#3fb5a5;display:grid;place-items:center;padding:0}
-.lucky-mini:active{transform:scale(.94)}
-.lucky-mini:hover{filter:brightness(1.1)}
 
-</style>
 </head>
 <body>
 <header>
@@ -689,7 +657,6 @@ let minesCount=3, minesSet=new Set(), openedCells=new Set(), minesOver=false;
 let trainingStake=10, rocketStake=10, minesMultiplier=1, minesCashed=false, minesStarted=false;
 let spinsBusy=false, spinsLast=[], spinsResult='Нажми «Крутить»', spinsWin=0;
 let toastTimer, state;
-let liveCatalog=null, liveCatalogError='', liveCatalogLoading=true;
 
 function seed(){return {bal:500,mine:[{id:1000,g:39,n:4521,buy:6.33}],mk:[],nid:1001,favs:[],history:[],theme:'dark'};}
 function validState(x){
@@ -777,20 +744,8 @@ function card(x){
     <div class="price">${fmt(x.p)} <small>GRAM</small></div>
     ${x.own
       ? '<button class="btn secondary" data-unlist="'+x.id+'">Снять лот</button>'
-      : '<div class="buyrow"><button class="btn" data-buy="'+x.id+'">Купить</button><button class="lucky-mini" data-lucky="'+x.id+'" aria-label="Lucky Buy" title="Lucky Buy"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff" aria-hidden="true"><circle cx="12" cy="7.5" r="4.2"/><circle cx="7" cy="14" r="4.2"/><circle cx="17" cy="14" r="4.2"/><path d="M12 13v8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button></div>'}
+      : '<div class="buyrow"><button class="btn" data-buy="'+x.id+'">Купить</button></div>'}
   </article>`;
-}
-
-function renderLiveCatalog(){
-  if(liveCatalogLoading) return '<div class="market-state"><span class="market-pulse"></span>Загружаем каталог NFT-моделей и фонов…</div>';
-  if(!liveCatalog) return '<div class="market-state"><b>Каталог NFT временно недоступен</b><p>'+esc(liveCatalogError||'Не удалось загрузить модели.')+'</p><button class="btn secondary" data-reloadcatalog>Повторить загрузку</button><p class="muted">Обычные Telegram-подарки и смайлики не подставляются вместо NFT.</p></div>';
-  if(!liveCatalog.length) return '<div class="market-state">Источник не вернул доступных моделей NFT.</div>';
-  return '<section class="live-market"><div class="sectionhead market-heading"><div><div class="market-kicker">ZEFUTMAX · COLLECTIBLES</div><h2>NFT-модели и фоны</h2><div class="market-caption">Коллекционные модели Telegram · галерея атрибутов, не объявления о продаже</div></div><span class="market-total">'+liveCatalog.length+' моделей</span></div>'+
-    '<div class="grid market-grid">'+liveCatalog.map((g,i)=>{
-      const bg=g.backdropColor ? '#'+String(g.backdropColor).replace('#','') : ['#30213f','#193d42','#45321d','#1d3153','#48232e'][i%5];
-      const visual=g.image ? '<img src="'+esc(g.image)+'" alt="'+esc(g.model||g.name)+'" loading="lazy" style="width:100%;height:100%;object-fit:contain;padding:12px" onerror="this.closest(\'.art\').innerHTML=\'<span class=&quot;muted&quot;>Модель недоступна</span>\'">' : '<span class="muted">Модель недоступна</span>';
-      return '<article class="card market-card"><div class="art market-art" style="background:'+bg+'">'+visual+'<span class="market-rarity">NFT MODEL</span></div><div class="cardtop"><b>'+esc(g.name||g.gift||'Telegram collectible')+'</b></div><div class="muted market-stock">Модель: '+esc(g.model||'—')+'</div><div class="muted market-stock">Фон: '+esc(g.backdrop||'—')+'</div></article>';
-    }).join('')+'</div><p class="note">Источник: GiftChanges API · Powered by @GiftChanges (api.changes.tg).</p></section>';
 }
 
 function catalogCard(index){
@@ -948,99 +903,7 @@ function render(){
   $('main').innerHTML=tab==='market'?renderMarket():tab==='mine'?renderMine():tab==='profile'?renderProfile():renderPlay();
 }
 
-/* ===== Lucky Buy ===== */
-let lbBusy=false,lbSkip=false,lbLast=10;
-const lbKey=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
-function lbVisual(i){
-  const n=lbKey(gifts[i][1]);
-  const hit=(liveCatalog||[]).find(c=>lbKey(c.gift)===n||lbKey(c.name)===n);
-  if(!hit||!hit.image) return art(i);
-  return '<div class="art c'+(i%4)+'"><img class="lb-img" src="'+esc(hit.image)+'" alt="'+esc(gifts[i][1])+'" onerror="this.replaceWith(document.createTextNode(\''+gifts[i][0]+'\'))"></div>';
-}
-function lbStake(price,ch){return Math.max(0.01,round(price*ch/100*1.12));}
-function lbOpen(id){
-  const x=find(state.mk,id); if(!x||x.own) return;
-  const g=gifts[x.g];
-  openSheet(lbVisual(x.g)+'<h2>'+esc(g[1])+'</h2><div class="desc">Lucky Buy · лот #'+x.n+' · демо</div>'+
-    '<div class="lb-price" id="lbStake"></div>'+
-    '<div class="summary"><div><span>Баланс</span><b>'+fmt(state.bal)+' GRAM</b></div></div>'+
-    '<div class="lb-box"><div class="lb-head"><b>Вероятность выиграть</b><span class="lb-chip" id="lbChance"></span></div><input id="lbRange" type="range" min="1" max="90" value="'+lbLast+'" data-lbid="'+x.id+'"></div>'+
-    '<label class="lb-skip"><span>Пропустить анимацию</span><input type="checkbox" id="lbSkip" '+(lbSkip?'checked':'')+'></label>'+
-    '<div class="summary"><div><span>Возможный выигрыш (<span id="lbMult"></span>)</span><b id="lbWin"></b></div><div><span>Мы покрываем</span><b id="lbCover"></b></div></div>'+
-    '<label class="lb-skip"><span>Я понимаю: это демо, GRAM виртуальные</span><input type="checkbox" id="lbAgree"></label>'+
-    '<button class="btn" id="lbGo" data-lbgo="'+x.id+'" disabled>Крутить</button><button class="btn secondary" data-close>Закрыть</button>');
-  lbUpdate();
-}
-function lbUpdate(){
-  const r=$('lbRange'); if(!r) return;
-  const x=find(state.mk,r.dataset.lbid); if(!x) return;
-  const ch=Number(r.value), st=lbStake(x.p,ch);
-  lbLast=ch;
-  $('lbChance').textContent=ch+'%';
-  $('lbStake').innerHTML='💎 '+fmt(st)+' <small>GRAM</small>';
-  $('lbMult').textContent='×'+(x.p/st).toFixed(2);
-  $('lbWin').textContent=fmt(x.p)+' GRAM';
-  $('lbCover').textContent=fmt(Math.max(0,x.p-st))+' GRAM';
-  const enough=state.bal>=st;
-  $('lbGo').disabled=!($('lbAgree').checked&&enough&&!lbBusy);
-  $('lbGo').textContent=enough?'Крутить за '+fmt(st)+' GRAM':'Недостаточно GRAM';
-}
-function lbImgUrl(i){
-  const n=lbKey(gifts[i][1]);
-  const hit=(liveCatalog||[]).find(c=>lbKey(c.gift)===n||lbKey(c.name)===n);
-  return hit&&hit.image?hit.image:'';
-}
-function lbTile(i){
-  if(i<0) return '<div class="rl-tile clover"><span>🍀</span><em>Пусто</em></div>';
-  const u=lbImgUrl(i), pal=['#1f3d3a','#2a2442','#40301c','#1e3050','#44222d'][i%5];
-  return '<div class="rl-tile" style="background:radial-gradient(circle at 50% 40%,'+pal+'cc,#0c1010)">'+(u?'<img src="'+esc(u)+'" alt="" onerror="this.replaceWith(document.createTextNode(\''+gifts[i][0]+'\'))">':gifts[i][0])+'<em>'+esc(gifts[i][1])+'</em></div>';
-}
-function lbRoulette(x,win,st,finish){
-  const g=gifts[x.g], others=gifts.map((_,i)=>i).filter(i=>i!==x.g);
-  const rnd=a=>a[Math.floor(Math.random()*a.length)];
-  const TILE=96,GAP=10,STEP=TILE+GAP,STOP=34,TOTAL=42;
-  const seq=Array.from({length:TOTAL},(_,k)=>k===STOP?(win?x.g:-1):(Math.random()<.35?x.g:-1));
-  openSheet('<div class="market-kicker" style="text-align:center">LUCKY BUY</div><h2>'+esc(g[1])+'</h2><div class="lb-price">💎 '+fmt(st)+' <small>GRAM</small></div><div class="rl-wrap"><i class="rl-arrow top"></i><div class="rl-view" id="rlView"><div class="rl-track" id="rlTrack">'+seq.map(i=>lbTile(i)).join('')+'</div></div><i class="rl-arrow bottom"></i></div><div class="muted" style="text-align:center;margin-top:12px">Крутим…</div>');
-  const view=$('rlView'),track=$('rlTrack');
-  if(!view||!track){setTimeout(finish,300);return;}
-  const jitter=(Math.random()-.5)*50;
-  const target=STOP*STEP+TILE/2+jitter-view.clientWidth/2;
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    track.style.transition='transform 4.6s cubic-bezier(.12,.72,.12,1)';
-    track.style.transform='translateX('+(-target)+'px)';
-  }));
-  setTimeout(finish,4900);
-}
-function lbGo(id){
-  if(lbBusy) return;
-  const x=find(state.mk,id), r=$('lbRange'); if(!x||x.own||!r) return;
-  const ch=Number(r.value), st=lbStake(x.p,ch), g=gifts[x.g];
-  if(state.bal<st){toast('Недостаточно виртуальных GRAM');return;}
-  lbBusy=true;
-  state.bal=round(state.bal-st); save(); render();
-  const win=Math.random()*100<ch;
-  const finish=()=>{
-    lbBusy=false;
-    if(win){
-      state.mk=state.mk.filter(y=>y.id!==x.id);
-      state.mine.push({id:++state.nid,g:x.g,n:x.n,buy:st});
-      log('lucky_win',g[1],-st,'Lucky Buy · победа · шанс '+ch+'% · демо');
-    }else log('lucky_loss',g[1],-st,'Lucky Buy · не повезло · шанс '+ch+'% · демо');
-    save(); render();
-    openSheet((win?lbVisual(x.g):'<div class="art c1"><span class="emoji">🍀</span></div>')+'<h2>'+(win?'🎉 Победа!':'Не повезло')+'</h2><div class="desc">'+esc(g[1])+' · '+(win?'добавлен в «Мои подарки»':'ставка списана, лот остался на маркете')+'</div>'+
-      '<div class="summary"><div><span>Ставка</span><b>'+fmt(st)+' GRAM</b></div><div><span>Шанс</span><b>'+ch+'%</b></div><div><span>Баланс</span><b>'+fmt(state.bal)+' GRAM</b></div></div>'+
-      (win?'':'<button class="btn" data-lucky="'+x.id+'">Ещё раз</button>')+'<button class="btn secondary" data-close>Закрыть</button>');
-    haptic(win?'success':'error');
-  };
-  if(lbSkip){finish();return;}
-  lbRoulette(x,win,st,finish);
-}
-document.addEventListener('input',e=>{if(e.target.id==='lbRange') lbUpdate();});
-document.addEventListener('change',e=>{
-  if(e.target.id==='lbSkip') lbSkip=e.target.checked;
-  if(e.target.id==='lbAgree'||e.target.id==='lbSkip') lbUpdate();
-});
-/* ===== /Lucky Buy ===== */
+
 
 function find(arr,id){
   return arr.find(x=>String(x.id)===String(id));
@@ -1228,38 +1091,7 @@ document.addEventListener('click',e=>{
     save();render();return;
   }
 
-  if(d.reloadcatalog){ liveCatalogLoading=true; liveCatalog=null; render(); loadLiveCatalog(); return; }
-  if(d.upgrader!==undefined){
-    const options=(liveCatalog||[]).slice(0,12);
-    openSheet('<div class="market-kicker">ZEFUTMAX TOOLS</div><h2>Апгрейдер подарков</h2><div class="desc">Демо-механика для интерфейса. Улучшение не меняет настоящий подарок.</div><div class="upgrade-preview"><div class="upgrade-orb">🎁</div><span>→</span><div class="upgrade-orb target">💎</div></div><label class="muted" for="upgradeCost">Сумма GRAM</label><input id="upgradeCost" type="number" min="1" max="10000" value="100" style="width:100%;margin:7px 0 12px"><label class="muted" for="upgradeTarget">Цель улучшения</label><select id="upgradeTarget" style="width:100%;margin:7px 0 12px">'+options.map(g=>'<option value="'+esc(g.id)+'">'+esc(g.stickerEmoji||'🎁')+' '+esc(g.id)+' · '+fmt(g.stars)+' Stars</option>').join('')+'</select><button class="btn" data-runupgrade>Показать результат</button><div class="muted" style="margin-top:10px">Используется только виртуальный баланс GRAM.</div><button class="btn secondary" data-close style="margin-top:8px">Закрыть</button>');
-    return;
-  }
-  if(d.runupgrade!==undefined){
-    const cost=Number($('upgradeCost')?.value||0);
-    const target=$('upgradeTarget')?.value||'';
-    if(!Number.isFinite(cost)||cost<1||cost>10000){toast('Укажи сумму от 1 до 10 000 GRAM');return;}
-    if(state.bal<cost){toast('Недостаточно виртуальных GRAM');return;}
-    const gift=liveCatalog?.find(x=>String(x.id)===String(target));
-    openSheet('<div class="market-kicker">РЕЗУЛЬТАТ</div><h2>Апгрейд в демо-режиме</h2><div class="upgrade-preview"><div class="upgrade-orb">🎁</div><span>→</span><div class="upgrade-orb target">'+esc(gift?.stickerEmoji||'💎')+'</div></div><p class="desc">Цель: '+esc(gift?.stickerEmoji||'Подарок')+' · ID '+esc(target||'—')+'</p><p class="note">Результат показан для оформления интерфейса. Баланс не списан, NFT не создан и подарок не изменён.</p><button class="btn secondary" data-close>Готово</button>');
-    return;
-  }
 
-  if(d.giftinfo){
-    const gift=liveCatalog?.find(x=>String(x.id)===String(d.giftinfo));
-    if(gift){
-      openSheet('<h2>'+(String(gift.id).startsWith('fallback-')?'Демо-подарок':'Официальный подарок Telegram')+'</h2><div class="desc">ID: '+esc(gift.id)+'</div><div class="summary"><div><span>'+(String(gift.id).startsWith('fallback-')?'Примерная цена':'Цена отправки ботом')+'</span><b>'+fmt(gift.stars)+' Stars</b></div><div><span>Тип стикера</span><b>'+esc(gift.stickerType)+'</b></div><div><span>Остаток</span><b>'+(gift.remainingCount===null?'Не указан':fmt(gift.remainingCount))+'</b></div></div><p class="note">'+(String(gift.id).startsWith('fallback-')?'Это демонстрационный пример, не настоящий каталог Telegram.':'Это информационная карточка. Реальная покупка или передача не выполняется.')+'</p><button class="btn secondary" data-close>Закрыть</button>');
-    }
-    return;
-  }
-
-  if(d.catalogbuy!==undefined){
-    const index=Number(d.catalogbuy);if(!Number.isInteger(index)||index<0||index>=gifts.length)return;
-    const gift=gifts[index];
-    state.mine.push({id:++state.nid,g:index,n:Math.floor(10000+Math.random()*90000),buy:0});
-    log('catalog_add',gift[1],0,'Бесплатное добавление в локальную демо-коллекцию');save();render();haptic('success');toast(gift[1]+' добавлен в демо-коллекцию');return;
-  }
-  if(d.lucky) return lbOpen(d.lucky);
-  if(d.lbgo) return lbGo(d.lbgo);
   if(d.buy) return confirmBuy(d.buy);
   if(d.confirmbuy) return doBuy(d.confirmbuy);
   if(d.close!==undefined) return closeSheet();
@@ -1342,60 +1174,6 @@ document.addEventListener('keydown',e=>{
 
 render();
 
-async function loadLiveCatalog(){
-  const known = [
-    ['PlushPepe','Plush Pepe'],['DurovsCap',"Durov's Cap"],['HeartLocket','Heart Locket'],
-    ['JellyBunny','Jelly Bunny'],['LootBag','Loot Bag'],['AstralShard','Astral Shard'],
-    ['PreciousPeach','Precious Peach'],['EternalRose','Eternal Rose'],
-    ['BerryBox','Berry Box'],['VintageCigar','Vintage Cigar'],
-    ['MagicPotion','Magic Potion'],['KissedFrog','Kissed Frog'],
-    ['DeskCalendar','Desk Calendar'],['PartySparkler','Party Sparkler'],
-    ['SignetRing','Signet Ring'],['ScaredCat','Scared Cat'],
-    ['GemSignet','Gem Signet'],['PerfumeBottle','Perfume Bottle']
-  ];
-  const arr = v => Array.isArray(v) ? v : (v && typeof v==='object' ? Object.values(v) : []);
-  const nm = v => typeof v==='string' ? v : (v && (v.name||v.slug||v.id||v.model||v.title));
-  try{
-    const ar=await fetch('https://api.changes.tg/gifts',{headers:{Accept:'application/json'}});
-    let items=[];
-    if(ar.ok){const p=await ar.json();items=arr(p.gifts||p.result||p.data||p);}
-    let queue=items.map(v=>({slug:String(nm(v)||''),title:typeof v==='object'?(v.title||v.name||''):''})).filter(v=>v.slug);
-    if(!queue.length) queue=known.map(v=>({slug:v[0],title:v[1]}));
-    const rows=[];
-    for(const it of queue.slice(0,12)){
-      try{
-        const rs=await Promise.all([
-          fetch('https://api.changes.tg/gift/'+encodeURIComponent(it.slug)),
-          fetch('https://api.changes.tg/models/'+encodeURIComponent(it.slug)),
-          fetch('https://api.changes.tg/backdrops/'+encodeURIComponent(it.slug))
-        ]);
-        const d0=rs[0].ok?await rs[0].json():{};
-        const m0=rs[1].ok?await rs[1].json():{};
-        const b0=rs[2].ok?await rs[2].json():{};
-        const d=d0.gift||d0.data||d0.result||d0;
-        let models=arr(m0.models||m0.result||m0.data||m0);
-        if(!models.length) models=arr(d.models||d.model);
-        const backs=arr(b0.backdrops||b0.result||b0.data||b0);
-        if(!models.length) continue;
-        const model=models[0], modelName=nm(model);
-        if(!modelName) continue;
-        const back=backs[0], backName=nm(back)||'Classic';
-        let color=back&&typeof back==='object'?(back.hex||back.color||back.center_color||back.bg_color||''):'';
-        if(color && /^[0-9a-f]{6}$/i.test(String(color))) color='#'+color;
-        rows.push({name:it.title||d.title||d.name||it.slug,gift:it.slug,model:String(modelName),backdrop:String(backName),backdropColor:String(color||''),image:'https://api.changes.tg/model/'+encodeURIComponent(it.slug)+'/'+encodeURIComponent(String(modelName))+'.png?size=256'});
-      }catch(e){}
-    }
-    liveCatalog=rows;
-    liveCatalogError=rows.length?'':'API ответил, но модели не удалось распознать.';
-  }catch(e){
-    liveCatalog=[];
-    liveCatalogError='Не удалось загрузить каталог NFT. Обнови страницу позже.';
-  }finally{
-    liveCatalogLoading=false;
-    if(tab==='market') render();
-  }
-}
-loadLiveCatalog();
 refreshSharedListings();
 refreshSharedWallet();
 setInterval(() => {
