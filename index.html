@@ -150,9 +150,18 @@ nav{
   padding:8px 12px calc(8px + env(safe-area-inset-bottom))
 }
 nav button{
-  flex:1;max-width:440px;border:0;background:transparent;color:var(--muted);
-  border-radius:12px;padding:7px 5px;font-size:12px;font-weight:750
+  flex:1;min-width:0;max-width:440px;border:0;background:transparent;color:var(--muted);
+  border-radius:12px;padding:7px 3px;font-size:11px;font-weight:750
 }
+nav button .ico{font-size:18px}
+.case-hero{padding:20px;border:1px solid var(--line);border-radius:20px;background:radial-gradient(circle at 50% 0%,#ff9f1c25,transparent 65%),var(--panel);text-align:center;margin-bottom:16px}
+.case-box{font-size:68px;line-height:1.25;filter:drop-shadow(0 8px 18px #ff9f1c30)}
+.case-drop-list{display:grid;gap:8px;margin:14px 0}
+.case-drop{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 12px;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+.case-drop .reward{font-weight:750}
+.case-drop .chance{color:var(--accent);font-weight:850;white-space:nowrap}
+.case-result{padding:18px 12px;margin:12px 0;text-align:center;border:1px solid var(--accent);border-radius:16px;background:var(--panel2)}
+.case-result .reward-big{font-size:26px;font-weight:900;color:var(--accent);margin:8px 0}
 nav button .ico{display:block;font-size:20px;line-height:1.2;margin-bottom:3px}
 nav button.active{background:var(--panel2);color:var(--accent)}
 #overlay{
@@ -522,6 +531,7 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
   <button id="marketTab" class="active"><span class="ico">🛍️</span>Маркет</button>
   <button id="mineTab"><span class="ico">🎁</span>Мои подарки</button>
   <button id="playTab"><span class="ico">🚀</span>Игры</button>
+  <button id="casesTab"><span class="ico">📦</span>Кейсы</button>
   <button id="profileTab"><span class="ico">👤</span>Профиль</button>
 </nav>
 
@@ -717,6 +727,7 @@ function setTab(next){
   $('marketTab').classList.toggle('active',next==='market');
   $('mineTab').classList.toggle('active',next==='mine');
   $('playTab').classList.toggle('active',next==='play');
+  $('casesTab').classList.toggle('active',next==='cases');
   $('profileTab').classList.toggle('active',next==='profile');
   $('toolbar').style.display=next==='market'?'grid':'none';
   $('filters').style.display=next==='market'?'flex':'none';
@@ -828,6 +839,46 @@ function renderMine(){
     </div>${body}`;
 }
 
+const freeCaseDrops=[
+  {label:'0.005 GRAM',chance:60,type:'gram',amount:0.005},
+  {label:'0.01 GRAM',chance:20,type:'gram',amount:0.01},
+  {label:'0.05 GRAM',chance:10,type:'gram',amount:0.05},
+  {label:'0.1 GRAM',chance:5,type:'gram',amount:0.1},
+  {label:'1 GRAM',chance:4,type:'gram',amount:1},
+  {label:'2.5 GRAM',chance:0.9,type:'gram',amount:2.5},
+  {label:'NFT-подарок на выбор · 3–5 TON',chance:0.04,type:'nft',range:'3–5 TON'},
+  {label:'NFT-подарок на выбор · 7–15 TON',chance:0.03,type:'nft',range:'7–15 TON'},
+  {label:'NFT-подарок на выбор · 20–40 TON',chance:0.02,type:'nft',range:'20–40 TON'},
+  {label:'NFT-подарок на выбор · 40–60 TON',chance:0.009,type:'nft',range:'40–60 TON'},
+  {label:'NFT-подарок на выбор · 100–250 TON',chance:0.001,type:'nft',range:'100–250 TON'}
+];
+let freeCaseBusy=false;
+function renderCases(){
+  return '<div class="sectionhead"><h2>📦 Кейсы</h2><span class="count">1 кейс</span></div>'+
+    '<div class="case-hero"><div class="case-box">🎁</div><h2>Бесплатный кейс</h2><p class="muted">Открой кейс и получи случайный дроп. Открытие бесплатное.</p><button class="btn" data-opencase '+(freeCaseBusy?'disabled':'')+'>'+(freeCaseBusy?'Открываем…':'Открыть бесплатно')+'</button></div>'+
+    '<div class="sectionhead"><h2>Шансы выпадения</h2><span class="count">100%</span></div>'+
+    '<div class="case-drop-list">'+freeCaseDrops.map(d=>'<div class="case-drop"><span class="reward">'+esc(d.label)+'</span><span class="chance">'+String(d.chance).replace('.',',')+'%</span></div>').join('')+'</div>'+
+    '<p class="note">Кейс работает в демо-режиме. GRAM-дропы добавляются к виртуальному балансу. NFT-дропы показываются как демо-награда: реальная выдача NFT и перевод TON пока не подключены.</p>';
+}
+function openFreeCase(){
+  if(freeCaseBusy) return;
+  freeCaseBusy=true;render();
+  setTimeout(()=>{
+    let roll=Math.random()*100,acc=0,drop=freeCaseDrops[freeCaseDrops.length-1];
+    for(const item of freeCaseDrops){acc+=item.chance;if(roll<acc){drop=item;break;}}
+    freeCaseBusy=false;
+    if(drop.type==='gram'){
+      state.bal=round(state.bal+drop.amount);
+      log('Кейс','Бесплатный кейс',drop.amount,'Дроп '+drop.label);
+      save();render();
+      openSheet('<div class="case-result"><div class="case-box">🪙</div><div>Выпало</div><div class="reward-big">'+esc(drop.label)+'</div><div class="desc">Награда добавлена к демо-балансу.</div></div><button class="btn" data-close>Отлично</button>');
+    }else{
+      log('Кейс','NFT-дроп',0,'Демо-награда '+drop.label);
+      save();render();
+      openSheet('<div class="case-result"><div class="case-box">🎁</div><div>Редкий дроп!</div><div class="reward-big">NFT-подарок</div><b>'+esc(drop.range)+'</b><div class="desc">Это демо-награда. Сам NFT не выдан, поскольку реальная доставка ещё не подключена.</div></div><button class="btn" data-close>Забрать результат</button>');
+    }
+  },650);
+}
 function renderLuckyBuy(){
   return '<div class="sectionhead"><h2>🍀 Лаки бай</h2><span class="count">Информация</span></div><p class="note">В MRKT Lucky Buy — это не случайная выдача подарка за фиксированную цену. В оригинальном сервисе пользователь предлагает цену ниже указанной стоимости подарка, а результат зависит от вероятности. Проигрыш компенсируется карточкой Lucky Buy.</p><div class="hub-banner"><div class="hub-orb">🍀</div><div><b>Lucky Buy · MRKT</b><div class="muted">Демонстрационная справка</div></div></div><div class="summary"><div><span>Ставки и списания</span><b>Отключены</b></div><div><span>Реальные подарки</span><b>Не подключены</b></div></div><button class="btn secondary" data-luckyinfo>Как это работает?</button>';
 }
@@ -909,7 +960,7 @@ function render(){
     'content','#050505');
   $('theme').textContent=state.theme==='dark'?'☀️':'🌙';
   $('theme').setAttribute('aria-label',state.theme==='dark'?'Включить светлую тему':'Включить тёмную тему');
-  $('main').innerHTML=tab==='market'?renderMarket():tab==='mine'?renderMine():tab==='profile'?renderProfile():tab==='lucky'?renderLuckyBuy():renderPlay();
+  $('main').innerHTML=tab==='market'?renderMarket():tab==='mine'?renderMine():tab==='profile'?renderProfile():tab==='cases'?renderCases():tab==='lucky'?renderLuckyBuy():renderPlay();
 }
 
 /* ===== Lucky Buy ===== */
@@ -1135,7 +1186,9 @@ document.addEventListener('click',e=>{
   if(b.id==='marketTab') return setTab('market');
   if(b.id==='mineTab') return setTab('mine');
   if(b.id==='playTab'){stopRocketOnNavigate();playMode='';return setTab('play');}
+  if(b.id==='casesTab') return setTab('cases');
   if(b.id==='profileTab') return setTab('profile');
+  if(d.opencase!==undefined) return openFreeCase();
   if(d.lucky) return lbOpen(d.lucky);
   if(d.lbgo) return lbGo(d.lbgo);
   if(d.luckyinfo!==undefined){openSheet('<h2>Lucky Buy в MRKT</h2><div class="desc">Это не покупка случайного подарка за фиксированные 25 GRAM. В оригинальном MRKT пользователь предлагает цену ниже цены подарка; шанс зависит от предложения. При проигрыше предусмотрена компенсация карточкой Lucky Buy. В этом проекте ставки, списания баланса и выдача случайных подарков отключены — функция показана только как справка.</div><button class="btn secondary" data-close>Понятно</button>');return;}
