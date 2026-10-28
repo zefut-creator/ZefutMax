@@ -672,7 +672,7 @@ function renderLiveCatalog(){
         ? '<img src="/api/gift-image?file_id='+encodeURIComponent(imageId)+'" alt="'+esc(g.stickerEmoji||'Подарок Telegram')+'" loading="lazy" style="width:100%;height:100%;object-fit:contain;padding:15px" onerror="this.style.display=\'none\'">'
         : '<span class="emoji market-fallback">'+esc(g.stickerEmoji||'🎁')+'</span>';
       const stock=g.remainingCount!==null?'Осталось '+fmt(g.remainingCount):'Коллекция Telegram';
-      return '<article class="card market-card"><div class="art market-art market-art-'+(i%5)+'">'+visual+'<span class="market-rarity">'+(g.premiumOnly?'PREMIUM':'TELEGRAM')+'</span></div><div class="cardtop"><b>'+esc(g.stickerEmoji||'Telegram Gift')+'</b><span class="market-index">#'+esc(g.id)+'</span></div><div class="muted market-stock">'+esc(stock)+'</div><div class="market-price"><span>'+fmt(g.stars)+'</span><small>⭐ Stars</small></div><button class="btn market-details" data-giftinfo="'+esc(g.id)+'">Открыть карточку <span>↗</span></button></article>';
+      return '<article class="card market-card"><div class="art market-art market-art-'+(i%5)+'">'+visual+'<span class="market-rarity">'+(g.id&&String(g.id).startsWith('fallback-')?'DEMO':(g.premiumOnly?'PREMIUM':'TELEGRAM'))+'</span></div><div class="cardtop"><b>'+esc(g.stickerEmoji||'Telegram Gift')+'</b><span class="market-index">#'+esc(g.id)+'</span></div><div class="muted market-stock">'+esc(stock)+'</div><div class="market-price"><span>'+fmt(g.stars)+'</span><small>⭐ Stars</small></div><button class="btn market-details" data-giftinfo="'+esc(g.id)+'">Открыть карточку <span>↗</span></button></article>';
     }).join('')+'</div></section>';
 }
 
@@ -1029,7 +1029,7 @@ document.addEventListener('click',e=>{
   if(d.giftinfo){
     const gift=liveCatalog?.find(x=>String(x.id)===String(d.giftinfo));
     if(gift){
-      openSheet('<h2>Официальный подарок Telegram</h2><div class="desc">ID: '+esc(gift.id)+'</div><div class="summary"><div><span>Цена отправки ботом</span><b>'+fmt(gift.stars)+' Stars</b></div><div><span>Тип стикера</span><b>'+esc(gift.stickerType)+'</b></div><div><span>Остаток</span><b>'+(gift.remainingCount===null?'Не указан':fmt(gift.remainingCount))+'</b></div></div><p class="note">Это информационная карточка. Реальная покупка или передача не выполняется.</p><button class="btn secondary" data-close>Закрыть</button>');
+      openSheet('<h2>'+(String(gift.id).startsWith('fallback-')?'Демо-подарок':'Официальный подарок Telegram')+'</h2><div class="desc">ID: '+esc(gift.id)+'</div><div class="summary"><div><span>'+(String(gift.id).startsWith('fallback-')?'Примерная цена':'Цена отправки ботом')+'</span><b>'+fmt(gift.stars)+' Stars</b></div><div><span>Тип стикера</span><b>'+esc(gift.stickerType)+'</b></div><div><span>Остаток</span><b>'+(gift.remainingCount===null?'Не указан':fmt(gift.remainingCount))+'</b></div></div><p class="note">'+(String(gift.id).startsWith('fallback-')?'Это демонстрационный пример, не настоящий каталог Telegram.':'Это информационная карточка. Реальная покупка или передача не выполняется.')+'</p><button class="btn secondary" data-close>Закрыть</button>');
     }
     return;
   }
