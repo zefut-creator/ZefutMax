@@ -34,6 +34,8 @@ module.exports = async function handler(req, res) {
       id: String(gift.id),
       stars: Number(gift.star_count),
       stickerFileId: gift.sticker?.file_id || null,
+      thumbnailFileId: gift.sticker?.thumbnail?.file_id || null,
+      previewFileId: gift.sticker?.thumbnail?.file_id || null,
       stickerEmoji: gift.sticker?.emoji || null,
       stickerType: gift.sticker?.is_animated ? 'animated' :
         gift.sticker?.is_video ? 'video' : 'static',
