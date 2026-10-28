@@ -79,7 +79,7 @@ begin
   where user_id=listing.seller_id;
 
   insert into public.owned_gifts(owner_id,gift_name,serial,purchase_price)
-  values(p_buyer_id,listing.gift_name,listing.id,listing.price);
+  values(p_buyer_id,listing.gift_name,coalesce(listing.serial,listing.id),listing.price);
   delete from public.market_listings where id=listing.id;
 
   return jsonb_build_object('ok',true,'listing_id',listing.id,'gift_name',listing.gift_name,'price',listing.price);
@@ -167,7 +167,7 @@ begin
 
   delete from public.market_listings where id = listing.id;
   insert into public.owned_gifts(owner_id, gift_name, serial, purchase_price)
-  values (listing.seller_id, listing.gift_name, listing.id, listing.price);
+  values (listing.seller_id, listing.gift_name, coalesce(listing.serial,listing.id), listing.price);
 
   return jsonb_build_object('ok', true, 'listing_id', listing.id);
 end;
