@@ -871,17 +871,32 @@ function caseItemMarkup(d,extra=''){
   const label=d.type==='nft'?'NFT '+d.range:d.label;
   return '<div class="case-roulette-item '+extra+'"><span class="case-emoji">'+icon+'</span><span>'+esc(label)+'</span></div>';
 }
+const FREE_CASE_COOLDOWN=24*60*60*1000;
+const FREE_CASE_STORAGE_KEY='zefutmax_free_case_last_open';
+function getFreeCaseRemaining(){
+  try{return Math.max(0,FREE_CASE_COOLDOWN-(Date.now()-(Number(localStorage.getItem(FREE_CASE_STORAGE_KEY))||0)));}catch(e){return 0;}
+}
+function formatFreeCaseRemaining(ms){
+  const total=Math.ceil(ms/1000),hours=Math.floor(total/3600),minutes=Math.floor((total%3600)/60),seconds=total%60;
+  return hours+' ч '+String(minutes).padStart(2,'0')+' мин '+String(seconds).padStart(2,'0')+' сек';
+}
 function renderCases(){
+  const remaining=getFreeCaseRemaining();
+  const onCooldown=remaining>0;
   return '<div class="sectionhead"><h2>📦 Кейсы</h2><span class="count">1 кейс</span></div>'+
-    '<div class="case-hero '+(freeCaseBusy?'case-opening':'')+'"><div class="case-box">🎁</div><h2>Бесплатный кейс</h2><p class="muted">Открой кейс и получи случайный дроп. Открытие бесплатное.</p>'+
+    '<div class="case-hero '+(freeCaseBusy?'case-opening':'')+'"><div class="case-box">🎁</div><h2>Бесплатный кейс</h2><p class="muted">Открывай один раз в 24 часа и получай случайный дроп.</p>'+
     (freeCaseBusy?'<div class="case-roulette"><div class="case-roulette-track" id="caseRouletteTrack"></div><div class="case-roulette-pointer"></div></div><div class="case-roulette-status">Рулетка крутится…</div>':'')+
-    '<button class="btn" data-opencase '+(freeCaseBusy?'disabled':'')+'>'+(freeCaseBusy?'Открываем…':'Открыть бесплатно')+'</button></div>'+
+    (onCooldown&&!freeCaseBusy?'<p class="muted">Следующее открытие через <b>'+formatFreeCaseRemaining(remaining)+'</b></p>':'')+
+    '<button class="btn" data-opencase '+(freeCaseBusy||onCooldown?'disabled':'')+'>'+(freeCaseBusy?'Открываем…':onCooldown?'Кейс пока недоступен':'Открыть бесплатно')+'</button></div>'+
     '<div class="sectionhead"><h2>Шансы выпадения</h2><span class="count">100%</span></div>'+
     '<div class="case-drop-list">'+freeCaseDrops.map(d=>'<div class="case-drop"><span class="reward">'+esc(d.label)+'</span><span class="chance">'+String(d.chance).replace('.',',')+'%</span></div>').join('')+'</div>'+
     '<p class="note">Кейс работает в демо-режиме. GRAM-дропы добавляются к виртуальному балансу. NFT-дропы показываются как демо-награда: реальная выдача NFT и перевод TON пока не подключены.</p>';
 }
 function openFreeCase(){
   if(freeCaseBusy) return;
+  const remaining=getFreeCaseRemaining();
+  if(remaining>0){toast('Кейс будет доступен через '+formatFreeCaseRemaining(remaining));return;}
+  try{localStorage.setItem(FREE_CASE_STORAGE_KEY,String(Date.now()));}catch(e){}
   let roll=Math.random()*100,acc=0,drop=freeCaseDrops[freeCaseDrops.length-1];
   for(const item of freeCaseDrops){acc+=item.chance;if(roll<acc){drop=item;break;}}
   freeCaseBusy=true;render();
