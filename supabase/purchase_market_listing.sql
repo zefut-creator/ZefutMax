@@ -39,26 +39,6 @@ for select to anon, authenticated using (true);
 
 grant select on public.wallet_balances, public.owned_gifts to anon, authenticated;
 
-create or replace function public.cancel_market_listing(
-  p_listing_id bigint,
-  p_seller_id text
-) returns jsonb
-language plpgsql security definer set search_path = ''
-as $$
-declare listing public.market_listings%rowtype;
-begin
-  select * into listing from public.market_listings
-  where id=p_listing_id and seller_id=p_seller_id for update;
-  if not found then raise exception 'Listing not found or not yours'; end if;
-
-  delete from public.market_listings where id=listing.id;
-  insert into public.owned_gifts(owner_id,gift_name,serial,purchase_price)
-  values(p_seller_id,listing.gift_name,listing.id,0);
-
-  return jsonb_build_object('ok',true);
-end;
-$$;
-
 create or replace function public.purchase_market_listing(
   p_listing_id bigint,
   p_buyer_id text,
