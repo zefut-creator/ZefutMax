@@ -35,7 +35,7 @@ create or replace function public.create_market_listing(
   p_price numeric,
   p_seller_id text
 ) returns jsonb
-language plpgsql security definer set search_path = public
+language plpgsql security definer set search_path = ''
 as $$
 declare new_listing public.market_listings%rowtype;
 begin
@@ -67,7 +67,7 @@ create or replace function public.cancel_market_listing(
   p_listing_id bigint,
   p_seller_id text
 ) returns jsonb
-language plpgsql security definer set search_path = public
+language plpgsql security definer set search_path = ''
 as $$
 declare listing public.market_listings%rowtype;
 begin
@@ -88,7 +88,7 @@ create or replace function public.purchase_market_listing(
   p_buyer_id text,
   p_buyer_balance numeric
 ) returns jsonb
-language plpgsql security definer set search_path = public
+language plpgsql security definer set search_path = ''
 as $$
 declare
   listing public.market_listings%rowtype;
@@ -232,7 +232,7 @@ create or replace function public.update_market_listing(
 ) returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = ''
 as $$
 declare updated_id bigint;
 begin
