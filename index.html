@@ -389,6 +389,16 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
 @media(min-width:600px){.market-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(min-width:850px){.market-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 
+
+.market-tools{margin-top:16px;padding:15px;display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:17px;background:var(--panel)}
+.market-tools .btn{width:auto;min-width:100px}
+.market-state{margin:18px 0;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--muted);font-size:13px}
+.market-state .btn{margin-top:12px}
+.upgrade-preview{display:flex;align-items:center;justify-content:center;gap:18px;margin:20px 0}
+.upgrade-orb{width:82px;height:82px;display:grid;place-items:center;border:1px solid #ffb84a55;border-radius:22px;background:radial-gradient(circle,#ffb84a35,transparent 70%),var(--panel2);font-size:36px}
+.upgrade-orb.target{border-color:#9e75ff77;background:radial-gradient(circle,#9e75ff35,transparent 70%),var(--panel2)}
+.upgrade-preview>span{color:var(--accent);font-size:22px;font-weight:900}
+
 </style>
 </head>
 <body>
@@ -997,6 +1007,22 @@ document.addEventListener('click',e=>{
       ?state.favs.filter(x=>x!==g)
       :state.favs.concat(g);
     save();render();return;
+  }
+
+  if(d.reloadcatalog){ liveCatalogLoading=true; liveCatalog=null; render(); loadLiveCatalog(); return; }
+  if(d.upgrader!==undefined){
+    const options=(liveCatalog||[]).slice(0,12);
+    openSheet('<div class="market-kicker">ZEFUTMAX TOOLS</div><h2>Апгрейдер подарков</h2><div class="desc">Демо-механика для интерфейса. Улучшение не меняет настоящий подарок.</div><div class="upgrade-preview"><div class="upgrade-orb">🎁</div><span>→</span><div class="upgrade-orb target">💎</div></div><label class="muted" for="upgradeCost">Сумма GRAM</label><input id="upgradeCost" type="number" min="1" max="10000" value="100" style="width:100%;margin:7px 0 12px"><label class="muted" for="upgradeTarget">Цель улучшения</label><select id="upgradeTarget" style="width:100%;margin:7px 0 12px">'+options.map(g=>'<option value="'+esc(g.id)+'">'+esc(g.stickerEmoji||'🎁')+' '+esc(g.id)+' · '+fmt(g.stars)+' Stars</option>').join('')+'</select><button class="btn" data-runupgrade>Показать результат</button><div class="muted" style="margin-top:10px">Используется только виртуальный баланс GRAM.</div><button class="btn secondary" data-close style="margin-top:8px">Закрыть</button>');
+    return;
+  }
+  if(d.runupgrade!==undefined){
+    const cost=Number($('upgradeCost')?.value||0);
+    const target=$('upgradeTarget')?.value||'';
+    if(!Number.isFinite(cost)||cost<1||cost>10000){toast('Укажи сумму от 1 до 10 000 GRAM');return;}
+    if(state.bal<cost){toast('Недостаточно виртуальных GRAM');return;}
+    const gift=liveCatalog?.find(x=>String(x.id)===String(target));
+    openSheet('<div class="market-kicker">РЕЗУЛЬТАТ</div><h2>Апгрейд в демо-режиме</h2><div class="upgrade-preview"><div class="upgrade-orb">🎁</div><span>→</span><div class="upgrade-orb target">'+esc(gift?.stickerEmoji||'💎')+'</div></div><p class="desc">Цель: '+esc(gift?.stickerEmoji||'Подарок')+' · ID '+esc(target||'—')+'</p><p class="note">Результат показан для оформления интерфейса. Баланс не списан, NFT не создан и подарок не изменён.</p><button class="btn secondary" data-close>Готово</button>');
+    return;
   }
 
   if(d.giftinfo){
