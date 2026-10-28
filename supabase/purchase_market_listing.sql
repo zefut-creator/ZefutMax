@@ -1,5 +1,6 @@
--- ZefutMax shared NFT purchases
--- Apply once in Supabase SQL Editor.
+-- ZefutMax: shared market buy/sell and wallet.
+-- Run this whole file once in Supabase SQL Editor.
+
 create table if not exists public.wallet_balances (
   user_id text primary key,
   balance numeric(14,2) not null default 500 check (balance >= 0),
@@ -26,14 +27,68 @@ drop policy if exists "Read owned gifts" on public.owned_gifts;
 create policy "Read owned gifts" on public.owned_gifts
 for select to anon, authenticated using (true);
 
+grant select on public.wallet_balances, public.owned_gifts to anon, authenticated;
+
+create or replace function public.create_market_listing(
+  p_gift_name text,
+  p_serial bigint,
+  p_price numeric,
+  p_seller_id text
+) returns jsonb
+language plpgsql security definer set search_path = public
+as $$
+declare new_listing public.market_listings%rowtype;
+begin
+  if coalesce(trim(p_gift_name),'') = '' or coalesce(trim(p_seller_id),'') = ''
+     or p_price is null or p_price <= 0 then
+    raise exception 'Invalid listing details';
+  end if;
+
+  insert into public.wallet_balances(user_id,balance)
+  values(p_seller_id,500) on conflict(user_id) do nothing;
+
+  insert into public.market_listings(gift_name,price,seller_id)
+  values(p_gift_name,round(p_price,2),p_seller_id)
+  returning * into new_listing;
+
+  -- Remove a previously recorded owned copy when available.
+  delete from public.owned_gifts
+  where id = (
+    select id from public.owned_gifts
+    where owner_id=p_seller_id and gift_name=p_gift_name and serial=p_serial
+    order by id limit 1
+  );
+
+  return jsonb_build_object('ok',true,'listing_id',new_listing.id,'price',new_listing.price);
+end;
+$$;
+
+create or replace function public.cancel_market_listing(
+  p_listing_id bigint,
+  p_seller_id text
+) returns jsonb
+language plpgsql security definer set search_path = public
+as $$
+declare listing public.market_listings%rowtype;
+begin
+  select * into listing from public.market_listings
+  where id=p_listing_id and seller_id=p_seller_id for update;
+  if not found then raise exception 'Listing not found or not yours'; end if;
+
+  delete from public.market_listings where id=listing.id;
+  insert into public.owned_gifts(owner_id,gift_name,serial,purchase_price)
+  values(p_seller_id,listing.gift_name,listing.id,0);
+
+  return jsonb_build_object('ok',true);
+end;
+$$;
+
 create or replace function public.purchase_market_listing(
   p_listing_id bigint,
   p_buyer_id text,
   p_buyer_balance numeric
 ) returns jsonb
-language plpgsql
-security definer
-set search_path = public
+language plpgsql security definer set search_path = public
 as $$
 declare
   listing public.market_listings%rowtype;
@@ -43,62 +98,39 @@ begin
     raise exception 'Invalid buyer';
   end if;
 
-  -- Seed a first-time demo wallet once; never overwrite an existing balance.
-  insert into public.wallet_balances(user_id, balance)
-  values (p_buyer_id, greatest(0, coalesce(p_buyer_balance, 0)))
+  insert into public.wallet_balances(user_id,balance)
+  values (p_buyer_id,greatest(0,round(coalesce(p_buyer_balance,0),2)))
   on conflict (user_id) do nothing;
 
-  select * into listing
-  from public.market_listings
-  where id = p_listing_id
-  for update;
+  select * into listing from public.market_listings
+  where id=p_listing_id for update;
+  if not found then raise exception 'Listing already sold or removed'; end if;
+  if listing.seller_id=p_buyer_id then raise exception 'Cannot buy your own listing'; end if;
+  if listing.price<=0 then raise exception 'Invalid listing price'; end if;
 
-  if not found then
-    raise exception 'Listing already sold or removed';
-  end if;
-  if listing.seller_id = p_buyer_id then
-    raise exception 'Cannot buy your own listing';
-  end if;
-  if listing.price <= 0 then
-    raise exception 'Invalid listing price';
-  end if;
+  select balance into buyer_balance from public.wallet_balances
+  where user_id=p_buyer_id for update;
+  if buyer_balance<listing.price then raise exception 'Insufficient balance'; end if;
 
-  select balance into buyer_balance
-  from public.wallet_balances
-  where user_id = p_buyer_id
-  for update;
+  update public.wallet_balances set balance=balance-listing.price,updated_at=now()
+  where user_id=p_buyer_id;
 
-  if buyer_balance < listing.price then
-    raise exception 'Insufficient balance';
-  end if;
+  insert into public.wallet_balances(user_id,balance)
+  values(listing.seller_id,0) on conflict(user_id) do nothing;
+  update public.wallet_balances set balance=balance+listing.price,updated_at=now()
+  where user_id=listing.seller_id;
 
-  update public.wallet_balances
-  set balance = balance - listing.price, updated_at = now()
-  where user_id = p_buyer_id;
+  insert into public.owned_gifts(owner_id,gift_name,serial,purchase_price)
+  values(p_buyer_id,listing.gift_name,listing.id,listing.price);
 
-  insert into public.wallet_balances(user_id, balance)
-  values (listing.seller_id, 0)
-  on conflict (user_id) do nothing;
-
-  update public.wallet_balances
-  set balance = balance + listing.price, updated_at = now()
-  where user_id = listing.seller_id;
-
-  insert into public.owned_gifts(owner_id, gift_name, serial, purchase_price)
-  values (p_buyer_id, listing.gift_name, listing.id, listing.price);
-
-  delete from public.market_listings where id = listing.id;
-
-  return jsonb_build_object(
-    'ok', true,
-    'listing_id', listing.id,
-    'gift_name', listing.gift_name,
-    'price', listing.price,
-    'seller_id', listing.seller_id
-  );
+  delete from public.market_listings where id=listing.id;
+  return jsonb_build_object('ok',true,'listing_id',listing.id,'gift_name',listing.gift_name,'price',listing.price);
 end;
 $$;
 
-revoke all on function public.purchase_market_listing(bigint, text, numeric) from public;
-grant execute on function public.purchase_market_listing(bigint, text, numeric) to anon, authenticated;
-grant select on public.wallet_balances, public.owned_gifts to anon, authenticated;
+revoke all on function public.create_market_listing(text,bigint,numeric,text) from public;
+revoke all on function public.cancel_market_listing(bigint,text) from public;
+revoke all on function public.purchase_market_listing(bigint,text,numeric) from public;
+grant execute on function public.create_market_listing(text,bigint,numeric,text) to anon, authenticated;
+grant execute on function public.cancel_market_listing(bigint,text) to anon, authenticated;
+grant execute on function public.purchase_market_listing(bigint,text,numeric) to anon, authenticated;
