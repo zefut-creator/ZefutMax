@@ -601,8 +601,10 @@ async function refreshSharedListings() {
       if (giftIndex < 0) return null;
       return {id: 'sb-' + row.id, dbId:row.id, g:giftIndex, n:Number(row.id), p:round(row.price), own:String(row.seller_id)===sellerId, shared:true};
     }).filter(Boolean);
-    const localNonShared = state.mk.filter(x=>!x.shared);
-    state.mk = [...localNonShared.filter(x=>!x.own), ...shared];
+    // The seeded catalog is only a visual demo and has no real database listing.
+    // Show only listings that actually exist in Supabase so every visible buyable lot
+    // has a database ID and can be purchased across accounts.
+    state.mk = shared;
     save();
     if (tab==='market' || tab==='mine') render();
   } catch (e) {
