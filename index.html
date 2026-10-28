@@ -888,13 +888,14 @@ document.addEventListener('click',e=>{
   if(d.play!==undefined){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode=d.play;playRound=0;if(d.play==='mines'){minesStarted=false;minesOver=false;minesCashed=false;openedCells.clear();minesMultiplier=1;}if(d.play==='rocket'){rocketValue=1;rocketCrashAt=0;}render();return;}
   if(d.playback!==undefined){if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}rocketRunning=false;playMode='';minesStarted=false;minesOver=false;minesCashed=false;openedCells.clear();setTab('play');return;}
   if(d.cashout!==undefined){if(minesOver||!minesStarted||openedCells.size===0)return;minesOver=true;minesCashed=true;const payout=round(trainingStake*minesMultiplier);state.bal=round(state.bal+payout);log('game_win','Мины',payout,'Возврат демо-ставки × '+minesMultiplier.toFixed(2));save();haptic('success');toast('Забрал '+fmt(payout)+' GRAM · демо-баланс');render();return;}
-  if(d.newmines!==undefined||d.startmines!==undefined){const input=$('trainingStakeInput');const mineSelect=$('mineCountSelect');if(input){const n=Number(input.value);if(Number.isFinite(n)&&n>=0.1&&n<=10000)trainingStake=Math.round(n*10)/10;else{toast('Укажи значение от 0,1 до 10 000 GRAM');return;}}if(mineSelect)minesCount=Number(mineSelect.value)||3;if(d.startmines!==undefined&&state.bal<trainingStake){toast('Недостаточно GRAM на демо-балансе');return;}if(d.startmines!==undefined){state.bal=round(state.bal-trainingStake);log('game_bet','Мины',-trainingStake,'Демо-ставка · '+minesCount+' мин');save();}startMines();haptic('light');render();return;}
+  if(d.newmines!==undefined){minesStarted=false;minesOver=false;minesCashed=false;openedCells.clear();minesSet.clear();minesMultiplier=1;render();return;}
+  if(d.startmines!==undefined){const input=$('trainingStakeInput');const mineSelect=$('mineCountSelect');if(input){const n=Number(input.value);if(Number.isFinite(n)&&n>=0.1&&n<=10000)trainingStake=Math.round(n*10)/10;else{toast('Укажи значение от 0,1 до 10 000 GRAM');return;}}if(mineSelect)minesCount=Number(mineSelect.value)||3;if(state.bal<trainingStake){toast('Недостаточно GRAM на демо-балансе');return;}state.bal=round(state.bal-trainingStake);log('game_bet','Мины',-trainingStake,'Демо-ставка · '+minesCount+' мин');save();startMines();haptic('light');render();return;}
   if(d.cell!==undefined){
     const cell=Number(d.cell);
     if(minesOver||!minesStarted||openedCells.has(cell)) return;
     openedCells.add(cell);
     if(minesSet.has(cell)){minesOver=true;log('game_loss','Мины',0,'Демо-ставка потеряна: '+fmt(trainingStake)+' GRAM');save();haptic('error');toast('💥 Мина! Потеряно '+fmt(trainingStake)+' демо-GRAM');}
-    else {const safeBefore=25-minesCount-openedCells.size+1;minesMultiplier=Math.round(minesMultiplier*(safeBefore/(25-openedCells.size+1))*0.97*100)/100;haptic('light');}
+    else {const safeBefore=25-minesCount-openedCells.size+1;const remainingBefore=25-openedCells.size+1;minesMultiplier=Math.round(minesMultiplier*(remainingBefore/safeBefore)*0.97*100)/100;haptic('light');}
     render();return;
   }
   if(d.rocket!==undefined){
