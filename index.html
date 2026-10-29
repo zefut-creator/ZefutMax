@@ -573,6 +573,9 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
   .gram-price-logo{width:17px;height:17px;display:inline-block;vertical-align:-4px;margin-right:5px;flex:0 0 auto}
   .market-subtabs{display:flex;gap:8px;margin:0 0 18px;overflow-x:auto}
   .market-subtabs .chip{white-space:nowrap}
+  .nft-filter-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin:10px 0 4px}
+  .nft-filter-grid select{width:100%;min-width:0;padding:10px 8px;border-radius:9px;background:var(--panel);font-size:13px}
+  @media(max-width:560px){.nft-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.nft-filter-grid select:last-child{grid-column:span 2}}
   .mk-art-plain .mk-badge{z-index:2}
   .catalog-tabs{margin:0 0 14px;padding-top:0}
 </style>
@@ -701,6 +704,7 @@ let toastTimer, state;
 let liveCatalog=null, liveCatalogError='', liveCatalogLoading=true;
 let catalogMode='unlimited';
 let marketSection='resale';
+let nftFilters={nft:'all',model:'all',background:'all',symbol:'all',price:'all'};
 // Estimated conversion using public reference prices: 1 Star ≈ $0.021; 1 GRAM ≈ $1.23.
  // Standard Telegram gifts have a fixed Stars issue price, not a resale-market floor.
 const STAR_USD_ESTIMATE = 0.021;
@@ -712,9 +716,13 @@ function seed(){
   const rnd=()=>{randomSeed=randomSeed*16807%2147483647;return randomSeed/2147483647};
   let listings=[],id=1;
 
+  const demoModels=['Classic','Gold','Neon','Shadow','Crystal','Pixel'];
+  const demoBackgrounds=['Blue','Orange','Purple','Emerald','Rose','Dark'];
+  const demoSymbols=['Star','Heart','Crown','Flame','Gem','Moon'];
   gifts.forEach((g,i)=>{
-    listings.push({id:id++,g:i,n:Math.floor(rnd()*9000)+100,p:round(g[2])});
-    listings.push({id:id++,g:i,n:Math.floor(rnd()*9000)+100,p:round(g[2]*(1.04+rnd()*.1))});
+    const traits={model:demoModels[i%demoModels.length],background:demoBackgrounds[(i*3+1)%demoBackgrounds.length],symbol:demoSymbols[(i*5+2)%demoSymbols.length]};
+    listings.push({id:id++,g:i,n:Math.floor(rnd()*9000)+100,p:round(g[2]),...traits});
+    listings.push({id:id++,g:i,n:Math.floor(rnd()*9000)+100,p:round(g[2]*(1.04+rnd()*.1)),...traits});
   });
 
   return {
@@ -943,8 +951,26 @@ function hydrateCatalogMedia(){
   els.forEach(el=>catObserver.observe(el));
 }
 
+function nftFilterMarkup(){
+  const select=(key,label,values)=>'<select data-nft-filter="'+key+'" aria-label="'+label+'"><option value="all">'+label+' · Все</option>'+values.map(v=>'<option value="'+esc(v)+'" '+(nftFilters[key]===v?'selected':'')+'>'+esc(v)+'</option>').join('')+'</select>';
+  return '<div class="nft-filter-grid">'+
+    select('nft','NFT',[...new Set(gifts.map(g=>g[1]))])+ 
+    select('model','Модель',['Classic','Gold','Neon','Shadow','Crystal','Pixel'])+
+    select('background','Фон',['Blue','Orange','Purple','Emerald','Rose','Dark'])+
+    select('symbol','Символ',['Star','Heart','Crown','Flame','Gem','Moon'])+
+    '<select data-nft-filter="price" aria-label="Цена"><option value="all">Цена · Любая</option><option value="under50" '+(nftFilters.price==='under50'?'selected':'')+'>До 50 GRAM</option><option value="50to200" '+(nftFilters.price==='50to200'?'selected':'')+'>50–200 GRAM</option><option value="200to1000" '+(nftFilters.price==='200to1000'?'selected':'')+'>200–1 000 GRAM</option><option value="1000plus" '+(nftFilters.price==='1000plus'?'selected':'')+'>От 1 000 GRAM</option></select></div>';
+}
+
 function renderMarket(){
   let list=state.mk.filter(x=>gifts[x.g][1].toLowerCase().includes(search)||String(x.n).includes(search));
+  if(nftFilters.nft!=='all') list=list.filter(x=>gifts[x.g][1]===nftFilters.nft);
+  if(nftFilters.model!=='all') list=list.filter(x=>x.model===nftFilters.model);
+  if(nftFilters.background!=='all') list=list.filter(x=>x.background===nftFilters.background);
+  if(nftFilters.symbol!=='all') list=list.filter(x=>x.symbol===nftFilters.symbol);
+  if(nftFilters.price==='under50') list=list.filter(x=>x.p<50);
+  if(nftFilters.price==='50to200') list=list.filter(x=>x.p>=50&&x.p<200);
+  if(nftFilters.price==='200to1000') list=list.filter(x=>x.p>=200&&x.p<1000);
+  if(nftFilters.price==='1000plus') list=list.filter(x=>x.p>=1000);
 
   if(filter==='up') list=list.filter(x=>gifts[x.g][3]>0);
   if(filter==='down') list=list.filter(x=>gifts[x.g][3]<0);
@@ -960,7 +986,7 @@ function renderMarket(){
   const marketTabs='<div class="filters market-subtabs"><button class="chip '+(marketSection==='resale'?'active':'')+'" data-marketsection="resale">Маркет подарков</button><button class="chip '+(marketSection==='telegram'?'active':'')+'" data-marketsection="telegram">Подарки Telegram</button></div>';
   if(marketSection==='telegram') return marketTabs+renderLiveCatalog()+'<p class="note">Цена в GRAM — ориентировочный эквивалент цены Telegram в Stars, рассчитанный по справочным курсам $0,021 за Star и $1,23 за GRAM. Это не реальная цена перепродажи: обычные подарки Telegram не имеют вторичного рынка. Курсы указаны как ориентир и автоматически не обновляются. Покупка и отправка подарков пока отключены.</p>';
 
-  return marketTabs+`<div class="searchbox market-search" style="margin:14px 0 12px"><span>⌕</span><input id="marketSearch" type="search" value="${esc(search)}" placeholder="Поиск по названию подарка или номеру…" aria-label="Поиск по маркету"></div>
+  return marketTabs+nftFilterMarkup()+`<div class="searchbox market-search" style="margin:14px 0 12px"><span>⌕</span><input id="marketSearch" type="search" value="${esc(search)}" placeholder="Поиск по названию подарка или номеру…" aria-label="Поиск по маркету"></div>
   <div class="filters market-local-filters">
     <button class="chip ${filter==='all'?'active':''}" data-filter="all">Все подарки</button>
     <button class="chip ${filter==='up'?'active':''}" data-filter="up">📈 Растут</button>
@@ -1733,6 +1759,13 @@ $('q').addEventListener('input',e=>{
   search=e.target.value.trim().toLowerCase();
   render();
 });
+$('main').addEventListener('change',e=>{
+  const key=e.target && e.target.dataset && e.target.dataset.nftFilter;
+  if(!key) return;
+  nftFilters[key]=e.target.value;
+  render();
+});
+
 $('main').addEventListener('input',e=>{
   if(e.target && e.target.id==='marketSearch'){
     const start=e.target.selectionStart;
