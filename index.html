@@ -849,7 +849,7 @@ function mkBgStyle(index){
 function mkArt(index){
   const g=gifts[index];
   return `<div class="mk-art" style="${mkBgStyle(index)}" aria-label="${esc(g[1])}">
-    ${mkPattern(index)}<span class="mk-glow"></span><span class="emoji">${g[0]}</span><span class="mk-badge">Minted</span>`;
+    ${mkPattern(index)}<span class="mk-glow"></span><span class="emoji">${g[0]}</span>`;
 }
 
 function card(x){
@@ -862,7 +862,7 @@ function card(x){
       <div class="mk-num">#${x.n} · ${change(x.g)}</div>
       ${x.own
         ? '<button class="btn secondary mk-own" data-unlist="'+x.id+'">Снять лот</button>'
-        : '<div class="mk-buy"><button class="mk-price" data-buynow="'+x.id+'" aria-label="Купить за '+fmt(x.p)+'"><i>◆</i>'+fmt(x.p>=1000?Math.round(x.p):x.p)+'</button>'+(inCart(x.id)
+        : '<div class="mk-buy"><button class="mk-price" data-buynow="'+x.id+'" aria-label="Купить за '+fmt(x.p)+'"><svg class="gram-price-logo" viewBox="0 0 100 100" aria-hidden="true"><path d="M31 12H69L91 38L50 91L9 38Z" fill="#ff9f1c"/><path d="M50 34L56 44L67 50L56 56L50 67L44 56L33 50L44 44Z" fill="#242424"/></svg>'+fmt(x.p>=1000?Math.round(x.p):x.p)+'</button>'+(inCart(x.id)
           ? '<button class="mk-cart in" data-cartremove="'+x.id+'" aria-label="Убрать из корзины">🗑️</button>'
           : '<button class="mk-cart" data-cart="'+x.id+'" aria-label="В корзину">🛒</button>')+'<button class="lucky-mini" data-lucky="'+x.id+'" aria-label="Lucky Buy" title="Lucky Buy"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff" aria-hidden="true"><circle cx="12" cy="7.5" r="4.2"/><circle cx="7" cy="14" r="4.2"/><circle cx="17" cy="14" r="4.2"/><path d="M12 13v8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button></div>'}
     </div>
@@ -1393,11 +1393,11 @@ function confirmBuy(id){
   openSheet(`<div class="bs-card"><div class="mk-art" style="${mkBgStyle(x.g)}">${mkPattern(x.g)}<span class="mk-glow"></span><span class="emoji">${g[0]}</span></div>
       <div class="bs-info"><b>${esc(g[1])}</b><span>#${x.n}</span></div></div>
     <h2 class="bs-title">Купить этот предмет?</h2>
-    <div class="bs-price"><i>◆</i>${fmt(x.p)}</div>
-    <div class="bs-bal ${enough?'ok':'low'}">Баланс: <i>◆</i> ${fmt(state.bal)}</div>
+    <div class="bs-price"><svg class="gram-price-logo" viewBox="0 0 100 100" aria-hidden="true"><path d="M31 12H69L91 38L50 91L9 38Z" fill="#ff9f1c"/><path d="M50 34L56 44L67 50L56 56L50 67L44 56L33 50L44 44Z" fill="#242424"/></svg>${fmt(x.p)}</div>
+    <div class="bs-bal ${enough?'ok':'low'}">Баланс: <svg class="gram-price-logo" viewBox="0 0 100 100" aria-hidden="true"><path d="M31 12H69L91 38L50 91L9 38Z" fill="#ff9f1c"/><path d="M50 34L56 44L67 50L56 56L50 67L44 56L33 50L44 44Z" fill="#242424"/></svg> ${fmt(state.bal)}</div>
     ${enough
-      ? `<button class="btn bs-main" data-confirmbuy="${x.id}">Купить <i>◆</i> ${fmt(x.p)}</button>`
-      : `<button class="btn bs-main bs-topup" data-topupbuy="${x.id}">Пополнить баланс <i>◆</i> ${fmt(x.p)}</button>`}
+      ? `<button class="btn bs-main" data-confirmbuy="${x.id}">Купить <svg class="gram-price-logo" viewBox="0 0 100 100" aria-hidden="true"><path d="M31 12H69L91 38L50 91L9 38Z" fill="#ff9f1c"/><path d="M50 34L56 44L67 50L56 56L50 67L44 56L33 50L44 44Z" fill="#242424"/></svg> ${fmt(x.p)}</button>`
+      : `<button class="btn bs-main bs-topup" data-topupbuy="${x.id}">Пополнить баланс <svg class="gram-price-logo" viewBox="0 0 100 100" aria-hidden="true"><path d="M31 12H69L91 38L50 91L9 38Z" fill="#ff9f1c"/><path d="M50 34L56 44L67 50L56 56L50 67L44 56L33 50L44 44Z" fill="#242424"/></svg> ${fmt(x.p)}</button>`}
     <button class="btn secondary" data-close>Отмена</button>
     <p class="note" style="text-align:center;margin:10px 0 0">Демо: виртуальные GRAM, реальные деньги не списываются.</p>`);
 }
