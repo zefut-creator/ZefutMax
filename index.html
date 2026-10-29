@@ -605,6 +605,18 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
 #rkBet,#rkAuto{-moz-appearance:textfield;appearance:textfield}
 #rkBet::-webkit-outer-spin-button,#rkBet::-webkit-inner-spin-button,#rkAuto::-webkit-outer-spin-button,#rkAuto::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .rk-chip.blue{color:#6db3ff;background:#6db3ff24}.rk-chip.purple{color:#c69bff;background:#c69bff26}
+.rk-hist{gap:8px;padding:6px 2px 12px}
+.rk-chip{padding:7px 14px;border-radius:13px;font-size:13px;font-weight:800;border:2px solid transparent}
+.rk-chip.red{color:#ffb3b8;background:#4a1f26;border-color:#b84a54}
+.rk-chip.green{color:#8df0bf;background:#133b2b;border-color:#2c9b68}
+.rk-chip.blue{color:#a9c8ff;background:#1b2a4d;border-color:#3f6fd4}
+.rk-chip.purple{color:#dcc2ff;background:#35224f;border-color:#8a5bd6}
+.rk-chip.gold{color:#ffe08a;background:#47380f;border-color:#d9a62a}
+:root[data-theme="light"] .rk-chip.red{color:#8a1f2a;background:#ffe3e5}
+:root[data-theme="light"] .rk-chip.green{color:#0f6b43;background:#dcf7ea}
+:root[data-theme="light"] .rk-chip.blue{color:#1d4aa8;background:#e1ebff}
+:root[data-theme="light"] .rk-chip.purple{color:#5a2da3;background:#eee2ff}
+:root[data-theme="light"] .rk-chip.gold{color:#7a5600;background:#fff0c4}
 </style>
 </head>
 <body>
@@ -870,13 +882,14 @@ function log(type,name,amount,detail=''){
 let rkPhase='idle', rkActive=false, rkStake=10, rkCrashAt=1, rkStartTs=0, rkMult=1, rkTimer=null, rkEndTimer=null;
 let rkAutoOn=false, rkAuto=2, rkBets=[], rkCashedAt=0;
 
-function rkCls(m){return m>=50?'gold':m>=10?'purple':m>=5?'blue':m>=2?'green':'red'}
+function rkCls(m){return m>=10?'gold':m>=5?'purple':m>=2?'blue':m>=1.5?'green':'red'}
+function rkFmt(m){return (m>=100?Math.round(m):m>=10?Math.round(m*10)/10:Math.round(m*100)/100).toFixed(m>=100?0:m>=10?1:2)+'x'}
 function rkHistHtml(){
-  return state.rkHist.map(m=>'<span class="rk-chip '+rkCls(m)+'">'+m.toFixed(2)+'×</span>').join('');
+  return state.rkHist.map(m=>'<span class="rk-chip '+rkCls(m)+'">'+rkFmt(m)+'</span>').join('');
 }
 function rkBetsHtml(){
   if(!rkBets.length) return '<div class="muted" style="font-size:12px;padding:8px 2px">Ставок пока нет.</div>';
-  return rkBets.map(b=>'<div class="rk-bet"><span>'+fmt(b.stake)+' GRAM</span><span class="rk-chip '+rkCls(b.at)+'">'+b.at.toFixed(2)+'×</span><b class="'+(b.win?'up':'down')+'">'+(b.win?'+':'−')+fmt(b.win?round(b.pay-b.stake):b.stake)+'</b></div>').join('');
+  return rkBets.map(b=>'<div class="rk-bet"><span>'+fmt(b.stake)+' GRAM</span><span class="rk-chip '+rkCls(b.at)+'">'+rkFmt(b.at)+'</span><b class="'+(b.win?'up':'down')+'">'+(b.win?'+':'−')+fmt(b.win?round(b.pay-b.stake):b.stake)+'</b></div>').join('');
 }
 function rkMainState(){
   if(rkPhase==='flying'&&rkActive) return {cls:'rk-cash',txt:'Забрать '+fmt(round(rkStake*rkMult))+' GRAM',attr:'data-rkcash',dis:false};
