@@ -569,7 +569,8 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
   .mk-art-plain .mk-media{display:flex!important;position:absolute;inset:0;align-items:center;justify-content:center;padding:14px}
   .mk-art-plain .mk-media img,.mk-art-plain .mk-media video,.mk-art-plain .mk-media svg{max-width:100%;max-height:100%;object-fit:contain}
   .gram-logo{width:25px;height:25px;flex:0 0 25px;vertical-align:middle;margin-right:3px;filter:drop-shadow(0 1px 3px #299fe955)}
-  .gram-mini{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#299fe9;color:white;font-size:10px;font-weight:900;font-style:normal;margin-right:4px;line-height:1}
+  .gram-mini{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#2AABEE;color:white;font-size:10px;font-weight:900;font-style:normal;margin-right:4px;line-height:1}
+  .gram-price-logo{width:17px;height:17px;display:inline-block;vertical-align:-4px;margin-right:5px;flex:0 0 auto}
   .market-subtabs{display:flex;gap:8px;margin:0 0 18px;overflow-x:auto}
   .market-subtabs .chip{white-space:nowrap}
   .mk-art-plain .mk-badge{z-index:2}
@@ -587,7 +588,7 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
       <div class="topactions">
         <button class="iconbtn" id="theme" aria-label="Сменить тему">☀️</button>
         <button class="balance" id="balance" title="Виртуальный демо-баланс — нажми, чтобы увидеть пояснение" aria-label="Виртуальный баланс GRAM">
-          <svg class="gram-logo" viewBox="0 0 100 100" aria-label="GRAM" role="img"><circle cx="50" cy="50" r="49" fill="#299fe9"/><path d="M32 35H68Q72 35 75 40L87 54Q90 58 86 62L54 88Q50 91 46 87L14 61Q10 57 14 52L26 39Q28 35 32 35Z" fill="#fff"/><path d="M58 43Q60 39 62 43L67 51L76 55Q80 57 76 59L67 63L62 72Q60 76 58 72L54 63L45 59Q41 57 45 55L54 51Z" fill="#299fe9"/></svg> <strong id="bal">500</strong> <span>GRAM</span> ＋
+          <svg class="gram-logo" viewBox="0 0 100 100" aria-label="GRAM" role="img"><circle cx="50" cy="50" r="49.5" fill="#2AABEE"/><path d="M35 27H65C70 27 74 30 77 35L91 58C93 62 92 66 89 69L53 96C51 98 49 98 47 96L11 69C8 66 7 62 9 58L23 35C26 30 30 27 35 27Z" fill="#fff"/><path d="M56 39C58 33 60 33 62 39L66 49L77 53C83 55 83 57 77 59L66 63L62 74C60 80 58 80 56 74L51 63L40 59C34 57 34 55 40 53L51 49Z" fill="#2AABEE"/></svg> <strong id="bal">500</strong> <span>GRAM</span> ＋
         </button>
       </div>
     </div>
@@ -700,8 +701,11 @@ let toastTimer, state;
 let liveCatalog=null, liveCatalogError='', liveCatalogLoading=true;
 let catalogMode='unlimited';
 let marketSection='resale';
-// Demo-only conversion until a real GRAM/Telegram Stars exchange rate is configured.
-const starToGram = stars => round(Number(stars)||0);
+// Estimated conversion using public reference prices: 1 Star ≈ $0.021; 1 GRAM ≈ $1.23.
+ // Standard Telegram gifts have a fixed Stars issue price, not a resale-market floor.
+const STAR_USD_ESTIMATE = 0.021;
+const GRAM_USD_REFERENCE = 1.23;
+const starToGram = stars => round((Number(stars)||0) * STAR_USD_ESTIMATE / GRAM_USD_REFERENCE);
 
 function seed(){
   let randomSeed=11;
@@ -892,7 +896,7 @@ function renderLiveCatalog(){
       const stock=limited?(g.remainingCount!==null?'Осталось '+fmt(g.remainingCount)+' из '+fmt(g.totalCount):'Лимит '+fmt(g.totalCount)):'Без лимита';
       return '<article class="card mk-card"><div class="mk-art mk-art-plain" data-fid="'+esc(g.stickerFileId||'')+'" data-stype="'+esc(g.stickerType)+'">'+(g.premiumOnly?'<span class="mk-badge mk-prem">Premium</span>':'')+'</div>'+
         '<div class="mk-body"><div class="mk-name">Подарок '+esc(g.stickerEmoji||'')+'</div><div class="mk-num">'+esc(stock)+'</div>'+
-        '<div class="mk-buy"><button class="mk-price" data-giftinfo="'+esc(g.id)+'" aria-label="Подробнее"><i class="gram-mini">G</i>'+fmt(starToGram(g.stars))+'</button></div></div></article>';
+        '<div class="mk-buy"><button class="mk-price" data-giftinfo="'+esc(g.id)+'" aria-label="Подробнее"><svg class="gram-price-logo" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="49.5" fill="#2AABEE"/><path d="M35 27H65C70 27 74 30 77 35L91 58C93 62 92 66 89 69L53 96C51 98 49 98 47 96L11 69C8 66 7 62 9 58L23 35C26 30 30 27 35 27Z" fill="#fff"/><path d="M56 39C58 33 60 33 62 39L66 49L77 53C83 55 83 57 77 59L66 63L62 74C60 80 58 80 56 74L51 63L40 59C34 57 34 55 40 53L51 49Z" fill="#2AABEE"/></svg>'+fmt(starToGram(g.stars))+'</button></div></div></article>';
     }).join('')+'</div>':empty('🔎','Ничего не найдено','Измени запрос.'))+
     '<p class="note">Каталог берётся напрямую из Telegram: это все подарки, которые сейчас можно отправить за Stars. Покупка и отправка здесь пока не включены.</p>';
 }
@@ -954,7 +958,7 @@ function renderMarket(){
   });
 
   const marketTabs='<div class="filters market-subtabs"><button class="chip '+(marketSection==='resale'?'active':'')+'" data-marketsection="resale">Маркет подарков</button><button class="chip '+(marketSection==='telegram'?'active':'')+'" data-marketsection="telegram">Подарки Telegram</button></div>';
-  if(marketSection==='telegram') return marketTabs+renderLiveCatalog()+'<p class="note">Цены показаны в GRAM по демонстрационному курсу 1 ⭐ = 1 GRAM. Это не рыночный обменный курс. Покупка и отправка подарков пока отключены.</p>';
+  if(marketSection==='telegram') return marketTabs+renderLiveCatalog()+'<p class="note">Цена в GRAM — ориентировочный эквивалент цены Telegram в Stars, рассчитанный по справочным курсам $0,021 за Star и $1,23 за GRAM. Это не реальная цена перепродажи: обычные подарки Telegram не имеют вторичного рынка. Курсы указаны как ориентир и автоматически не обновляются. Покупка и отправка подарков пока отключены.</p>';
 
   return marketTabs+`<div class="sectionhead" style="margin-top:18px">
     <h2>Демо-лоты маркета</h2><span class="count">${list.length} лотов</span>
@@ -1672,7 +1676,7 @@ document.addEventListener('click',e=>{
   if(d.giftinfo){
     const gift=liveCatalog?.find(x=>String(x.id)===String(d.giftinfo));
     if(gift){
-      openSheet('<h2>Официальный подарок Telegram</h2><div class="desc">ID: '+esc(gift.id)+'</div><div class="summary"><div><span>Цена отправки ботом</span><b>'+fmt(starToGram(gift.stars))+' GRAM</b></div><div><span>Тип стикера</span><b>'+esc(gift.stickerType)+'</b></div><div><span>Остаток</span><b>'+(gift.remainingCount===null?'Не указан':fmt(gift.remainingCount))+'</b></div></div><p class="note">Это информационная карточка. Реальная покупка или передача не выполняется.</p><button class="btn secondary" data-close>Закрыть</button>');
+      openSheet('<h2>Официальный подарок Telegram</h2><div class="desc">ID: '+esc(gift.id)+'</div><div class="summary"><div><span>Оценка в GRAM</span><b><svg class="gram-price-logo" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="49.5" fill="#2AABEE"/><path d="M35 27H65C70 27 74 30 77 35L91 58C93 62 92 66 89 69L53 96C51 98 49 98 47 96L11 69C8 66 7 62 9 58L23 35C26 30 30 27 35 27Z" fill="#fff"/><path d="M56 39C58 33 60 33 62 39L66 49L77 53C83 55 83 57 77 59L66 63L62 74C60 80 58 80 56 74L51 63L40 59C34 57 34 55 40 53L51 49Z" fill="#2AABEE"/></svg>'+fmt(starToGram(gift.stars))+' GRAM</b></div><div><span>Тип стикера</span><b>'+esc(gift.stickerType)+'</b></div><div><span>Остаток</span><b>'+(gift.remainingCount===null?'Не указан':fmt(gift.remainingCount))+'</b></div></div><p class="note">Это информационная карточка. Реальная покупка или передача не выполняется.</p><button class="btn secondary" data-close>Закрыть</button>');
     }
     return;
   }
