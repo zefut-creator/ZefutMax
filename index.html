@@ -568,7 +568,11 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
   .mk-art-plain.has-media>.emoji{display:none!important}
   .mk-art-plain .mk-media{display:flex!important;position:absolute;inset:0;align-items:center;justify-content:center;padding:14px}
   .mk-art-plain .mk-media img,.mk-art-plain .mk-media video,.mk-art-plain .mk-media svg{max-width:100%;max-height:100%;object-fit:contain}
-  .gram-icon{display:inline-grid;place-items:center;width:17px;height:17px;border:1.5px solid var(--accent);border-radius:50%;color:var(--accent);font-size:10px;font-weight:900;margin-right:2px;line-height:1;text-shadow:0 0 10px color-mix(in srgb,var(--accent) 35%,transparent)}
+  .gram-logo{width:25px;height:25px;flex:0 0 25px;vertical-align:middle;margin-right:3px;filter:drop-shadow(0 1px 3px #299fe955)}
+  .gram-mini{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#299fe9;color:white;font-size:10px;font-weight:900;font-style:normal;margin-right:4px;line-height:1}
+  .market-subtabs{display:flex;gap:8px;margin:0 0 18px;overflow-x:auto}
+  .market-subtabs .chip{white-space:nowrap}
+  .mk-art-plain .mk-badge{z-index:2}
   .catalog-tabs{margin:0 0 14px;padding-top:0}
 </style>
 </head>
@@ -583,7 +587,7 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
       <div class="topactions">
         <button class="iconbtn" id="theme" aria-label="Сменить тему">☀️</button>
         <button class="balance" id="balance" title="Виртуальный демо-баланс — нажми, чтобы увидеть пояснение" aria-label="Виртуальный баланс GRAM">
-          <span class="gram-icon" aria-hidden="true">G</span> <strong id="bal">500</strong> <span>GRAM</span> ＋
+          <svg class="gram-logo" viewBox="0 0 100 100" aria-label="GRAM" role="img"><circle cx="50" cy="50" r="49" fill="#299fe9"/><path d="M32 35H68Q72 35 75 40L87 54Q90 58 86 62L54 88Q50 91 46 87L14 61Q10 57 14 52L26 39Q28 35 32 35Z" fill="#fff"/><path d="M58 43Q60 39 62 43L67 51L76 55Q80 57 76 59L67 63L62 72Q60 76 58 72L54 63L45 59Q41 57 45 55L54 51Z" fill="#299fe9"/></svg> <strong id="bal">500</strong> <span>GRAM</span> ＋
         </button>
       </div>
     </div>
@@ -695,6 +699,9 @@ let trainingStake=10, minesMultiplier=1, minesCashed=false, minesStarted=false;
 let toastTimer, state;
 let liveCatalog=null, liveCatalogError='', liveCatalogLoading=true;
 let catalogMode='unlimited';
+let marketSection='resale';
+// Demo-only conversion until a real GRAM/Telegram Stars exchange rate is configured.
+const starToGram = stars => round(Number(stars)||0);
 
 function seed(){
   let randomSeed=11;
@@ -879,13 +886,13 @@ function renderLiveCatalog(){
   const all=catalogList();
   const list=all.filter(({g})=>catalogMode==='all'||(catalogMode==='unlimited'?(g.totalCount===null||g.totalCount===undefined):(g.totalCount!==null&&g.totalCount!==undefined)));
   const tabs='<div class="filters catalog-tabs"><button class="chip '+(catalogMode==='unlimited'?'active':'')+'" data-catalogmode="unlimited">Безлимитные</button><button class="chip '+(catalogMode==='limited'?'active':'')+'" data-catalogmode="limited">Лимитированные</button><button class="chip '+(catalogMode==='all'?'active':'')+'" data-catalogmode="all">Все подарки</button></div>';
-  return '<div class="sectionhead"><h2>Подарки Telegram</h2><span class="count">'+list.length+' из '+liveCatalog.length+' · цены в Stars</span></div>'+tabs+
+  return '<div class="sectionhead"><h2>Подарки Telegram</h2><span class="count">'+list.length+' из '+liveCatalog.length+' · цены в GRAM</span></div>'+tabs+
     (list.length?'<div class="grid">'+list.map(({g,i})=>{
       const limited=g.totalCount!==null&&g.totalCount!==undefined;
       const stock=limited?(g.remainingCount!==null?'Осталось '+fmt(g.remainingCount)+' из '+fmt(g.totalCount):'Лимит '+fmt(g.totalCount)):'Без лимита';
       return '<article class="card mk-card"><div class="mk-art mk-art-plain" data-fid="'+esc(g.stickerFileId||'')+'" data-stype="'+esc(g.stickerType)+'">'+(g.premiumOnly?'<span class="mk-badge mk-prem">Premium</span>':'')+'</div>'+
         '<div class="mk-body"><div class="mk-name">Подарок '+esc(g.stickerEmoji||'')+'</div><div class="mk-num">'+esc(stock)+'</div>'+
-        '<div class="mk-buy"><button class="mk-price" data-giftinfo="'+esc(g.id)+'" aria-label="Подробнее"><i>★</i>'+fmt(g.stars)+'</button></div></div></article>';
+        '<div class="mk-buy"><button class="mk-price" data-giftinfo="'+esc(g.id)+'" aria-label="Подробнее"><i class="gram-mini">G</i>'+fmt(starToGram(g.stars))+'</button></div></div></article>';
     }).join('')+'</div>':empty('🔎','Ничего не найдено','Измени запрос.'))+
     '<p class="note">Каталог берётся напрямую из Telegram: это все подарки, которые сейчас можно отправить за Stars. Покупка и отправка здесь пока не включены.</p>';
 }
@@ -946,7 +953,10 @@ function renderMarket(){
     return a.p-b.p;
   });
 
-  return renderLiveCatalog()+`<div class="sectionhead" style="margin-top:30px">
+  const marketTabs='<div class="filters market-subtabs"><button class="chip '+(marketSection==='resale'?'active':'')+'" data-marketsection="resale">Маркет подарков</button><button class="chip '+(marketSection==='telegram'?'active':'')+'" data-marketsection="telegram">Подарки Telegram</button></div>';
+  if(marketSection==='telegram') return marketTabs+renderLiveCatalog()+'<p class="note">Цены показаны в GRAM по демонстрационному курсу 1 ⭐ = 1 GRAM. Это не рыночный обменный курс. Покупка и отправка подарков пока отключены.</p>';
+
+  return marketTabs+`<div class="sectionhead" style="margin-top:18px">
     <h2>Демо-лоты маркета</h2><span class="count">${list.length} лотов</span>
   </div>
   ${list.length?'<div class="grid">'+list.map(card).join('')+'</div>':
@@ -1523,6 +1533,7 @@ document.addEventListener('click',e=>{
   if(b.id==='casesTab') return setTab('cases');
   if(b.id==='profileTab') return setTab('profile');
   if(d.catalogmode){catalogMode=d.catalogmode;render();return;}
+  if(d.marketsection){marketSection=d.marketsection;render();return;}
   if(d.casepick!==undefined){selectedCase=d.casepick;render();return;}
   if(d.caseback!==undefined){selectedCase='';render();return;}
   if(d.opencase!==undefined) return openFreeCase();
@@ -1661,7 +1672,7 @@ document.addEventListener('click',e=>{
   if(d.giftinfo){
     const gift=liveCatalog?.find(x=>String(x.id)===String(d.giftinfo));
     if(gift){
-      openSheet('<h2>Официальный подарок Telegram</h2><div class="desc">ID: '+esc(gift.id)+'</div><div class="summary"><div><span>Цена отправки ботом</span><b>'+fmt(gift.stars)+' Stars</b></div><div><span>Тип стикера</span><b>'+esc(gift.stickerType)+'</b></div><div><span>Остаток</span><b>'+(gift.remainingCount===null?'Не указан':fmt(gift.remainingCount))+'</b></div></div><p class="note">Это информационная карточка. Реальная покупка или передача не выполняется.</p><button class="btn secondary" data-close>Закрыть</button>');
+      openSheet('<h2>Официальный подарок Telegram</h2><div class="desc">ID: '+esc(gift.id)+'</div><div class="summary"><div><span>Цена отправки ботом</span><b>'+fmt(starToGram(gift.stars))+' GRAM</b></div><div><span>Тип стикера</span><b>'+esc(gift.stickerType)+'</b></div><div><span>Остаток</span><b>'+(gift.remainingCount===null?'Не указан':fmt(gift.remainingCount))+'</b></div></div><p class="note">Это информационная карточка. Реальная покупка или передача не выполняется.</p><button class="btn secondary" data-close>Закрыть</button>');
     }
     return;
   }
