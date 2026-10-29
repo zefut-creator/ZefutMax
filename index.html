@@ -9,6 +9,7 @@
 <meta name="color-scheme" content="dark light">
 <title>Max Market</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" defer></script>
 <style>
 :root{
   color-scheme:dark;
@@ -557,6 +558,11 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
 .mk-buy{gap:6px}
 .mk-price{min-width:0;padding:9px 4px;font-size:13px;white-space:nowrap;overflow:hidden}
 .mk-cart,.mk-buy .lucky-mini{flex:0 0 38px;width:38px;min-width:38px;padding:0}
+.mk-media{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:12%}
+.mk-media img,.mk-media video,.mk-media svg{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 8px 12px #0007)}
+.mk-art.has-media .emoji{display:none}
+.mk-prem{left:auto;right:8px;background:#2a6fdb99}
+.mk-price i.star,.mk-price i{font-style:normal}
 </style>
 </head>
 <body>
@@ -844,18 +850,77 @@ function card(x){
   </article>`;
 }
 
+function catPattern(emoji){
+  const e=esc(emoji||'🎁');
+  return MK_PAT.map(([x,y,r,sz])=>`<i class="mk-p" style="left:${x}%;top:${y}%;font-size:${sz}px;transform:rotate(${r}deg)">${e}</i>`).join('');
+}
+
+function catalogList(){
+  if(!Array.isArray(liveCatalog)) return [];
+  let list=liveCatalog.map((g,i)=>({g,i}));
+  const q=search.trim();
+  if(q) list=list.filter(({g})=>String(g.stickerEmoji||'').includes(q)||String(g.id).includes(q)||String(g.stars)===q);
+  list.sort((a,b)=>sort==='priceDown'?b.g.stars-a.g.stars:a.g.stars-b.g.stars);
+  return list;
+}
+
 function renderLiveCatalog(){
-  if(liveCatalogLoading) return '<div class="note">Загружаем официальный каталог Telegram…</div>';
-  if(!liveCatalog) return '<div class="note">Официальный каталог пока недоступен. '+esc(liveCatalogError||'Проверь настройку TELEGRAM_BOT_TOKEN в Vercel.')+'</div>';
+  if(liveCatalogLoading) return '<div class="note">Загружаем каталог подарков Telegram…</div>';
+  if(!liveCatalog) return '<div class="note">Каталог Telegram пока недоступен. '+esc(liveCatalogError||'Проверь настройку TELEGRAM_BOT_TOKEN в Vercel.')+'</div>';
   if(!liveCatalog.length) return '<div class="note">Telegram не вернул доступных подарков.</div>';
-  return '<div class="sectionhead" style="margin-top:28px"><h2>Официальные подарки Telegram</h2><span class="count">'+liveCatalog.length+' типов · цены в Stars</span></div>'+
-    '<div class="grid">'+liveCatalog.map(g=>{
-      const visual=g.stickerFileId && g.stickerType==='static'
-        ? '<img src="/api/gift-image?file_id='+encodeURIComponent(g.stickerFileId)+'" alt="Стикер подарка Telegram" loading="lazy" style="width:100%;height:100%;object-fit:contain;padding:18px" onerror="this.style.display=\'none\'">'
-        : '<span class="emoji">🎁</span>';
-      const stock=g.remainingCount!==null?'Осталось: '+fmt(g.remainingCount):'Доступен у бота';
-      return '<article class="card"><div class="art">'+visual+'</div><div class="cardtop"><b>'+esc(g.stickerEmoji||'Telegram Gift')+'</b></div><div class="muted">'+esc(stock)+(g.premiumOnly?' · Premium':'')+'</div><div class="price">'+fmt(g.stars)+' <small>Stars</small></div><button class="btn secondary" data-giftinfo="'+esc(g.id)+'">Подробнее</button></article>';
-    }).join('')+'</div><p class="note">Данные из официального Telegram Bot API. Это подарки, которые бот может отправлять, а не лоты вторичного рынка. Покупка и отправка через этот каталог пока не включены.</p>';
+  const list=catalogList();
+  return '<div class="sectionhead"><h2>Подарки Telegram</h2><span class="count">'+list.length+' из '+liveCatalog.length+' · цены в Stars</span></div>'+
+    (list.length?'<div class="grid">'+list.map(({g,i})=>{
+      const c=MK_BG[i%MK_BG.length];
+      const limited=g.totalCount!==null&&g.totalCount!==undefined;
+      const stock=limited?(g.remainingCount!==null?'Осталось '+fmt(g.remainingCount)+' из '+fmt(g.totalCount):'Лимит '+fmt(g.totalCount)):'Без лимита';
+      return '<article class="card mk-card"><div class="mk-art" data-fid="'+esc(g.stickerFileId||'')+'" data-stype="'+esc(g.stickerType)+'" style="--mk-c1:'+c[0]+';--mk-c2:'+c[1]+'">'+catPattern(g.stickerEmoji)+'<span class="mk-glow"></span><span class="emoji">'+esc(g.stickerEmoji||'🎁')+'</span>'+(limited?'<span class="mk-badge">Лимит</span>':'')+(g.premiumOnly?'<span class="mk-badge mk-prem">Premium</span>':'')+'</div>'+
+        '<div class="mk-body"><div class="mk-name">Подарок '+esc(g.stickerEmoji||'')+'</div><div class="mk-num">'+esc(stock)+'</div>'+
+        '<div class="mk-buy"><button class="mk-price" data-giftinfo="'+esc(g.id)+'" aria-label="Подробнее"><i>★</i>'+fmt(g.stars)+'</button></div></div></article>';
+    }).join('')+'</div>':empty('🔎','Ничего не найдено','Измени запрос.'))+
+    '<p class="note">Каталог берётся напрямую из Telegram: это все подарки, которые сейчас можно отправить за Stars. Покупка и отправка здесь пока не включены.</p>';
+}
+
+const catMediaDone=new WeakSet();
+let catObserver=null;
+async function loadCatalogMedia(el){
+  if(catMediaDone.has(el)) return;
+  catMediaDone.add(el);
+  const fid=el.dataset.fid, type=el.dataset.stype;
+  if(!fid) return;
+  const url='/api/gift-image?file_id='+encodeURIComponent(fid);
+  const holder=document.createElement('div');
+  holder.className='mk-media';
+  try{
+    if(type==='static'){
+      const img=new Image(); img.alt=''; img.decoding='async'; img.src=url;
+      await img.decode(); holder.appendChild(img);
+    }else if(type==='video'){
+      const v=document.createElement('video');
+      v.src=url; v.muted=true; v.loop=true; v.autoplay=true; v.playsInline=true;
+      await new Promise((ok,no)=>{v.onloadeddata=ok;v.onerror=no;});
+      holder.appendChild(v); v.play().catch(()=>{});
+    }else{
+      if(!window.lottie||!window.DecompressionStream) return;
+      const r=await fetch(url); if(!r.ok) throw new Error('bad');
+      const stream=r.body.pipeThrough(new DecompressionStream('gzip'));
+      const data=JSON.parse(await new Response(stream).text());
+      el.appendChild(holder);
+      window.lottie.loadAnimation({container:holder,renderer:'svg',loop:true,autoplay:true,animationData:data});
+      el.classList.add('has-media'); return;
+    }
+    el.appendChild(holder); el.classList.add('has-media');
+  }catch(e){ /* остаётся эмодзи */ }
+}
+function hydrateCatalogMedia(){
+  const els=document.querySelectorAll('.mk-art[data-fid]');
+  if(!els.length) return;
+  if(!('IntersectionObserver' in window)){els.forEach(loadCatalogMedia);return;}
+  if(catObserver) catObserver.disconnect();
+  catObserver=new IntersectionObserver(entries=>{
+    entries.forEach(en=>{ if(en.isIntersecting){catObserver.unobserve(en.target);loadCatalogMedia(en.target);} });
+  },{rootMargin:'200px'});
+  els.forEach(el=>catObserver.observe(el));
 }
 
 function renderMarket(){
@@ -872,14 +937,14 @@ function renderMarket(){
     return a.p-b.p;
   });
 
-  return `<div class="sectionhead">
-    <h2>Подарки на маркете</h2><span class="count">${list.length} лотов</span>
+  return renderLiveCatalog()+`<div class="sectionhead" style="margin-top:30px">
+    <h2>Демо-лоты маркета</h2><span class="count">${list.length} лотов</span>
   </div>
   ${list.length?'<div class="grid">'+list.map(card).join('')+'</div>':
     empty('🔎','Ничего не найдено','Измени запрос или фильтр.')}
   <p class="note">Демо-режим: каталог, цены и изменение за 24 часа — примеры.
   Баланс и операции сохраняются только в этом браузере. Реальные платежи и
-  передача Telegram-подарков не подключены.</p>`+renderLiveCatalog();
+  передача Telegram-подарков не подключены.</p>`;
 }
 
 function renderMine(){
@@ -1185,6 +1250,7 @@ function render(){
   $('theme').textContent=state.theme==='dark'?'☀️':'🌙';
   $('theme').setAttribute('aria-label',state.theme==='dark'?'Включить светлую тему':'Включить тёмную тему');
   $('main').innerHTML=tab==='market'?renderMarket():tab==='mine'?renderMine():tab==='profile'?renderProfile():tab==='cases'?renderCases():tab==='lucky'?renderLuckyBuy():renderPlay();
+  if(tab==='market') hydrateCatalogMedia();
 }
 
 /* ===== Lucky Buy ===== */
