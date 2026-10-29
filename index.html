@@ -960,7 +960,13 @@ function renderMarket(){
   const marketTabs='<div class="filters market-subtabs"><button class="chip '+(marketSection==='resale'?'active':'')+'" data-marketsection="resale">Маркет подарков</button><button class="chip '+(marketSection==='telegram'?'active':'')+'" data-marketsection="telegram">Подарки Telegram</button></div>';
   if(marketSection==='telegram') return marketTabs+renderLiveCatalog()+'<p class="note">Цена в GRAM — ориентировочный эквивалент цены Telegram в Stars, рассчитанный по справочным курсам $0,021 за Star и $1,23 за GRAM. Это не реальная цена перепродажи: обычные подарки Telegram не имеют вторичного рынка. Курсы указаны как ориентир и автоматически не обновляются. Покупка и отправка подарков пока отключены.</p>';
 
-  return marketTabs+`<div class="sectionhead" style="margin-top:18px">
+  return marketTabs+`<div class="searchbox market-search" style="margin:14px 0 12px"><span>⌕</span><input id="marketSearch" type="search" value="${esc(search)}" placeholder="Поиск по названию подарка или номеру…" aria-label="Поиск по маркету"></div>
+  <div class="filters market-local-filters">
+    <button class="chip ${filter==='all'?'active':''}" data-filter="all">Все подарки</button>
+    <button class="chip ${filter==='up'?'active':''}" data-filter="up">📈 Растут</button>
+    <button class="chip ${filter==='down'?'active':''}" data-filter="down">📉 Падают</button>
+  </div>
+  <div class="sectionhead" style="margin-top:18px">
     <h2>Демо-лоты маркета</h2><span class="count">${list.length} лотов</span>
   </div>
   ${list.length?'<div class="grid">'+list.map(card).join('')+'</div>':
@@ -1726,6 +1732,16 @@ document.addEventListener('click',e=>{
 $('q').addEventListener('input',e=>{
   search=e.target.value.trim().toLowerCase();
   render();
+});
+$('main').addEventListener('input',e=>{
+  if(e.target && e.target.id==='marketSearch'){
+    const start=e.target.selectionStart;
+    search=e.target.value.trim().toLowerCase();
+    $('q').value=e.target.value;
+    render();
+    const next=$('marketSearch');
+    if(next){next.focus();try{next.setSelectionRange(start,start);}catch(_){}}
+  }
 });
 
 $('sort').addEventListener('change',e=>{
