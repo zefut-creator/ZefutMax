@@ -617,6 +617,20 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
 :root[data-theme="light"] .rk-chip.blue{color:#1d4aa8;background:#e1ebff}
 :root[data-theme="light"] .rk-chip.purple{color:#5a2da3;background:#eee2ff}
 :root[data-theme="light"] .rk-chip.gold{color:#7a5600;background:#fff0c4}
+/* свои плашки множителей: заливка-градиент и цветная полоска слева, без рамки */
+.rk-hist{gap:7px}
+.rk-chip{border:0;border-radius:9px;padding:8px 13px 8px 15px;position:relative;overflow:hidden;color:#fff;letter-spacing:.2px;box-shadow:none}
+.rk-chip:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--rk-c)}
+.rk-chip.red{--rk-c:#ff5d73;background:linear-gradient(90deg,#ff5d7338,#ff5d730d);color:#ffc2cb;border:0}
+.rk-chip.green{--rk-c:#3ddc97;background:linear-gradient(90deg,#3ddc9738,#3ddc970d);color:#b9f6da;border:0}
+.rk-chip.blue{--rk-c:#4aa8ff;background:linear-gradient(90deg,#4aa8ff38,#4aa8ff0d);color:#c2e1ff;border:0}
+.rk-chip.purple{--rk-c:#b57bff;background:linear-gradient(90deg,#b57bff3d,#b57bff0f);color:#e6d3ff;border:0}
+.rk-chip.gold{--rk-c:#ffb020;background:linear-gradient(90deg,#ffb0204a,#ff7a1a14);color:#ffe4a3;border:0;box-shadow:0 0 14px #ffb02033}
+:root[data-theme="light"] .rk-chip.red{color:#a3182f;background:linear-gradient(90deg,#ff5d7340,#ff5d7310)}
+:root[data-theme="light"] .rk-chip.green{color:#0d6b43;background:linear-gradient(90deg,#3ddc9745,#3ddc9712)}
+:root[data-theme="light"] .rk-chip.blue{color:#14509e;background:linear-gradient(90deg,#4aa8ff45,#4aa8ff12)}
+:root[data-theme="light"] .rk-chip.purple{color:#5a2da3;background:linear-gradient(90deg,#b57bff48,#b57bff14)}
+:root[data-theme="light"] .rk-chip.gold{color:#7a4b00;background:linear-gradient(90deg,#ffb02052,#ff7a1a18)}
 </style>
 </head>
 <body>
@@ -883,7 +897,7 @@ let rkPhase='idle', rkActive=false, rkStake=10, rkCrashAt=1, rkStartTs=0, rkMult
 let rkAutoOn=false, rkAuto=2, rkBets=[], rkCashedAt=0;
 
 function rkCls(m){return m>=10?'gold':m>=5?'purple':m>=2?'blue':m>=1.5?'green':'red'}
-function rkFmt(m){return (m>=100?Math.round(m):m>=10?Math.round(m*10)/10:Math.round(m*100)/100).toFixed(m>=100?0:m>=10?1:2)+'x'}
+function rkFmt(m){return (m>=100?Math.round(m):m>=10?Math.round(m*10)/10:Math.round(m*100)/100).toFixed(m>=100?0:m>=10?1:2)+'×'}
 function rkHistHtml(){
   return state.rkHist.map(m=>'<span class="rk-chip '+rkCls(m)+'">'+rkFmt(m)+'</span>').join('');
 }
