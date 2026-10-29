@@ -973,17 +973,17 @@ function formatFreeCaseRemaining(ms){
   return hours+' ч '+String(minutes).padStart(2,'0')+' мин '+String(seconds).padStart(2,'0')+' сек';
 }
 const halloweenCaseDrops=[
-  {label:'NFT · 0,5 TON',chance:30},
-  {label:'NFT · 1 TON',chance:25},
-  {label:'NFT · 1,5 TON',chance:20},
-  {label:'NFT · 2 TON',chance:12},
-  {label:'NFT · 3 TON',chance:7},
-  {label:'NFT · 5 TON',chance:3},
-  {label:'NFT · 7 TON',chance:2},
-  {label:'NFT · 10 TON',chance:0.7},
-  {label:'NFT · 15 TON',chance:0.2},
-  {label:'NFT · 20 TON',chance:0.09},
-  {label:'NFT · 30 TON',chance:0.01}
+  {label:'0,5 GRAM',chance:30,type:'gram',amount:0.5},
+  {label:'1 GRAM',chance:25,type:'gram',amount:1},
+  {label:'1,5 GRAM',chance:20,type:'gram',amount:1.5},
+  {label:'2 GRAM',chance:12,type:'gram',amount:2},
+  {label:'3 GRAM',chance:7,type:'gram',amount:3},
+  {label:'5 GRAM',chance:3,type:'gram',amount:5},
+  {label:'7 GRAM',chance:2,type:'gram',amount:7},
+  {label:'10 GRAM',chance:0.7,type:'gram',amount:10},
+  {label:'15 GRAM',chance:0.2,type:'gram',amount:15},
+  {label:'20 GRAM',chance:0.09,type:'gram',amount:20},
+  {label:'30 GRAM',chance:0.01,type:'gram',amount:30}
 ];
 function pickCaseDrop(drops){
   const roll=Math.random()*100;let acc=0;
@@ -993,7 +993,7 @@ function pickCaseDrop(drops){
 function openHalloweenDemo(){
   if(halloweenBusy) return;
   const demoCost=10;
-  if(state.bal<demoCost){toast('Недостаточно демо-баланса: нужно 10 условных единиц');return;}
+  if(state.bal<demoCost){toast('Недостаточно демо-баланса: нужно 10 GRAM');return;}
   state.bal=round(state.bal-demoCost);
   const drop=pickCaseDrop(halloweenCaseDrops);
   log('Кейс','HALLOWEEN · демо',-demoCost,'Демо-списание 10 условных единиц; результат '+drop.label);
@@ -1002,11 +1002,11 @@ function openHalloweenDemo(){
   render();
   const track=$('halloweenRouletteTrack');
   if(track){
-    const rouletteDrops=halloweenCaseDrops.map(d=>({label:d.label,type:'nft',range:d.label}));
+    const rouletteDrops=halloweenCaseDrops;
     const sequence=[];
     for(let i=0;i<34;i++) sequence.push(rouletteDrops[(i*7+Math.floor(Math.random()*rouletteDrops.length))%rouletteDrops.length]);
     const winnerIndex=sequence.length-5;
-    sequence[winnerIndex]=Object.assign({type:'nft',range:drop.label},drop);
+    sequence[winnerIndex]=drop;
     sequence.push(...rouletteDrops.slice(0,4));
     track.innerHTML=sequence.map((d,i)=>caseItemMarkup(d,i===winnerIndex?'winner':'')).join('');
     const itemWidth=121;
@@ -1017,8 +1017,10 @@ function openHalloweenDemo(){
   }
   setTimeout(()=>{
     halloweenBusy=false;
+    state.bal=round(state.bal+drop.amount);
+    log('Кейс','HALLOWEEN · награда',drop.amount,'Зачислено '+drop.label+' на демо-баланс');
     save();render();
-    openSheet('<div class="case-result"><div class="case-box">🎃</div><div>HALLOWEEN · демо-дроп</div><div class="reward-big">'+esc(drop.label)+'</div><div class="desc">Списано 10 условных единиц с виртуального демо-баланса. Реальные TON не списывались, NFT не выдан.</div></div><button class="btn" data-close>Понятно</button>');
+    openSheet('<div class="case-result"><div class="case-box">🎃</div><div>HALLOWEEN · выпало</div><div class="reward-big">'+esc(drop.label)+'</div><div class="desc">Награда '+esc(drop.label)+' зачислена на виртуальный баланс GRAM. Списание 10 условных единиц также было демо-операцией.</div></div><button class="btn" data-close>Понятно</button>');
   },8900);
 }
 function halloweenDropList(){
@@ -1052,10 +1054,10 @@ function renderCases(){
   }
   return '<button class="btn secondary" data-caseback>← Все кейсы</button>'+
     '<div class="sectionhead" style="margin-top:16px"><h2>🎃 HALLOWEEN</h2><span class="count">ДЕМО</span></div>'+
-    '<div class="case-hero '+(halloweenBusy?'halloween-opening':'')+'" style="background:radial-gradient(circle at 50% 0%,#a855f755,transparent 65%),var(--panel);border-color:#8b5cf6"><div class="case-box">🎃</div><h2>HALLOWEEN</h2><p class="muted">Стоимость открытия: 10 условных единиц демо-баланса.</p>'+
+    '<div class="case-hero '+(halloweenBusy?'halloween-opening':'')+'" style="background:radial-gradient(circle at 50% 0%,#a855f755,transparent 65%),var(--panel);border-color:#8b5cf6"><div class="case-box">🎃</div><h2>HALLOWEEN</h2><p class="muted">Стоимость открытия: 10 GRAM с виртуального демо-баланса.</p>'+
     (halloweenBusy?'<div class="case-roulette"><div class="case-roulette-track" id="halloweenRouletteTrack"></div><div class="case-roulette-pointer"></div></div><div class="case-roulette-status">Рулетка крутится…</div>':'')+
-    '<div class="summary"><div><span>Демо-стоимость</span><b>10 единиц</b></div><div><span>Реальные TON</span><b>Не списываются</b></div></div><button class="btn" data-openhalloween '+(halloweenBusy?'disabled':'')+'>'+(halloweenBusy?'🎃 Рулетка крутится…':'Открыть за 10')+'</button></div>'+
-    '<div class="sectionhead"><h2>Награды и шансы</h2><span class="count">100%</span></div><div class="case-drop-list">'+halloweenDropList()+'</div><p class="note">Демо-режим: списываются 10 условных единиц с виртуального баланса GRAM; реальные TON не списываются, NFT не выдаются.</p>';
+    '<div class="summary"><div><span>Стоимость</span><b>10 GRAM</b></div><div><span>Реальная оплата</span><b>Отключена</b></div></div><button class="btn" data-openhalloween '+(halloweenBusy?'disabled':'')+'>'+(halloweenBusy?'🎃 Рулетка крутится…':'Открыть за 10 GRAM')+'</button></div>'+
+    '<div class="sectionhead"><h2>Награды и шансы</h2><span class="count">100%</span></div><div class="case-drop-list">'+halloweenDropList()+'</div><p class="note">Демо-режим: 10 GRAM списываются с виртуального баланса, а выпавшие GRAM зачисляются обратно. Реальные платежи отключены.</p>';
 }
 function openFreeCase(){
   if(freeCaseBusy) return;
