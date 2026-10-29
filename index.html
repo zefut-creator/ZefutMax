@@ -952,6 +952,7 @@ const freeCaseDrops=[
   {label:'NFT-подарок на выбор · 100–250 TON',chance:0.001,type:'nft',range:'100–250 TON'}
 ];
 let freeCaseBusy=false,freeCaseTimer=null;
+let selectedCase='';
 function caseItemMarkup(d,extra=''){
   const icon=d.type==='nft'?'🎁':'🪙';
   const label=d.type==='nft'?'NFT '+d.range:d.label;
@@ -967,17 +968,17 @@ function formatFreeCaseRemaining(ms){
   return hours+' ч '+String(minutes).padStart(2,'0')+' мин '+String(seconds).padStart(2,'0')+' сек';
 }
 const halloweenCaseDrops=[
-  {label:'NFT · 5 TON',chance:30},
-  {label:'NFT · 7 TON',chance:25},
-  {label:'NFT · 9 TON',chance:20},
-  {label:'NFT · 10 TON',chance:12},
-  {label:'NFT · 12 TON',chance:7},
-  {label:'NFT · 15 TON',chance:3},
-  {label:'NFT · 20 TON',chance:2},
-  {label:'NFT · 30 TON',chance:0.7},
-  {label:'NFT · 50 TON',chance:0.2},
-  {label:'NFT · 100 TON',chance:0.09},
-  {label:'NFT · 250 TON',chance:0.01}
+  {label:'NFT · 0,5 TON',chance:30},
+  {label:'NFT · 1 TON',chance:25},
+  {label:'NFT · 1,5 TON',chance:20},
+  {label:'NFT · 2 TON',chance:12},
+  {label:'NFT · 3 TON',chance:7},
+  {label:'NFT · 5 TON',chance:3},
+  {label:'NFT · 7 TON',chance:2},
+  {label:'NFT · 10 TON',chance:0.7},
+  {label:'NFT · 15 TON',chance:0.2},
+  {label:'NFT · 20 TON',chance:0.09},
+  {label:'NFT · 30 TON',chance:0.01}
 ];
 function pickCaseDrop(drops){
   const roll=Math.random()*100;let acc=0;
@@ -996,18 +997,33 @@ function halloweenDropList(){
 function renderCases(){
   const remaining=getFreeCaseRemaining();
   const onCooldown=remaining>0;
-  return '<div class="sectionhead"><h2>📦 Кейсы</h2><span class="count">2 кейса</span></div>'+
-    '<div class="sectionhead"><h2>🎁 Бесплатный кейс</h2><span class="count">1 раз в 24 часа</span></div>'+
-    '<div class="case-hero '+(freeCaseBusy?'case-opening':'')+'"><div class="case-box">🎁</div><h2>Бесплатный кейс</h2><p class="muted">Открывай один раз в 24 часа и получай случайный дроп.</p>'+
-    (freeCaseBusy?'<div class="case-roulette"><div class="case-roulette-track" id="caseRouletteTrack"></div><div class="case-roulette-pointer"></div></div><div class="case-roulette-status">Рулетка крутится…</div>':'')+
-    (onCooldown&&!freeCaseBusy?'<p class="muted">Следующее открытие через <b>'+formatFreeCaseRemaining(remaining)+'</b></p>':'')+
-    '<button class="btn" data-opencase '+(freeCaseBusy||onCooldown?'disabled':'')+'>'+(freeCaseBusy?'Открываем…':onCooldown?'Кейс пока недоступен':'Открыть бесплатно')+'</button></div>'+
-    '<div class="sectionhead"><h2>Шансы выпадения</h2><span class="count">100%</span></div>'+
-    '<div class="case-drop-list">'+freeCaseDrops.map(d=>'<div class="case-drop"><span class="reward">'+esc(d.label)+'</span><span class="chance">'+String(d.chance).replace('.',',')+'%</span></div>').join('')+'</div>'+
-    '<p class="note">Бесплатный кейс работает в демо-режиме. GRAM-дропы добавляются к виртуальному балансу. NFT-дропы — демо-награды без реальной выдачи.</p>'+
-    '<div class="sectionhead"><h2>🎃 HALLOWEEN</h2><span class="count">ДЕМО</span></div>'+
-    '<div class="case-hero" style="background:radial-gradient(circle at 50% 0%,#a855f755,transparent 65%),var(--panel);border-color:#8b5cf6"><div class="case-box">🎃</div><h2>HALLOWEEN · DEMO</h2><p class="muted">Виртуальная цена: 10 TON. Это только симуляция.</p><div class="summary"><div><span>Виртуальная цена</span><b>10 TON</b></div><div><span>Реальная оплата</span><b>Отключена</b></div></div><button class="btn" data-openhalloween>Открыть демо-кейс</button></div>'+
-    '<div class="sectionhead"><h2>Награды HALLOWEEN</h2><span class="count">100%</span></div><div class="case-drop-list">'+halloweenDropList()+'</div><p class="note">Только демо: TON не списываются, реальные TON и NFT не принимаются и не выдаются.</p>';
+  if(!selectedCase){
+    return '<div class="sectionhead"><h2>📦 Кейсы</h2><span class="count">Выбери кейс</span></div>'+
+      '<div class="grid case-select-grid">'+
+      '<button class="card case-select-card" data-casepick="free" style="text-align:left;color:var(--text);cursor:pointer"><div class="art"><span class="emoji">🎁</span></div><div class="cardtop"><b>Бесплатный кейс</b></div><p class="muted">Бесплатно · раз в 24 часа</p><span class="game-open">Посмотреть кейс →</span></button>'+
+      '<button class="card case-select-card" data-casepick="halloween" style="text-align:left;color:var(--text);cursor:pointer"><div class="art" style="background:radial-gradient(circle at 50% 10%,#a855f755,transparent 70%),#171017"><span class="emoji">🎃</span></div><div class="cardtop"><b>HALLOWEEN</b></div><p class="muted">10 TON · демо-режим</p><span class="game-open">Посмотреть кейс →</span></button>'+
+      '<button class="card case-select-card" data-casepick="coming" style="text-align:left;color:var(--text);cursor:pointer"><div class="art"><span class="emoji">🔒</span></div><div class="cardtop"><b>Новый кейс</b></div><p class="muted">Скоро появится</p><span class="game-open">В разработке →</span></button>'+
+      '<button class="card case-select-card" data-casepick="coming" style="text-align:left;color:var(--text);cursor:pointer"><div class="art"><span class="emoji">✨</span></div><div class="cardtop"><b>Особый кейс</b></div><p class="muted">Будущий кейс</p><span class="game-open">В разработке →</span></button>'+
+      '</div><p class="note">Нажми на кейс, чтобы посмотреть награды и шансы. Новые кейсы можно будет добавить позже.</p>';
+  }
+  if(selectedCase==='coming'){
+    return '<button class="btn secondary" data-caseback>← Все кейсы</button><div class="empty" style="margin-top:14px"><div class="big">🔒</div><b>Кейс скоро появится</b><p>Этот слот оставлен для будущего кейса.</p></div>';
+  }
+  if(selectedCase==='free'){
+    return '<button class="btn secondary" data-caseback>← Все кейсы</button>'+
+      '<div class="sectionhead" style="margin-top:16px"><h2>🎁 Бесплатный кейс</h2><span class="count">1 раз в 24 часа</span></div>'+
+      '<div class="case-hero '+(freeCaseBusy?'case-opening':'')+'"><div class="case-box">🎁</div><h2>Бесплатный кейс</h2><p class="muted">Открывай один раз в 24 часа и получай случайный дроп.</p>'+
+      (freeCaseBusy?'<div class="case-roulette"><div class="case-roulette-track" id="caseRouletteTrack"></div><div class="case-roulette-pointer"></div></div><div class="case-roulette-status">Рулетка крутится…</div>':'')+
+      (onCooldown&&!freeCaseBusy?'<p class="muted">Следующее открытие через <b>'+formatFreeCaseRemaining(remaining)+'</b></p>':'')+
+      '<button class="btn" data-opencase '+(freeCaseBusy||onCooldown?'disabled':'')+'>'+(freeCaseBusy?'Открываем…':onCooldown?'Кейс пока недоступен':'Открыть бесплатно')+'</button></div>'+
+      '<div class="sectionhead"><h2>Шансы выпадения</h2><span class="count">100%</span></div>'+
+      '<div class="case-drop-list">'+freeCaseDrops.map(d=>'<div class="case-drop"><span class="reward">'+esc(d.label)+'</span><span class="chance">'+String(d.chance).replace('.',',')+'%</span></div>').join('')+'</div>'+
+      '<p class="note">Демо-режим: GRAM-дропы добавляются к виртуальному балансу. NFT-дропы не выдаются реально.</p>';
+  }
+  return '<button class="btn secondary" data-caseback>← Все кейсы</button>'+
+    '<div class="sectionhead" style="margin-top:16px"><h2>🎃 HALLOWEEN</h2><span class="count">ДЕМО</span></div>'+
+    '<div class="case-hero" style="background:radial-gradient(circle at 50% 0%,#a855f755,transparent 65%),var(--panel);border-color:#8b5cf6"><div class="case-box">🎃</div><h2>HALLOWEEN</h2><p class="muted">Цена кейса: 10 TON. Сейчас это только демо.</p><div class="summary"><div><span>Указанная цена</span><b>10 TON</b></div><div><span>Реальная оплата</span><b>Отключена</b></div></div><button class="btn" data-openhalloween>Открыть демо-кейс</button></div>'+
+    '<div class="sectionhead"><h2>Награды и шансы</h2><span class="count">100%</span></div><div class="case-drop-list">'+halloweenDropList()+'</div><p class="note">Только демо: TON не списываются, реальные TON и NFT не принимаются и не выдаются.</p>';
 }
 function openFreeCase(){
   if(freeCaseBusy) return;
@@ -1389,6 +1405,8 @@ document.addEventListener('click',e=>{
   if(b.id==='playTab'){stopRocketOnNavigate();playMode='';return setTab('play');}
   if(b.id==='casesTab') return setTab('cases');
   if(b.id==='profileTab') return setTab('profile');
+  if(d.casepick!==undefined){selectedCase=d.casepick;render();return;}
+  if(d.caseback!==undefined){selectedCase='';render();return;}
   if(d.opencase!==undefined) return openFreeCase();
   if(d.openhalloween!==undefined) return openHalloweenDemo();
   if(d.lucky) return lbOpen(d.lucky);
