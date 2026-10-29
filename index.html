@@ -588,7 +588,7 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
       <div class="topactions">
         <button class="iconbtn" id="theme" aria-label="Сменить тему">☀️</button>
         <button class="balance" id="balance" title="Виртуальный демо-баланс — нажми, чтобы увидеть пояснение" aria-label="Виртуальный баланс GRAM">
-          <svg class="gram-logo" viewBox="0 0 100 100" aria-label="GRAM" role="img"><path d="M31 12H69L91 38L50 91L9 38Z" fill="#BFC3C9"/><path d="M50 34L56 44L67 50L56 56L50 67L44 56L33 50L44 44Z" fill="#242424"/></svg> <strong id="bal">500</strong> <span>GRAM</span> ＋
+          <svg class="gram-logo" viewBox="0 0 100 100" aria-label="GRAM" role="img"><path d="M31 12H69L91 38L50 91L9 38Z" fill="#ff9f1c"/><path d="M50 34L56 44L67 50L56 56L50 67L44 56L33 50L44 44Z" fill="#242424"/></svg> <strong id="bal">500</strong> <span>GRAM</span> ＋
         </button>
       </div>
     </div>
@@ -896,7 +896,7 @@ function renderLiveCatalog(){
       const stock=limited?(g.remainingCount!==null?'Осталось '+fmt(g.remainingCount)+' из '+fmt(g.totalCount):'Лимит '+fmt(g.totalCount)):'Без лимита';
       return '<article class="card mk-card"><div class="mk-art mk-art-plain" data-fid="'+esc(g.stickerFileId||'')+'" data-stype="'+esc(g.stickerType)+'">'+(g.premiumOnly?'<span class="mk-badge mk-prem">Premium</span>':'')+'</div>'+
         '<div class="mk-body"><div class="mk-name">Подарок '+esc(g.stickerEmoji||'')+'</div><div class="mk-num">'+esc(stock)+'</div>'+
-        '<div class="mk-buy"><button class="mk-price" data-giftinfo="'+esc(g.id)+'" aria-label="Подробнее"><svg class="gram-price-logo" viewBox="0 0 100 100" aria-hidden="true"><path d="M31 12H69L91 38L50 91L9 38Z" fill="#BFC3C9"/><path d="M50 34L56 44L67 50L56 56L50 67L44 56L33 50L44 44Z" fill="#242424"/></svg>'+fmt(starToGram(g.stars))+'</button></div></div></article>';
+        '<div class="mk-buy"><button class="mk-price" data-giftinfo="'+esc(g.id)+'" aria-label="Подробнее"><svg class="gram-price-logo" viewBox="0 0 100 100" aria-hidden="true"><path d="M31 12H69L91 38L50 91L9 38Z" fill="#ff9f1c"/><path d="M50 34L56 44L67 50L56 56L50 67L44 56L33 50L44 44Z" fill="#242424"/></svg>'+fmt(starToGram(g.stars))+'</button></div></div></article>';
     }).join('')+'</div>':empty('🔎','Ничего не найдено','Измени запрос.'))+
     '<p class="note">Каталог берётся напрямую из Telegram: это все подарки, которые сейчас можно отправить за Stars. Покупка и отправка здесь пока не включены.</p>';
 }
@@ -1676,7 +1676,7 @@ document.addEventListener('click',e=>{
   if(d.giftinfo){
     const gift=liveCatalog?.find(x=>String(x.id)===String(d.giftinfo));
     if(gift){
-      openSheet('<h2>Официальный подарок Telegram</h2><div class="desc">ID: '+esc(gift.id)+'</div><div class="summary"><div><span>Оценка в GRAM</span><b><svg class="gram-price-logo" viewBox="0 0 100 100" aria-hidden="true"><path d="M31 12H69L91 38L50 91L9 38Z" fill="#BFC3C9"/><path d="M50 34L56 44L67 50L56 56L50 67L44 56L33 50L44 44Z" fill="#242424"/></svg>'+fmt(starToGram(gift.stars))+' GRAM</b></div><div><span>Тип стикера</span><b>'+esc(gift.stickerType)+'</b></div><div><span>Остаток</span><b>'+(gift.remainingCount===null?'Не указан':fmt(gift.remainingCount))+'</b></div></div><p class="note">Это информационная карточка. Реальная покупка или передача не выполняется.</p><button class="btn secondary" data-close>Закрыть</button>');
+      openSheet('<h2>Официальный подарок Telegram</h2><div class="desc">ID: '+esc(gift.id)+'</div><div class="summary"><div><span>Оценка в GRAM</span><b><svg class="gram-price-logo" viewBox="0 0 100 100" aria-hidden="true"><path d="M31 12H69L91 38L50 91L9 38Z" fill="#ff9f1c"/><path d="M50 34L56 44L67 50L56 56L50 67L44 56L33 50L44 44Z" fill="#242424"/></svg>'+fmt(starToGram(gift.stars))+' GRAM</b></div><div><span>Тип стикера</span><b>'+esc(gift.stickerType)+'</b></div><div><span>Остаток</span><b>'+(gift.remainingCount===null?'Не указан':fmt(gift.remainingCount))+'</b></div></div><p class="note">Это информационная карточка. Реальная покупка или передача не выполняется.</p><button class="btn secondary" data-close>Закрыть</button>');
     }
     return;
   }
