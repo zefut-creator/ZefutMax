@@ -721,8 +721,8 @@ function seed(){
   const demoSymbols=['Star','Heart','Crown','Flame','Gem','Moon'];
   gifts.forEach((g,i)=>{
     const traits={model:demoModels[i%demoModels.length],background:demoBackgrounds[(i*3+1)%demoBackgrounds.length],symbol:demoSymbols[(i*5+2)%demoSymbols.length]};
-    listings.push({id:id++,g:i,n:Math.floor(rnd()*9000)+100,p:round(g[2]),...traits});
-    listings.push({id:id++,g:i,n:Math.floor(rnd()*9000)+100,p:round(g[2]*(1.04+rnd()*.1)),...traits});
+    listings.push({id:id++,g:i,n:Math.floor(rnd()*9000)+100,p:round(g[2]),listedAt:id,...traits});
+    listings.push({id:id++,g:i,n:Math.floor(rnd()*9000)+100,p:round(g[2]*(1.04+rnd()*.1)),listedAt:id,...traits});
   });
 
   return {
@@ -831,8 +831,8 @@ function setTab(next){
   $('playTab').classList.toggle('active',next==='play');
   $('casesTab').classList.toggle('active',next==='cases');
   $('profileTab').classList.toggle('active',next==='profile');
-  $('toolbar').style.display=next==='market'?'grid':'none';
-  $('filters').style.display=next==='market'?'flex':'none';
+  $('toolbar').style.display=next==='market'?'none':'grid';
+  $('filters').style.display=next==='market'?'none':'flex';
   render();
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -958,7 +958,8 @@ function nftFilterMarkup(){
     select('model','Модель',['Classic','Gold','Neon','Shadow','Crystal','Pixel'])+
     select('background','Фон',['Blue','Orange','Purple','Emerald','Rose','Dark'])+
     select('symbol','Символ',['Star','Heart','Crown','Flame','Gem','Moon'])+
-    '<select data-nft-filter="price" aria-label="Цена"><option value="all">Цена · Любая</option><option value="under50" '+(nftFilters.price==='under50'?'selected':'')+'>До 50 GRAM</option><option value="50to200" '+(nftFilters.price==='50to200'?'selected':'')+'>50–200 GRAM</option><option value="200to1000" '+(nftFilters.price==='200to1000'?'selected':'')+'>200–1 000 GRAM</option><option value="1000plus" '+(nftFilters.price==='1000plus'?'selected':'')+'>От 1 000 GRAM</option></select></div>';
+    '<select data-nft-filter="price" aria-label="Цена"><option value="all">Цена · Любая</option><option value="under50" '+(nftFilters.price==='under50'?'selected':'')+'>До 50 GRAM</option><option value="50to200" '+(nftFilters.price==='50to200'?'selected':'')+'>50–200 GRAM</option><option value="200to1000" '+(nftFilters.price==='200to1000'?'selected':'')+'>200–1 000 GRAM</option><option value="1000plus" '+(nftFilters.price==='1000plus'?'selected':'')+'>От 1 000 GRAM</option></select>'+
+    '<select data-market-sort aria-label="Сортировать по"><option value="priceUp" '+(sort==='priceUp'?'selected':'')+'>Цена (по возрастанию)</option><option value="priceDown" '+(sort==='priceDown'?'selected':'')+'>Цена (по убыванию)</option><option value="listedOld" '+(sort==='listedOld'?'selected':'')+'>Время размещения (сначала старые)</option><option value="listedNew" '+(sort==='listedNew'?'selected':'')+'>Время размещения (сначала новые)</option><option value="modelRareUp" '+(sort==='modelRareUp'?'selected':'')+'>Редкость модели (по возрастанию)</option><option value="modelRareDown" '+(sort==='modelRareDown'?'selected':'')+'>Редкость модели (по убыванию)</option><option value="backgroundRareUp" '+(sort==='backgroundRareUp'?'selected':'')+'>Редкость фона (по возрастанию)</option><option value="backgroundRareDown" '+(sort==='backgroundRareDown'?'selected':'')+'>Редкость фона (по убыванию)</option><option value="symbolRareUp" '+(sort==='symbolRareUp'?'selected':'')+'>Редкость символа (по возрастанию)</option><option value="symbolRareDown" '+(sort==='symbolRareDown'?'selected':'')+'>Редкость символа (по убыванию)</option><option value="numberUp" '+(sort==='numberUp'?'selected':'')+'>Номер подарка (по возрастанию)</option><option value="numberDown" '+(sort==='numberDown'?'selected':'')+'>Номер подарка (по убыванию)</option></select></div>';
 }
 
 function renderMarket(){
@@ -976,11 +977,28 @@ function renderMarket(){
   if(filter==='down') list=list.filter(x=>gifts[x.g][3]<0);
   if(filter==='fav') list=list.filter(x=>state.favs.includes(x.g));
 
+  const rarity=(key,item)=>{
+    const total=state.mk.length||1;
+    const count=state.mk.filter(x=>x[key]===item[key]).length;
+    return count/total;
+  };
   list.sort((a,b)=>{
-    if(sort==='priceDown') return b.p-a.p;
-    if(sort==='growth') return gifts[b.g][3]-gifts[a.g][3]||a.p-b.p;
-    if(sort==='name') return gifts[a.g][1].localeCompare(gifts[b.g][1]);
-    return a.p-b.p;
+    switch(sort){
+      case 'listedOld': return (a.listedAt||a.id)-(b.listedAt||b.id);
+      case 'listedNew': return (b.listedAt||b.id)-(a.listedAt||a.id);
+      case 'priceDown': return b.p-a.p;
+      case 'modelRareUp': return rarity('model',a)-rarity('model',b);
+      case 'modelRareDown': return rarity('model',b)-rarity('model',a);
+      case 'backgroundRareUp': return rarity('background',a)-rarity('background',b);
+      case 'backgroundRareDown': return rarity('background',b)-rarity('background',a);
+      case 'symbolRareUp': return rarity('symbol',a)-rarity('symbol',b);
+      case 'symbolRareDown': return rarity('symbol',b)-rarity('symbol',a);
+      case 'numberUp': return a.n-b.n;
+      case 'numberDown': return b.n-a.n;
+      case 'growth': return gifts[b.g][3]-gifts[a.g][3]||a.p-b.p;
+      case 'name': return gifts[a.g][1].localeCompare(gifts[b.g][1]);
+      default: return a.p-b.p;
+    }
   });
 
   const marketTabs='<div class="filters market-subtabs"><button class="chip '+(marketSection==='resale'?'active':'')+'" data-marketsection="resale">Маркет подарков</button><button class="chip '+(marketSection==='telegram'?'active':'')+'" data-marketsection="telegram">Подарки Telegram</button></div>';
@@ -1760,6 +1778,11 @@ $('q').addEventListener('input',e=>{
   render();
 });
 $('main').addEventListener('change',e=>{
+  if(e.target && e.target.dataset && e.target.dataset.marketSort){
+    sort=e.target.value;
+    render();
+    return;
+  }
   const key=e.target && e.target.dataset && e.target.dataset.nftFilter;
   if(!key) return;
   nftFilters[key]=e.target.value;
