@@ -979,11 +979,14 @@ const halloweenCaseDrops=[
   {label:'2 GRAM',chance:12,type:'gram',amount:2},
   {label:'3 GRAM',chance:7,type:'gram',amount:3},
   {label:'5 GRAM',chance:3,type:'gram',amount:5},
-  {label:'7 GRAM',chance:2,type:'gram',amount:7},
-  {label:'10 GRAM',chance:0.7,type:'gram',amount:10},
-  {label:'15 GRAM',chance:0.2,type:'gram',amount:15},
-  {label:'20 GRAM',chance:0.09,type:'gram',amount:20},
-  {label:'30 GRAM',chance:0.01,type:'gram',amount:30}
+  {label:'7 GRAM',chance:1.5,type:'gram',amount:7},
+  {label:'10 GRAM',chance:0.8,type:'gram',amount:10},
+  {label:'15 GRAM',chance:0.4,type:'gram',amount:15},
+  {label:'20 GRAM',chance:0.15,type:'gram',amount:20},
+  {label:'30 GRAM',chance:0.08,type:'gram',amount:30},
+  {label:'50 GRAM',chance:0.04,type:'gram',amount:50},
+  {label:'100 GRAM',chance:0.02,type:'gram',amount:100},
+  {label:'200 GRAM',chance:0.01,type:'gram',amount:200}
 ];
 function pickCaseDrop(drops){
   const roll=Math.random()*100;let acc=0;
@@ -996,7 +999,9 @@ function openHalloweenDemo(){
   if(state.bal<demoCost){toast('Недостаточно демо-баланса: нужно 10 GRAM');return;}
   state.bal=round(state.bal-demoCost);
   const drop=pickCaseDrop(halloweenCaseDrops);
-  log('Кейс','HALLOWEEN · демо',-demoCost,'Демо-списание 10 условных единиц; результат '+drop.label);
+  state.bal=round(state.bal+drop.amount);
+  log('Кейс','HALLOWEEN · демо',-demoCost,'Демо-списание 10 GRAM; результат '+drop.label);
+  log('Кейс','HALLOWEEN · награда',drop.amount,'Сразу зачислено '+drop.label+' на демо-баланс');
   save();
   halloweenBusy=true;
   render();
@@ -1017,10 +1022,8 @@ function openHalloweenDemo(){
   }
   setTimeout(()=>{
     halloweenBusy=false;
-    state.bal=round(state.bal+drop.amount);
-    log('Кейс','HALLOWEEN · награда',drop.amount,'Зачислено '+drop.label+' на демо-баланс');
     save();render();
-    openSheet('<div class="case-result"><div class="case-box">🎃</div><div>HALLOWEEN · выпало</div><div class="reward-big">'+esc(drop.label)+'</div><div class="desc">Награда '+esc(drop.label)+' зачислена на виртуальный баланс GRAM. Списание 10 условных единиц также было демо-операцией.</div></div><button class="btn" data-close>Понятно</button>');
+    openSheet('<div class="case-result"><div class="case-box">🎃</div><div>HALLOWEEN · выпало</div><div class="reward-big">'+esc(drop.label)+'</div><div class="desc">Награда была сразу зачислена на виртуальный баланс GRAM в начале открытия. Списание 10 GRAM — демо-операция.</div></div><button class="btn" data-close>Понятно</button>');
   },8900);
 }
 function halloweenDropList(){
