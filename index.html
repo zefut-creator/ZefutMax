@@ -877,7 +877,6 @@ function rocketView(){
     '<div class="rk-row"><label for="rkBet">Ставка, GRAM</label><span class="muted">Баланс: <b id="rkBal">'+fmt(state.bal)+'</b></span></div>'+
     '<div class="rk-row"><input id="rkBet" type="number" inputmode="decimal" min="0.1" step="0.1" value="'+rkStake+'" '+(locked?'disabled':'')+'>'+
       '<button class="rk-q" data-rkhalf '+(locked?'disabled':'')+'>½</button><button class="rk-q" data-rkdouble '+(locked?'disabled':'')+'>×2</button><button class="rk-q" data-rkmax '+(locked?'disabled':'')+'>Макс</button></div>'+
-    '<div class="rk-row rk-presets">'+[1,5,10,50,100].map(v=>'<button class="rk-q" data-rkset="'+v+'" '+(locked?'disabled':'')+'>'+v+'</button>').join('')+'</div>'+
     '<div class="rk-row rk-autorow"><button class="rk-switch '+(rkAutoOn?'on':'')+'" data-rkauto role="switch" aria-checked="'+rkAutoOn+'" aria-label="Авто-вывод"><i></i></button><span>Авто-вывод на</span>'+
       '<input id="rkAuto" type="number" inputmode="decimal" min="1.01" step="0.1" value="'+rkAuto+'" '+(flying?'disabled':'')+'><b>×</b></div>'+
     '<button class="btn rk-main '+st.cls+'" id="rkMain" '+st.attr+' '+(st.dis?'disabled':'')+'>'+st.txt+'</button>'+
@@ -1782,7 +1781,6 @@ document.addEventListener('click',e=>{
   if(d.rkhalf!==undefined) return rkSetStake((Number($('rkBet')?.value)||rkStake)/2);
   if(d.rkdouble!==undefined) return rkSetStake((Number($('rkBet')?.value)||rkStake)*2);
   if(d.rkmax!==undefined) return rkSetStake(state.bal);
-  if(d.rkset!==undefined) return rkSetStake(Number(d.rkset));
   if(d.rkauto!==undefined){ rkAutoOn=!rkAutoOn; b.classList.toggle('on',rkAutoOn); b.setAttribute('aria-checked',rkAutoOn); return; }
   if(d.pvp!==undefined){
     const you=Math.floor(Math.random()*100)+1,bot=Math.floor(Math.random()*100)+1;
