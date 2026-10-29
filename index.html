@@ -966,10 +966,40 @@ function formatFreeCaseRemaining(ms){
   const total=Math.ceil(ms/1000),hours=Math.floor(total/3600),minutes=Math.floor((total%3600)/60),seconds=total%60;
   return hours+' ч '+String(minutes).padStart(2,'0')+' мин '+String(seconds).padStart(2,'0')+' сек';
 }
+const halloweenCaseDrops=[
+  {label:'NFT · 5 TON',chance:30},
+  {label:'NFT · 7 TON',chance:25},
+  {label:'NFT · 9 TON',chance:20},
+  {label:'NFT · 10 TON',chance:12},
+  {label:'NFT · 12 TON',chance:7},
+  {label:'NFT · 15 TON',chance:3},
+  {label:'NFT · 20 TON',chance:2},
+  {label:'NFT · 30 TON',chance:0.7},
+  {label:'NFT · 50 TON',chance:0.2},
+  {label:'NFT · 100 TON',chance:0.09},
+  {label:'NFT · 250 TON',chance:0.01}
+];
+function pickCaseDrop(drops){
+  const roll=Math.random()*100;let acc=0;
+  for(const item of drops){acc+=item.chance;if(roll<acc)return item;}
+  return drops[drops.length-1];
+}
+function openHalloweenDemo(){
+  const drop=pickCaseDrop(halloweenCaseDrops);
+  log('Кейс','HALLOWEEN · демо',0,'Демо-награда '+drop.label);
+  save();
+  openSheet('<div class="case-result"><div class="case-box">🎃</div><div>HALLOWEEN · демо-дроп</div><div class="reward-big">'+esc(drop.label)+'</div><div class="desc">Это симуляция: 10 TON не списаны, реальные NFT и TON не выдаются.</div></div><button class="btn" data-close>Понятно</button>');
+}
+function halloweenDropList(){
+  return halloweenCaseDrops.map(d=>'<div class="case-drop"><span class="reward">'+esc(d.label)+'</span><span class="chance">'+String(d.chance).replace('.',',')+'%</span></div>').join('');
+}
 function renderCases(){
   const remaining=getFreeCaseRemaining();
   const onCooldown=remaining>0;
-  return '<div class="sectionhead"><h2>📦 Кейсы</h2><span class="count">1 кейс</span></div>'+
+  return '<div class="sectionhead"><h2>📦 Кейсы</h2><span class="count">2 кейса</span></div>'+
+    '<div class="case-hero" style="background:radial-gradient(circle at 50% 0%,#a855f755,transparent 65%),var(--panel);border-color:#8b5cf6"><div class="case-box">🎃</div><h2>HALLOWEEN</h2><p class="muted">Цена в задумке: 10 TON · только демо, без списания средств.</p><div class="summary"><div><span>Виртуальная стоимость</span><b>10 TON</b></div><div><span>Реальная оплата</span><b>Отключена</b></div></div><button class="btn" data-openhalloween>Открыть демо-кейс</button></div>'+
+    '<div class="sectionhead"><h2>Награды HALLOWEEN</h2><span class="count">100%</span></div><div class="case-drop-list">'+halloweenDropList()+'</div><p class="note">HALLOWEEN работает только как симуляция: виртуальная цена 10 TON не списывается, реальные TON и NFT не принимаются и не выдаются.</p>'+
+    '<div class="sectionhead"><h2>🎁 Бесплатный кейс</h2><span class="count">1 раз в 24 часа</span></div>'+
     '<div class="case-hero '+(freeCaseBusy?'case-opening':'')+'"><div class="case-box">🎁</div><h2>Бесплатный кейс</h2><p class="muted">Открывай один раз в 24 часа и получай случайный дроп.</p>'+
     (freeCaseBusy?'<div class="case-roulette"><div class="case-roulette-track" id="caseRouletteTrack"></div><div class="case-roulette-pointer"></div></div><div class="case-roulette-status">Рулетка крутится…</div>':'')+
     (onCooldown&&!freeCaseBusy?'<p class="muted">Следующее открытие через <b>'+formatFreeCaseRemaining(remaining)+'</b></p>':'')+
@@ -1359,6 +1389,7 @@ document.addEventListener('click',e=>{
   if(b.id==='casesTab') return setTab('cases');
   if(b.id==='profileTab') return setTab('profile');
   if(d.opencase!==undefined) return openFreeCase();
+  if(d.openhalloween!==undefined) return openHalloweenDemo();
   if(d.lucky) return lbOpen(d.lucky);
   if(d.lbgo) return lbGo(d.lbgo);
   if(d.luckyinfo!==undefined){openSheet('<h2>Lucky Buy в MRKT</h2><div class="desc">Это не покупка случайного подарка за фиксированные 25 GRAM. В оригинальном MRKT пользователь предлагает цену ниже цены подарка; шанс зависит от предложения. При проигрыше предусмотрена компенсация карточкой Lucky Buy. В этом проекте ставки, списания баланса и выдача случайных подарков отключены — функция показана только как справка.</div><button class="btn secondary" data-close>Понятно</button>');return;}
