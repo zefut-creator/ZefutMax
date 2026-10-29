@@ -831,8 +831,8 @@ function setTab(next){
   $('playTab').classList.toggle('active',next==='play');
   $('casesTab').classList.toggle('active',next==='cases');
   $('profileTab').classList.toggle('active',next==='profile');
-  $('toolbar').style.display=next==='market'?'none':'grid';
-  $('filters').style.display=next==='market'?'none':'flex';
+  $('toolbar').style.display='none';
+  $('filters').style.display='none';
   render();
   window.scrollTo({top:0,behavior:'smooth'});
 }
