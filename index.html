@@ -563,6 +563,12 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
 .mk-art.has-media .emoji{display:none}
 .mk-prem{left:auto;right:8px;background:#2a6fdb99}
 .mk-price i.star,.mk-price i{font-style:normal}
+  .mk-art-plain{background:var(--panel2)!important;}
+  .mk-art-plain:before,.mk-art-plain:after,.mk-art-plain .mk-p,.mk-art-plain .mk-glow,.mk-art-plain>.emoji{display:none!important}
+  .mk-art-plain .mk-media{display:flex!important;position:absolute;inset:0;align-items:center;justify-content:center;padding:14px}
+  .mk-art-plain .mk-media img,.mk-art-plain .mk-media video,.mk-art-plain .mk-media svg{max-width:100%;max-height:100%;object-fit:contain}
+  .gram-icon{display:inline-block;color:var(--accent);font-size:14px;margin-right:2px;text-shadow:0 0 10px color-mix(in srgb,var(--accent) 35%,transparent)}
+  .catalog-tabs{margin:0 0 14px;padding-top:0}
 </style>
 </head>
 <body>
@@ -576,7 +582,7 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
       <div class="topactions">
         <button class="iconbtn" id="theme" aria-label="Сменить тему">☀️</button>
         <button class="balance" id="balance" title="Виртуальный демо-баланс — нажми, чтобы увидеть пояснение" aria-label="Виртуальный баланс GRAM">
-          <strong id="bal">500</strong> <span>GRAM</span> ＋
+          <span class="gram-icon" aria-hidden="true">◆</span> <strong id="bal">500</strong> <span>GRAM</span> ＋
         </button>
       </div>
     </div>
@@ -687,6 +693,7 @@ let minesCount=3, minesSet=new Set(), openedCells=new Set(), minesOver=false, mi
 let trainingStake=10, minesMultiplier=1, minesCashed=false, minesStarted=false;
 let toastTimer, state;
 let liveCatalog=null, liveCatalogError='', liveCatalogLoading=true;
+let catalogMode='unlimited';
 
 function seed(){
   let randomSeed=11;
@@ -868,13 +875,14 @@ function renderLiveCatalog(){
   if(liveCatalogLoading) return '<div class="note">Загружаем каталог подарков Telegram…</div>';
   if(!liveCatalog) return '<div class="note">Каталог Telegram пока недоступен. '+esc(liveCatalogError||'Проверь настройку TELEGRAM_BOT_TOKEN в Vercel.')+'</div>';
   if(!liveCatalog.length) return '<div class="note">Telegram не вернул доступных подарков.</div>';
-  const list=catalogList();
-  return '<div class="sectionhead"><h2>Подарки Telegram</h2><span class="count">'+list.length+' из '+liveCatalog.length+' · цены в Stars</span></div>'+
+  const all=catalogList();
+  const list=all.filter(({g})=>catalogMode==='all'||(catalogMode==='unlimited'?(g.totalCount===null||g.totalCount===undefined):(g.totalCount!==null&&g.totalCount!==undefined)));
+  const tabs='<div class="filters catalog-tabs"><button class="chip '+(catalogMode==='unlimited'?'active':'')+'" data-catalogmode="unlimited">Безлимитные</button><button class="chip '+(catalogMode==='limited'?'active':'')+'" data-catalogmode="limited">Лимитированные</button><button class="chip '+(catalogMode==='all'?'active':'')+'" data-catalogmode="all">Все подарки</button></div>';
+  return '<div class="sectionhead"><h2>Подарки Telegram</h2><span class="count">'+list.length+' из '+liveCatalog.length+' · цены в Stars</span></div>'+tabs+
     (list.length?'<div class="grid">'+list.map(({g,i})=>{
-      const c=MK_BG[i%MK_BG.length];
       const limited=g.totalCount!==null&&g.totalCount!==undefined;
       const stock=limited?(g.remainingCount!==null?'Осталось '+fmt(g.remainingCount)+' из '+fmt(g.totalCount):'Лимит '+fmt(g.totalCount)):'Без лимита';
-      return '<article class="card mk-card"><div class="mk-art" data-fid="'+esc(g.stickerFileId||'')+'" data-stype="'+esc(g.stickerType)+'" style="--mk-c1:'+c[0]+';--mk-c2:'+c[1]+'">'+catPattern(g.stickerEmoji)+'<span class="mk-glow"></span><span class="emoji">'+esc(g.stickerEmoji||'🎁')+'</span>'+(limited?'<span class="mk-badge">Лимит</span>':'')+(g.premiumOnly?'<span class="mk-badge mk-prem">Premium</span>':'')+'</div>'+
+      return '<article class="card mk-card"><div class="mk-art mk-art-plain" data-fid="'+esc(g.stickerFileId||'')+'" data-stype="'+esc(g.stickerType)+'">'+(g.premiumOnly?'<span class="mk-badge mk-prem">Premium</span>':'')+'</div>'+
         '<div class="mk-body"><div class="mk-name">Подарок '+esc(g.stickerEmoji||'')+'</div><div class="mk-num">'+esc(stock)+'</div>'+
         '<div class="mk-buy"><button class="mk-price" data-giftinfo="'+esc(g.id)+'" aria-label="Подробнее"><i>★</i>'+fmt(g.stars)+'</button></div></div></article>';
     }).join('')+'</div>':empty('🔎','Ничего не найдено','Измени запрос.'))+
@@ -1513,6 +1521,7 @@ document.addEventListener('click',e=>{
   if(b.id==='playTab'){stopRocketOnNavigate();playMode='';return setTab('play');}
   if(b.id==='casesTab') return setTab('cases');
   if(b.id==='profileTab') return setTab('profile');
+  if(d.catalogmode){catalogMode=d.catalogmode;render();return;}
   if(d.casepick!==undefined){selectedCase=d.casepick;render();return;}
   if(d.caseback!==undefined){selectedCase='';render();return;}
   if(d.opencase!==undefined) return openFreeCase();
