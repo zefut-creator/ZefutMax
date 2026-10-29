@@ -578,6 +578,30 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
   @media(max-width:560px){.nft-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.nft-filter-grid select:last-child{grid-column:span 2}}
   .mk-art-plain .mk-badge{z-index:2}
   .catalog-tabs{margin:0 0 14px;padding-top:0}
+
+.rk-hist{display:flex;gap:7px;overflow-x:auto;padding:4px 2px 10px;margin:0 -2px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.rk-chip{flex:0 0 auto;scroll-snap-align:start;padding:5px 10px;border-radius:999px;font-weight:800;font-size:12px;font-variant-numeric:tabular-nums;background:var(--panel2)}
+.rk-chip.red{color:#ff8193;background:#ff819322}.rk-chip.green{color:#4ce0a0;background:#4ce0a022}.rk-chip.gold{color:#ffc94d;background:#ffc94d26}
+.rk-stage{position:relative;padding:0;height:190px}
+.rk-stage canvas{position:absolute;inset:0;width:100%;height:190px}
+.rk-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;gap:6px}
+.rk-center .rocket-mult{margin:0;font-size:44px;text-shadow:0 2px 14px #0008}
+.rk-stage.crashed .rocket-mult{color:#ff6b81}
+.rk-panel{display:flex;flex-direction:column;gap:9px;margin:12px 0;padding:13px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
+.rk-row{display:flex;align-items:center;gap:8px}.rk-row label{font-size:12px;color:var(--muted);flex:1}
+.rk-row input{flex:1;min-width:0;width:100%}
+.rk-q{flex:0 0 auto;min-width:44px;padding:9px 10px;border-radius:11px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-weight:700;cursor:pointer}
+.rk-q:disabled{opacity:.45}
+.rk-presets{flex-wrap:wrap}.rk-presets .rk-q{flex:1}
+.rk-autorow input{max-width:90px;flex:0 0 90px;text-align:center}
+.rk-switch{flex:0 0 auto;width:46px;height:27px;border-radius:999px;border:0;background:var(--line);position:relative;cursor:pointer;transition:background .2s}
+.rk-switch i{position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:transform .2s}
+.rk-switch.on{background:var(--green)}.rk-switch.on i{transform:translateX(19px)}
+.rk-main{font-size:16px;padding:14px}
+.rk-main.rk-cash{background:linear-gradient(135deg,#4ce0a0,#1fa971);color:#04281a}
+.rk-main.rk-wait{opacity:.7}
+.rk-bet{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 2px;border-bottom:1px solid var(--line);font-size:13px}
+.rk-bet .up{color:var(--green)}.rk-bet .down{color:var(--red)}
 </style>
 </head>
 <body>
@@ -691,6 +715,11 @@ const gifts = [
 
 const STORAGE_KEY = 'max_market_v2';
 const round = n => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
+function rkGenCrash(){
+  const u=Math.random();
+  return Math.min(1000,Math.max(1,Math.floor(100*0.97/(1-u))/100));
+}
+function rkSeedHistory(){return Array.from({length:24},rkGenCrash)}
 const fmt = n => Number(n).toLocaleString('ru-RU',{maximumFractionDigits:2});
 const esc = s => String(s).replace(/[&<>"']/g,c=>({
   '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
@@ -732,6 +761,7 @@ function seed(){
     nid:1001,
     favs:[],
     cart:[],
+    rkHist:rkSeedHistory(),
     history:[],
     theme:'dark'
   };
@@ -817,11 +847,144 @@ function log(type,name,amount,detail=''){
   state.history=state.history.slice(0,100);
 }
 
-function stopRocketOnNavigate(){
-  if(!rocketRunning) return;
-  rocketRunning=false;
-  if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}
+
+/* ===== Ракетка: ставка, авто-вывод, история множителей (демо-GRAM) ===== */
+let rkPhase='idle', rkActive=false, rkStake=10, rkCrashAt=1, rkStartTs=0, rkMult=1, rkTimer=null, rkEndTimer=null;
+let rkAutoOn=false, rkAuto=2, rkBets=[], rkCashedAt=0;
+
+function rkCls(m){return m>=10?'gold':m>=2?'green':'red'}
+function rkHistHtml(){
+  return state.rkHist.map(m=>'<span class="rk-chip '+rkCls(m)+'">'+m.toFixed(2)+'×</span>').join('');
 }
+function rkBetsHtml(){
+  if(!rkBets.length) return '<div class="muted" style="font-size:12px;padding:8px 2px">Ставок пока нет.</div>';
+  return rkBets.map(b=>'<div class="rk-bet"><span>'+fmt(b.stake)+' GRAM</span><span class="rk-chip '+rkCls(b.at)+'">'+b.at.toFixed(2)+'×</span><b class="'+(b.win?'up':'down')+'">'+(b.win?'+':'−')+fmt(b.win?round(b.pay-b.stake):b.stake)+'</b></div>').join('');
+}
+function rkMainState(){
+  if(rkPhase==='flying'&&rkActive) return {cls:'rk-cash',txt:'Забрать '+fmt(round(rkStake*rkMult))+' GRAM',attr:'data-rkcash',dis:false};
+  if(rkPhase==='flying') return {cls:'rk-wait',txt:'Выведено · ждём конец раунда',attr:'data-rkcash',dis:true};
+  if(rkPhase==='crashed') return {cls:'rk-wait',txt:'Новый раунд…',attr:'data-rkbet',dis:true};
+  return {cls:'rk-go',txt:'Поставить '+fmt(rkStake)+' GRAM',attr:'data-rkbet',dis:false};
+}
+function rocketView(){
+  const st=rkMainState();
+  const flying=rkPhase==='flying', crashed=rkPhase==='crashed';
+  const locked=flying||crashed;
+  return '<div class="sectionhead"><h2>🚀 Ракетка</h2><span class="count">Демо-GRAM · без реальных денег</span></div>'+
+  '<div class="rk-hist" id="rkHist" aria-label="Последние множители">'+rkHistHtml()+'</div>'+
+  '<div class="rocket-stage rk-stage '+(crashed?'crashed':'')+'"><canvas id="rkCanvas" height="190"></canvas><div class="rk-center"><div class="rocket-mult" id="rocketMult">'+(crashed?rkCrashAt:(flying?rkMult:1)).toFixed(2)+'×</div><strong id="rocketStatus">'+(crashed?'💥 Взрыв!':flying?(rkActive?'Ракета летит — успей забрать':'Ждём конец раунда'):'Сделай ставку и запусти')+'</strong></div></div>'+
+  '<div class="rk-panel">'+
+    '<div class="rk-row"><label for="rkBet">Ставка, GRAM</label><span class="muted">Баланс: <b id="rkBal">'+fmt(state.bal)+'</b></span></div>'+
+    '<div class="rk-row"><input id="rkBet" type="number" inputmode="decimal" min="0.1" step="0.1" value="'+rkStake+'" '+(locked?'disabled':'')+'>'+
+      '<button class="rk-q" data-rkhalf '+(locked?'disabled':'')+'>½</button><button class="rk-q" data-rkdouble '+(locked?'disabled':'')+'>×2</button><button class="rk-q" data-rkmax '+(locked?'disabled':'')+'>Макс</button></div>'+
+    '<div class="rk-row rk-presets">'+[1,5,10,50,100].map(v=>'<button class="rk-q" data-rkset="'+v+'" '+(locked?'disabled':'')+'>'+v+'</button>').join('')+'</div>'+
+    '<div class="rk-row rk-autorow"><button class="rk-switch '+(rkAutoOn?'on':'')+'" data-rkauto role="switch" aria-checked="'+rkAutoOn+'" aria-label="Авто-вывод"><i></i></button><span>Авто-вывод на</span>'+
+      '<input id="rkAuto" type="number" inputmode="decimal" min="1.01" step="0.1" value="'+rkAuto+'" '+(flying?'disabled':'')+'><b>×</b></div>'+
+    '<button class="btn rk-main '+st.cls+'" id="rkMain" '+st.attr+' '+(st.dis?'disabled':'')+'>'+st.txt+'</button>'+
+  '</div>'+
+  '<div class="sectionhead" style="margin-top:18px"><h2 style="font-size:15px">Мои ставки</h2></div><div id="rkBets">'+rkBetsHtml()+'</div>'+
+  '<p class="note">Демо: виртуальные GRAM. Множитель растёт, пока ракета не взорвётся в случайный момент — забери выигрыш раньше или включи авто-вывод.</p>'+
+  '<button class="btn secondary" data-playback style="margin-top:8px">← Все режимы</button>';
+}
+
+function rkDraw(){
+  const c=$('rkCanvas'); if(!c) return;
+  const dpr=window.devicePixelRatio||1, w=c.clientWidth||300, h=190;
+  c.width=Math.round(w*dpr); c.height=Math.round(h*dpr);
+  const g=c.getContext('2d'); g.scale(dpr,dpr); g.clearRect(0,0,w,h);
+  const cs=getComputedStyle(document.documentElement);
+  const accent=cs.getPropertyValue('--accent').trim()||'#ff9f1c', muted=cs.getPropertyValue('--muted').trim()||'#888';
+  const t=rkPhase==='idle'?0:(rkPhase==='crashed'?Math.log(rkCrashAt)/0.12:(Date.now()-rkStartTs)/1000);
+  const m=rkPhase==='crashed'?rkCrashAt:(rkPhase==='flying'?rkMult:1);
+  const tMax=Math.max(8,t*1.15), mMax=Math.max(2,m*1.2);
+  const X=tt=>14+(w-28)*(tt/tMax), Y=mm=>h-16-(h-34)*((mm-1)/(mMax-1));
+  g.strokeStyle=muted; g.globalAlpha=.25; g.lineWidth=1;
+  for(let k=1;k<=3;k++){const yy=h-16-(h-34)*k/3;g.beginPath();g.moveTo(14,yy);g.lineTo(w-14,yy);g.stroke();}
+  g.globalAlpha=1;
+  if(rkPhase==='idle') return;
+  g.strokeStyle=rkPhase==='crashed'?'#ff6b81':accent; g.lineWidth=3; g.lineJoin='round'; g.beginPath();
+  const steps=60; for(let i=0;i<=steps;i++){const tt=t*i/steps,mm=Math.exp(0.12*tt);i?g.lineTo(X(tt),Y(mm)):g.moveTo(X(tt),Y(mm));}
+  g.stroke();
+  g.font='26px sans-serif'; g.textAlign='center'; g.textBaseline='middle';
+  g.fillText(rkPhase==='crashed'?'💥':'🚀',Math.min(w-20,X(t)),Math.max(18,Y(m)));
+}
+
+function rkUpdateLive(){
+  const mult=$('rocketMult'); if(mult) mult.textContent=rkMult.toFixed(2)+'×';
+  const mainBtn=$('rkMain'); if(mainBtn&&rkPhase==='flying'&&rkActive) mainBtn.textContent='Забрать '+fmt(round(rkStake*rkMult))+' GRAM';
+  rkDraw();
+}
+function rkRefreshPanels(){
+  if(tab==='play'&&playMode==='rocket') render();
+}
+
+function rkRecord(stake,at,win,pay){
+  rkBets.unshift({stake,at,win,pay:pay||0});
+  rkBets=rkBets.slice(0,8);
+}
+
+function rkStart(){
+  if(rkPhase!=='idle') return;
+  const stake=round(Number($('rkBet')?.value||rkStake));
+  if(!Number.isFinite(stake)||stake<0.1){toast('Минимальная ставка 0.1 GRAM');return;}
+  if(stake>state.bal){toast('Недостаточно средств');return;}
+  const auto=Number($('rkAuto')?.value||rkAuto);
+  if(Number.isFinite(auto)&&auto>=1.01) rkAuto=Math.round(auto*100)/100;
+  rkStake=stake;
+  state.bal=round(state.bal-stake);
+  rkActive=true; rkPhase='flying'; rkMult=1; rkCrashAt=rkGenCrash(); rkStartTs=Date.now();
+  log('game_bet','Ракетка',-stake,'Демо-ставка');save();haptic('light');
+  render();
+  if(rkTimer) clearInterval(rkTimer);
+  rkTimer=setInterval(rkTick,50);
+}
+function rkCash(at){
+  if(!rkActive) return;
+  rkActive=false;
+  const pay=round(rkStake*at);
+  state.bal=round(state.bal+pay);
+  rkRecord(rkStake,at,true,pay);
+  log('game_win','Ракетка',pay,'Забрал на '+at.toFixed(2)+'×');save();haptic('success');
+  toast('+'+fmt(round(pay-rkStake))+' GRAM · '+at.toFixed(2)+'×');
+  if(tab==='play'&&playMode==='rocket'){ $('bal').textContent=fmt(state.bal); const b=$('rkBal'); if(b)b.textContent=fmt(state.bal); const mb=$('rkMain'); if(mb){mb.disabled=true;mb.className='btn rk-main rk-wait';mb.textContent='Выведено ×'+at.toFixed(2)+' · ждём конец раунда';} const bl=$('rkBets'); if(bl)bl.innerHTML=rkBetsHtml(); }
+}
+function rkTick(){
+  const t=(Date.now()-rkStartTs)/1000;
+  rkMult=Math.min(rkCrashAt,Math.exp(0.12*t));
+  if(rkMult>=rkCrashAt){ rkCrash(); return; }
+  if(rkActive&&rkAutoOn&&rkAuto>=1.01&&rkMult>=rkAuto) rkCash(rkAuto);
+  rkUpdateLive();
+}
+function rkCrash(){
+  if(rkTimer){clearInterval(rkTimer);rkTimer=null;}
+  rkMult=rkCrashAt; rkPhase='crashed';
+  state.rkHist.unshift(rkCrashAt); state.rkHist=state.rkHist.slice(0,50);
+  if(rkActive){
+    rkActive=false; rkRecord(rkStake,rkCrashAt,false,0);
+    log('game_loss','Ракетка',0,'Взрыв на '+rkCrashAt.toFixed(2)+'× · ставка '+fmt(rkStake)+' GRAM потеряна');haptic('error');
+  }
+  save(); rkRefreshPanels();
+  if(rkEndTimer) clearTimeout(rkEndTimer);
+  rkEndTimer=setTimeout(()=>{rkEndTimer=null;rkPhase='idle';rkMult=1;rkRefreshPanels();},1800);
+  rkDraw();
+}
+function rkLeave(){
+  if(rkTimer){clearInterval(rkTimer);rkTimer=null;}
+  if(rkEndTimer){clearTimeout(rkEndTimer);rkEndTimer=null;}
+  if(rkPhase==='flying'&&rkActive){ rkCash(Math.max(1,Math.floor(rkMult*100)/100)); }
+  rkPhase='idle'; rkMult=1; rkActive=false;
+}
+function rkSetStake(v){
+  v=Math.max(0.1,Math.min(round(v),Math.max(0.1,state.bal)));
+  rkStake=v; const i=$('rkBet'); if(i) i.value=v;
+  const mb=$('rkMain'); if(mb&&rkPhase==='idle') mb.textContent='Поставить '+fmt(v)+' GRAM';
+}
+document.addEventListener('input',e=>{
+  if(e.target.id==='rkBet'){const v=Number(e.target.value); if(Number.isFinite(v)&&v>0){rkStake=v;const mb=$('rkMain'); if(mb&&rkPhase==='idle') mb.textContent='Поставить '+fmt(v)+' GRAM';}}
+  if(e.target.id==='rkAuto'){const v=Number(e.target.value); if(Number.isFinite(v)&&v>=1.01) rkAuto=v;}
+});
+
+function stopRocketOnNavigate(){ rkLeave(); }
 
 function setTab(next){
   if(next!=='play') stopRocketOnNavigate();
@@ -1290,11 +1453,11 @@ function renderMinesAtmosphere(){
 function renderPlay(){
   const games=[
     ['💣','Мины','Открывай клетки и тренируй внимательность.','mines'],
-    ['🚀','Ракетка','Следи за полётом ракеты и останови раунд в любой момент.','rocket'],
+    ['🚀','Ракетка','Ставка, авто-вывод и история множителей. Забери до взрыва!','rocket'],
     ['⚔️','PvP Арена','Тренировочный матч против демо-соперника.','pvp']
   ];
   if(playMode==='mines'){const showMineBlast=minesBlastVisible;const hitCellForAnimation=minesHitCell;const newlyOpenedCell=minesLastOpenedCell;minesBlastVisible=false;minesHitCell=-1;minesLastOpenedCell=-1;return '<div class="sectionhead"><h2>💣 Мины</h2><span class="count">Демо-режим</span></div><div class="gameboard '+(minesStarted&&!minesOver?'mines-active':'')+(minesOver?' mines-finished':'')+'">'+Array.from({length:25},(_,i)=>{const open=minesStarted&&(openedCells.has(i)||minesOver&&minesSet.has(i));const bomb=open&&minesSet.has(i);return '<button class="gamecell '+(open?'revealed ':'')+(bomb?'mine-bomb ':'')+(bomb&&showMineBlast?'mine-starfall-once ':'')+(bomb&&showMineBlast&&i===hitCellForAnimation?'crystal-splitting ':'')+(open&&!bomb?'mine-safe ':'')+(open&&!bomb&&i===newlyOpenedCell?'mine-just-opened ':'')+'" data-cell="'+i+'" '+(!minesStarted||openedCells.has(i)||minesOver?'disabled':'')+'>'+(open?(bomb?'<svg class="mine-bomb-icon" viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="crystalFaceL" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff1b8"/><stop offset=".42" stop-color="#ffb52e"/><stop offset="1" stop-color="#b64c12"/></linearGradient><linearGradient id="crystalFaceR" x1="1" y1="0" x2="0" y2="1"><stop stop-color="#fff5c9"/><stop offset=".45" stop-color="#ff8a18"/><stop offset="1" stop-color="#9e3613"/></linearGradient><radialGradient id="crystalBomb" cx="28%" cy="20%" r="85%"><stop stop-color="#77717d"/><stop offset=".48" stop-color="#29252e"/><stop offset="1" stop-color="#07070a"/></radialGradient></defs><g class="crystal-half crystal-half-left"><path d="M48 8 47 30 39 43 46 54 34 69 50 94 49 57 44 47 49 36Z" fill="url(#crystalFaceL)" stroke="#ffe0a0" stroke-width="2" stroke-linejoin="round"/><path d="M48 8 25 14 5 38 34 69 39 43 47 30Z" fill="url(#crystalFaceL)" stroke="#ffcf68" stroke-width="2" stroke-linejoin="round"/><path d="M25 14 35 34 5 38Z" fill="#fff0b6" opacity=".8"/><path d="M5 38 34 69 25 44Z" fill="#ffb02e"/><path d="M34 69 50 94 43 61Z" fill="#c95713"/></g><g class="crystal-half crystal-half-right"><path d="M52 8 53 30 61 43 54 54 66 69 50 94 51 57 56 47 51 36Z" fill="url(#crystalFaceR)" stroke="#ffe0a0" stroke-width="2" stroke-linejoin="round"/><path d="M52 8 75 14 95 38 66 69 61 43 53 30Z" fill="url(#crystalFaceR)" stroke="#ffcf68" stroke-width="2" stroke-linejoin="round"/><path d="M75 14 65 34 95 38Z" fill="#fff5cc" opacity=".78"/><path d="M95 38 66 69 75 44Z" fill="#ff9a22"/><path d="M66 69 50 94 57 61Z" fill="#b94b12"/></g><g class="crystal-inner-bomb"><path d="M45 29 Q46 22 54 24 L61 16" fill="none" stroke="#c8b9a6" stroke-width="5" stroke-linecap="round"/><path d="M60 17 66 12 M60 17 68 19 M60 17 58 10" fill="none" stroke="#ff6b18" stroke-width="3" stroke-linecap="round"/><circle cx="50" cy="47" r="15" fill="url(#crystalBomb)" stroke="#ff6658" stroke-width="2.5"/><path d="M41 41 Q45 34 52 34" fill="none" stroke="#fff" stroke-opacity=".65" stroke-width="3" stroke-linecap="round"/><path d="M38 50 Q42 59 50 60" fill="none" stroke="#ff8a8a" stroke-opacity=".5" stroke-width="2" stroke-linecap="round"/></g></svg>':'<svg class="mine-app-icon" viewBox="0 0 100 100" aria-hidden="true"><path fill="#ff8a18" stroke="#ffb13b" stroke-width="2" stroke-linejoin="round" d="M23 7H77L97 36 50 94 3 36Z"/><g fill="none" stroke="#140711" stroke-width="2.4" stroke-linecap="butt" stroke-linejoin="round"><path d="M23 7 40 36 3 36M77 7 60 36 97 36M3 39H97M31 39 50 94 69 39M40 39 50 62 60 39"/></g><g fill="#140711"><path d="M23 22l2.8 6.2L32 31l-6.2 2.8L23 40l-2.8-6.2L14 31l6.2-2.8ZM50 15l2.5 5.5L58 23l-5.5 2.5L50 31l-2.5-5.5L42 23l5.5-2.5ZM76 24l2.5 5.5L84 32l-5.5 2.5L76 40l-2.5-5.5L68 32l5.5-2.5ZM31 51l2.5 5.5L39 59l-5.5 2.5L31 67l-2.5-5.5L23 59l5.5-2.5ZM61 51l2.5 5.5L69 59l-5.5 2.5L61 67l-2.5-5.5L53 59l5.5-2.5Z"/></g></svg><span class="starfall"><i style="--sx:7%;--sd:0.65s;--delay:0s;animation:mine-star-fall var(--sd) ease-in var(--delay) 1 both">✦</i><i style="--sx:44%;--sd:0.8s;--delay:0.018s;animation:mine-star-fall var(--sd) ease-in var(--delay) 1 both">✦</i><i style="--sx:81%;--sd:0.7s;--delay:0.036s;animation:mine-star-fall var(--sd) ease-in var(--delay) 1 both">✦</i><i style="--sx:23%;--sd:0.9s;--delay:0.05399999999999999s;animation:mine-star-fall var(--sd) ease-in var(--delay) 1 both">✦</i><i style="--sx:60%;--sd:0.72s;--delay:0.072s;animation:mine-star-fall var(--sd) ease-in var(--delay) 1 both">✦</i><i style="--sx:2%;--sd:0.85s;--delay:0.09s;animation:mine-star-fall var(--sd) ease-in var(--delay) 1 both">✦</i><i style="--sx:39%;--sd:0.65s;--delay:0.10799999999999998s;animation:mine-star-fall var(--sd) ease-in var(--delay) 1 both">✦</i><i style="--sx:76%;--sd:0.8s;--delay:0.126s;animation:mine-star-fall var(--sd) ease-in var(--delay) 1 both">✦</i><i style="--sx:18%;--sd:0.7s;--delay:0.144s;animation:mine-star-fall var(--sd) ease-in var(--delay) 1 both">✦</i><i style="--sx:55%;--sd:0.9s;--delay:0.16199999999999998s;animation:mine-star-fall var(--sd) ease-in var(--delay) 1 both">✦</i><i style="--sx:92%;--sd:0.72s;--delay:0.18s;animation:mine-star-fall var(--sd) ease-in var(--delay) 1 both">✦</i><i style="--sx:34%;--sd:0.85s;--delay:0.19799999999999998s;animation:mine-star-fall var(--sd) ease-in var(--delay) 1 both">✦</i></span>'):'<span class="cell-question">?</span>')+'</button>';}).join('')+renderMinesAtmosphere()+(showMineBlast?'<div class="blast-overlay" aria-hidden="true"><div class="blast-flash"></div><div class="blast-core">✦</div>'+Array.from({length:18},(_,n)=>'<i class="crystal-rain-shard" style="--sx:'+((n*37+4)%97)+'%;--sw:'+([8,10,12,14][n%4])+'px;--sh:'+([16,20,24,28][n%4])+'px;--sd:'+([1.05,1.2,1.35,1.45][n%4])+'s;--delay:'+(n*.025)+'s"></i>').join('')+(document.documentElement.dataset.theme==='light'?Array.from({length:30},(_,n)=>'<i class="black-rain-drop" style="--bx:'+((n*37+4)%97)+'%;--bw:'+([3,4,5,6][n%4])+'px;--bh:'+([14,18,22,25][n%4])+'px;--bd:'+([1.05,1.2,1.35,1.45][n%4])+'s;--bdelay:'+(n*.025)+'s"></i>').join(''):'')+'</div>':'')+'</div><div class="summary"><div><span>Статус</span><b>'+(minesOver?(minesCashed?'Выигрыш '+fmt(trainingStake*minesMultiplier)+' GRAM · '+minesMultiplier.toFixed(2)+'×':'Раунд завершён'):(minesStarted?'Игра идёт':'Готов к запуску'))+'</b></div><div><span>Множитель</span><b>'+minesMultiplier.toFixed(2)+'×</b></div><div><span>Демо-результат</span><b>'+fmt(trainingStake*minesMultiplier)+' GRAM</b></div></div><div class="sectionhead" style="margin-top:18px"><h2>Настройки игры</h2></div><label class="inputlabel" for="trainingStakeInput">Демо-ставка в GRAM (0,1–10 000)</label><input id="trainingStakeInput" type="number" min="0.1" max="10000" step="0.1" value="'+trainingStake+'" '+(minesStarted&&!minesOver?'disabled':'')+' style="width:100%;margin:6px 0 10px"><label class="inputlabel" for="mineCountSelect">Количество мин</label><select id="mineCountSelect" style="width:100%;margin:6px 0 10px" '+(minesStarted&&!minesOver?'disabled':'')+'>'+Array.from({length:24},(_,i)=>i+1).map(n=>'<option value="'+n+'" '+(n===minesCount?'selected':'')+'>'+n+' мин</option>').join('')+'</select>'+(minesOver?'<button class="btn" data-newmines>Закончить игру</button>':minesStarted?'<button class="btn" data-cashout '+(openedCells.size===0?'disabled':'')+'>Сохранить демо-результат · '+fmt(trainingStake*minesMultiplier)+' GRAM</button>':'<button class="btn" data-startmines>Начать игру</button>')+'<button class="btn secondary" style="margin-top:8px" data-playback>← Вернуться в Игры</button>';}
-  if(playMode==='rocket') return '<div class="sectionhead"><h2>🚀 Ракетка</h2><span class="count">Аркадный режим</span></div><div class="summary"><div><span>Режим</span><b>Рекорд множителя</b></div><div><span>Лучший результат</span><b>'+rocketBest.toFixed(2)+'×</b></div></div><div class="rocket-stage"><div class="rocket-icon" id="rocketIcon">🚀</div><strong id="rocketStatus">Готов к старту</strong><div class="rocket-mult" id="rocketMult">1.00×</div><div class="rocket-sub">Твой рекорд: <b id="rocketBest">'+rocketBest.toFixed(2)+'×</b></div></div><p class="note">Запусти ракету и зафиксируй множитель до завершения полёта. Это игровой рекорд: баланс GRAM не меняется.</p><button class="btn" data-rocket>Запустить ракету</button><button class="btn secondary" data-playback style="margin-top:8px">← Все режимы</button>';
+  if(playMode==='rocket') return rocketView();
   if(playMode==='pvp') return '<div class="sectionhead"><h2>⚔️ PvP Арена</h2><span class="count">Матч против бота</span></div><div class="summary"><div><span>Формат</span><b>Счёт 1–100</b></div><div><span>Матчи</span><b>Тренировка</b></div></div><div class="pvp-box"><div class="fighter">🟠<b>Ты</b><strong id="youScore">—</strong></div><div class="versus">VS</div><div class="fighter">🤖<b>Бот-соперник</b><strong id="botScore">—</strong></div></div><p id="pvpResult" class="note">Набери больше очков, чем соперник. Матч не меняет баланс и инвентарь.</p><button class="btn" data-pvp>Сыграть раунд</button><button class="btn secondary" data-playback>← Все режимы</button>';
   return '<div class="sectionhead"><h2>Игры</h2><span class="count">Игровой центр</span></div><div class="hub-banner"><div class="hub-orb">✦</div><div><b>Играй в тренировочных режимах</b><div class="muted">Чёрный · оранжевый · без ставок</div></div></div><div class="gamecards">'+games.map(g=>'<button class="gamecard" data-play="'+g[3]+'"><span class="gameicon">'+g[0]+'</span><b>'+g[1]+'</b><span class="muted">'+g[2]+'</span><span class="game-open">Открыть →</span></button>').join('')+'</div><p class="note">Это первая демо-версия Игры. Игры работают локально: без реальных денег, ставок, выплат и онлайн-матчмейкинга.</p>';
 }
@@ -1324,6 +1487,7 @@ function render(){
   $('theme').setAttribute('aria-label',state.theme==='dark'?'Включить светлую тему':'Включить тёмную тему');
   $('main').innerHTML=tab==='market'?renderMarket():tab==='mine'?renderMine():tab==='profile'?renderProfile():tab==='cases'?renderCases():tab==='lucky'?renderLuckyBuy():renderPlay();
   if(tab==='market') hydrateCatalogMedia();
+  if(tab==='play'&&playMode==='rocket') rkDraw();
 }
 
 /* ===== Lucky Buy ===== */
@@ -1613,58 +1777,13 @@ document.addEventListener('click',e=>{
     else {let survival=1;for(let j=0;j<openedCells.size;j++)survival*=(25-minesCount-j)/(25-j);minesMultiplier=Math.min(minesCount===1?24.37:Math.round((1/survival)*0.9748*100)/100,Math.round((1/survival)*0.9748*100)/100);haptic('light');if(openedCells.size===25-minesCount){minesOver=true;minesCashed=true;const payout=round(trainingStake*minesMultiplier);state.bal=round(state.bal+payout);log('game_win','Мины',payout,'Автовыигрыш · '+minesMultiplier.toFixed(2)+'× · все безопасные клетки открыты');save();haptic('success');toast('🏆 Все клетки открыты! '+minesMultiplier.toFixed(2)+'× · выигрыш '+fmt(payout)+' GRAM');}}
     render();return;
   }
-  if(d.rocket!==undefined){
-    if(rocketRunning){
-      rocketRunning=false;
-      if(rocketTimer){clearInterval(rocketTimer);rocketTimer=null;}
-      rocketBest=Math.max(rocketBest,rocketValue);
-      log('game_result','Ракетка',0,'Рекорд зафиксирован: '+rocketValue.toFixed(2)+'× · аркадный режим');
-      save();haptic('success');
-      const status=$('rocketStatus'),mult=$('rocketMult'),icon=$('rocketIcon'),button=document.querySelector('[data-rocket]'),best=$('rocketBest');
-      if(status)status.textContent='🏆 Рекорд зафиксирован!';
-      if(icon){icon.classList.remove('flying');icon.textContent='🏆';}
-      if(mult)mult.textContent=rocketValue.toFixed(2)+'×';
-      if(button)button.textContent='Запустить снова';
-      if(best)best.textContent=rocketBest.toFixed(2)+'×';
-      toast('Рекорд: '+rocketValue.toFixed(2)+'×');
-    }else{
-      if(Date.now()<rocketCooldownUntil){toast('Подожди окончания паузы');return;}
-      rocketRunning=true;rocketValue=1;rocketCrashAt=4+Math.random()*6;
-      const started=Date.now();render();
-      const status=$('rocketStatus'),mult=$('rocketMult'),icon=$('rocketIcon'),button=document.querySelector('[data-rocket]');
-      if(status)status.textContent='Ракета летит — зафиксируй рекорд!';
-      if(icon){icon.textContent='🚀';icon.classList.add('flying');}
-      if(mult)mult.textContent='1.00×';
-      if(button)button.textContent='Зафиксировать рекорд';
-      rocketTimer=setInterval(()=>{
-        if(!rocketRunning){clearInterval(rocketTimer);rocketTimer=null;return;}
-        const elapsed=(Date.now()-started)/1000;
-        rocketValue=Math.min(99,Math.exp(elapsed*0.13));
-        const currentMult=$('rocketMult'),currentStatus=$('rocketStatus'),rocketIcon=$('rocketIcon'),rocketButton=document.querySelector('[data-rocket]');
-        if(currentMult)currentMult.textContent=rocketValue.toFixed(2)+'×';
-        if(elapsed>=rocketCrashAt){
-          rocketRunning=false;clearInterval(rocketTimer);rocketTimer=null;
-          rocketBest=Math.max(rocketBest,rocketValue);
-          log('game_result','Ракетка',0,'Полёт завершён на '+rocketValue.toFixed(2)+'× · аркадный режим');save();
-          if(currentStatus)currentStatus.textContent='💥 Полёт завершён · попробуй снова';
-          if(rocketIcon){rocketIcon.classList.remove('flying');rocketIcon.textContent='💥';}
-          if(currentMult)currentMult.textContent=rocketValue.toFixed(2)+'×';
-          if($('rocketBest'))$('rocketBest').textContent=rocketBest.toFixed(2)+'×';
-          rocketCooldownUntil=Date.now()+3000;
-          if(rocketButton){rocketButton.disabled=true;rocketButton.textContent='Повтор через 3 секунды';}
-          if(rocketCooldownTimer)clearInterval(rocketCooldownTimer);
-          rocketCooldownTimer=setInterval(()=>{
-            const seconds=Math.max(0,Math.ceil((rocketCooldownUntil-Date.now())/1000));
-            const btnNow=document.querySelector('[data-rocket]');
-            if(btnNow){btnNow.textContent=seconds?'Повтор через '+seconds+' сек.':'Запустить снова';btnNow.disabled=seconds>0;}
-            if(seconds<=0){clearInterval(rocketCooldownTimer);rocketCooldownTimer=null;}
-          },250);
-          toast('Полёт завершён · рекорд '+rocketBest.toFixed(2)+'×');
-        }
-      },80);
-    }
-    return;
-  }
+  if(d.rkbet!==undefined) return rkStart();
+  if(d.rkcash!==undefined){ if(rkPhase==='flying'&&rkActive) rkCash(Math.max(1,Math.floor(rkMult*100)/100)); return; }
+  if(d.rkhalf!==undefined) return rkSetStake((Number($('rkBet')?.value)||rkStake)/2);
+  if(d.rkdouble!==undefined) return rkSetStake((Number($('rkBet')?.value)||rkStake)*2);
+  if(d.rkmax!==undefined) return rkSetStake(state.bal);
+  if(d.rkset!==undefined) return rkSetStake(Number(d.rkset));
+  if(d.rkauto!==undefined){ rkAutoOn=!rkAutoOn; b.classList.toggle('on',rkAutoOn); b.setAttribute('aria-checked',rkAutoOn); return; }
   if(d.pvp!==undefined){
     const you=Math.floor(Math.random()*100)+1,bot=Math.floor(Math.random()*100)+1;
     const youEl=$('youScore'),botEl=$('botScore');
