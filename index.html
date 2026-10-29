@@ -564,10 +564,11 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
 .mk-prem{left:auto;right:8px;background:#2a6fdb99}
 .mk-price i.star,.mk-price i{font-style:normal}
   .mk-art-plain{background:var(--panel2)!important;}
-  .mk-art-plain:before,.mk-art-plain:after,.mk-art-plain .mk-p,.mk-art-plain .mk-glow,.mk-art-plain>.emoji{display:none!important}
+  .mk-art-plain:before,.mk-art-plain:after,.mk-art-plain .mk-p,.mk-art-plain .mk-glow{display:none!important}
+  .mk-art-plain.has-media>.emoji{display:none!important}
   .mk-art-plain .mk-media{display:flex!important;position:absolute;inset:0;align-items:center;justify-content:center;padding:14px}
   .mk-art-plain .mk-media img,.mk-art-plain .mk-media video,.mk-art-plain .mk-media svg{max-width:100%;max-height:100%;object-fit:contain}
-  .gram-icon{display:inline-block;color:var(--accent);font-size:14px;margin-right:2px;text-shadow:0 0 10px color-mix(in srgb,var(--accent) 35%,transparent)}
+  .gram-icon{display:inline-grid;place-items:center;width:17px;height:17px;border:1.5px solid var(--accent);border-radius:50%;color:var(--accent);font-size:10px;font-weight:900;margin-right:2px;line-height:1;text-shadow:0 0 10px color-mix(in srgb,var(--accent) 35%,transparent)}
   .catalog-tabs{margin:0 0 14px;padding-top:0}
 </style>
 </head>
@@ -582,7 +583,7 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
       <div class="topactions">
         <button class="iconbtn" id="theme" aria-label="Сменить тему">☀️</button>
         <button class="balance" id="balance" title="Виртуальный демо-баланс — нажми, чтобы увидеть пояснение" aria-label="Виртуальный баланс GRAM">
-          <span class="gram-icon" aria-hidden="true">◆</span> <strong id="bal">500</strong> <span>GRAM</span> ＋
+          <span class="gram-icon" aria-hidden="true">G</span> <strong id="bal">500</strong> <span>GRAM</span> ＋
         </button>
       </div>
     </div>
