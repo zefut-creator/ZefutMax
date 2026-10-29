@@ -957,7 +957,7 @@ const freeCaseDrops=[
 ];
 let freeCaseBusy=false,freeCaseTimer=null;
 let selectedCase='';
-let halloweenBusy=false;
+let halloweenBusy=false,halloweenTimer=null,halloweenCurrentDrop=null;
 function caseItemMarkup(d,extra=''){
   const icon=d.type==='nft'?'🎁':'🪙';
   const label=d.type==='nft'?'NFT '+d.range:d.label;
@@ -999,6 +999,7 @@ function openHalloweenDemo(){
   if(state.bal<demoCost){toast('Недостаточно демо-баланса: нужно 10 GRAM');return;}
   state.bal=round(state.bal-demoCost);
   const drop=pickCaseDrop(halloweenCaseDrops);
+  halloweenCurrentDrop=drop;
   state.bal=round(state.bal+drop.amount);
   log('Кейс','HALLOWEEN · демо',-demoCost,'Демо-списание 10 GRAM; результат '+drop.label);
   log('Кейс','HALLOWEEN · награда',drop.amount,'Сразу зачислено '+drop.label+' на демо-баланс');
@@ -1020,11 +1021,15 @@ function openHalloweenDemo(){
     track.getBoundingClientRect();
     requestAnimationFrame(()=>{track.style.transition='transform 8.5s cubic-bezier(.12,.72,.18,1)';track.style.transform='translateX(-'+Math.max(0,target)+'px)';});
   }
-  setTimeout(()=>{
-    halloweenBusy=false;
-    save();render();
-    openSheet('<div class="case-result"><div class="case-box">🎃</div><div>HALLOWEEN · выпало</div><div class="reward-big">'+esc(drop.label)+'</div><div class="desc">Награда была сразу зачислена на виртуальный баланс GRAM в начале открытия. Списание 10 GRAM — демо-операция.</div></div><button class="btn" data-close>Понятно</button>');
-  },8900);
+  halloweenTimer=setTimeout(()=>finishHalloweenDemo(drop),8900);
+}
+function finishHalloweenDemo(drop){
+  if(!halloweenBusy) return;
+  if(halloweenTimer){clearTimeout(halloweenTimer);halloweenTimer=null;}
+  halloweenBusy=false;
+  halloweenCurrentDrop=null;
+  save();render();
+  openSheet('<div class="case-result"><div class="case-box">🎃</div><div>HALLOWEEN · выпало</div><div class="reward-big">'+esc(drop.label)+'</div><div class="desc">Награда была сразу зачислена на виртуальный баланс GRAM в начале открытия. Списание 10 GRAM — демо-операция.</div></div><button class="btn" data-close>Понятно</button>');
 }
 function halloweenDropList(){
   return halloweenCaseDrops.map(d=>'<div class="case-drop"><span class="reward">'+esc(d.label)+'</span><span class="chance">'+String(d.chance).replace('.',',')+'%</span></div>').join('');
@@ -1059,7 +1064,7 @@ function renderCases(){
     '<div class="sectionhead" style="margin-top:16px"><h2>🎃 HALLOWEEN</h2><span class="count">ДЕМО</span></div>'+
     '<div class="case-hero '+(halloweenBusy?'halloween-opening':'')+'" style="background:radial-gradient(circle at 50% 0%,#a855f755,transparent 65%),var(--panel);border-color:#8b5cf6"><div class="case-box">🎃</div><h2>HALLOWEEN</h2><p class="muted">Стоимость открытия: 10 GRAM с виртуального демо-баланса.</p>'+
     (halloweenBusy?'<div class="case-roulette"><div class="case-roulette-track" id="halloweenRouletteTrack"></div><div class="case-roulette-pointer"></div></div><div class="case-roulette-status">Рулетка крутится…</div>':'')+
-    '<div class="summary"><div><span>Стоимость</span><b>10 GRAM</b></div><div><span>Реальная оплата</span><b>Отключена</b></div></div><button class="btn" data-openhalloween '+(halloweenBusy?'disabled':'')+'>'+(halloweenBusy?'🎃 Рулетка крутится…':'Открыть за 10 GRAM')+'</button></div>'+
+    '<div class="summary"><div><span>Стоимость</span><b>10 GRAM</b></div><div><span>Реальная оплата</span><b>Отключена</b></div></div>'+(halloweenBusy?'<button class="btn" data-skiphalloween>⏭ Скип</button>':'<button class="btn" data-openhalloween>Открыть за 10 GRAM</button>')+'</div>'+
     '<div class="sectionhead"><h2>Награды и шансы</h2><span class="count">100%</span></div><div class="case-drop-list">'+halloweenDropList()+'</div><p class="note">Демо-режим: 10 GRAM списываются с виртуального баланса, а выпавшие GRAM зачисляются обратно. Реальные платежи отключены.</p>';
 }
 function openFreeCase(){
@@ -1445,6 +1450,10 @@ document.addEventListener('click',e=>{
   if(d.casepick!==undefined){selectedCase=d.casepick;render();return;}
   if(d.caseback!==undefined){selectedCase='';render();return;}
   if(d.opencase!==undefined) return openFreeCase();
+  if(d.skiphalloween!==undefined){
+    if(halloweenBusy && halloweenCurrentDrop) return finishHalloweenDemo(halloweenCurrentDrop);
+    return;
+  }
   if(d.openhalloween!==undefined) return openHalloweenDemo();
   if(d.lucky) return lbOpen(d.lucky);
   if(d.lbgo) return lbGo(d.lbgo);
