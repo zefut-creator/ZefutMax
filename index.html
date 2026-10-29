@@ -167,6 +167,10 @@ nav button .ico{font-size:18px}
 .case-roulette-pointer{position:absolute;z-index:3;left:50%;top:0;bottom:0;width:3px;transform:translateX(-50%);background:#ffad1f;box-shadow:0 0 9px #ff9f1f}
 .case-roulette-pointer:before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);border-left:7px solid transparent;border-right:7px solid transparent;border-top:10px solid #ffad1f}
 .case-opening .case-box{animation:case-box-shake .4s ease-in-out infinite alternate}
+.halloween-opening .case-box{animation:halloween-pulse .55s ease-in-out infinite alternate;filter:drop-shadow(0 0 24px #a855f7cc)}
+.halloween-opening{border-color:#a855f7!important;box-shadow:0 0 28px #7c3aed35}
+.halloween-opening .case-box:after{content:"";display:block;position:absolute}
+@keyframes halloween-pulse{from{transform:rotate(-9deg) scale(.94);filter:drop-shadow(0 0 8px #a855f7)}to{transform:rotate(9deg) scale(1.12);filter:drop-shadow(0 0 28px #c084fc)}}
 @keyframes case-box-shake{from{transform:rotate(-5deg) scale(1)}to{transform:rotate(5deg) scale(1.06)}}
 .case-roulette-status{min-height:20px;color:var(--muted);font-size:12px;margin:8px 0}
 .case-drop-list{display:grid;gap:8px;margin:14px 0}
@@ -953,6 +957,7 @@ const freeCaseDrops=[
 ];
 let freeCaseBusy=false,freeCaseTimer=null;
 let selectedCase='';
+let halloweenBusy=false;
 function caseItemMarkup(d,extra=''){
   const icon=d.type==='nft'?'🎁':'🪙';
   const label=d.type==='nft'?'NFT '+d.range:d.label;
@@ -986,10 +991,17 @@ function pickCaseDrop(drops){
   return drops[drops.length-1];
 }
 function openHalloweenDemo(){
-  const drop=pickCaseDrop(halloweenCaseDrops);
-  log('Кейс','HALLOWEEN · демо',0,'Демо-награда '+drop.label);
-  save();
-  openSheet('<div class="case-result"><div class="case-box">🎃</div><div>HALLOWEEN · демо-дроп</div><div class="reward-big">'+esc(drop.label)+'</div><div class="desc">Это симуляция: 10 TON не списаны, реальные NFT и TON не выдаются.</div></div><button class="btn" data-close>Понятно</button>');
+  if(halloweenBusy) return;
+  halloweenBusy=true;
+  render();
+  window.setTimeout(()=>{
+    const drop=pickCaseDrop(halloweenCaseDrops);
+    log('Кейс','HALLOWEEN · демо',0,'Демо-награда '+drop.label);
+    save();
+    halloweenBusy=false;
+    render();
+    openSheet('<div class="case-result"><div class="case-box">🎃</div><div>HALLOWEEN · демо-дроп</div><div class="reward-big">'+esc(drop.label)+'</div><div class="desc">Это симуляция: 10 TON не списаны, реальные NFT и TON не выдаются.</div></div><button class="btn" data-close>Понятно</button>');
+  },2200);
 }
 function halloweenDropList(){
   return halloweenCaseDrops.map(d=>'<div class="case-drop"><span class="reward">'+esc(d.label)+'</span><span class="chance">'+String(d.chance).replace('.',',')+'%</span></div>').join('');
@@ -1022,7 +1034,7 @@ function renderCases(){
   }
   return '<button class="btn secondary" data-caseback>← Все кейсы</button>'+
     '<div class="sectionhead" style="margin-top:16px"><h2>🎃 HALLOWEEN</h2><span class="count">ДЕМО</span></div>'+
-    '<div class="case-hero" style="background:radial-gradient(circle at 50% 0%,#a855f755,transparent 65%),var(--panel);border-color:#8b5cf6"><div class="case-box">🎃</div><h2>HALLOWEEN</h2><p class="muted">Цена кейса: 10 TON. Сейчас это только демо.</p><div class="summary"><div><span>Указанная цена</span><b>10 TON</b></div><div><span>Реальная оплата</span><b>Отключена</b></div></div><button class="btn" data-openhalloween>Открыть демо-кейс</button></div>'+
+    '<div class="case-hero '+(halloweenBusy?'halloween-opening':'')+'" style="background:radial-gradient(circle at 50% 0%,#a855f755,transparent 65%),var(--panel);border-color:#8b5cf6"><div class="case-box">🎃</div><h2>HALLOWEEN</h2><p class="muted">Цена кейса: 10 TON. Сейчас это только демо.</p><div class="summary"><div><span>Указанная цена</span><b>10 TON</b></div><div><span>Реальная оплата</span><b>Отключена</b></div></div><button class="btn" data-openhalloween '+(halloweenBusy?'disabled':'')+'>'+(halloweenBusy?'🎃 Открываем…':'10 TON')+'</button></div>'+
     '<div class="sectionhead"><h2>Награды и шансы</h2><span class="count">100%</span></div><div class="case-drop-list">'+halloweenDropList()+'</div><p class="note">Только демо: TON не списываются, реальные TON и NFT не принимаются и не выдаются.</p>';
 }
 function openFreeCase(){
