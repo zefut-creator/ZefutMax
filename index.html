@@ -604,6 +604,7 @@ nav button.active{animation:premium-nav-pop .22s var(--ease-spring)}
 .rk-bet .up{color:var(--green)}.rk-bet .down{color:var(--red)}
 #rkBet,#rkAuto{-moz-appearance:textfield;appearance:textfield}
 #rkBet::-webkit-outer-spin-button,#rkBet::-webkit-inner-spin-button,#rkAuto::-webkit-outer-spin-button,#rkAuto::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.rk-chip.blue{color:#6db3ff;background:#6db3ff24}.rk-chip.purple{color:#c69bff;background:#c69bff26}
 </style>
 </head>
 <body>
@@ -717,11 +718,26 @@ const gifts = [
 
 const STORAGE_KEY = 'max_market_v2';
 const round = n => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
-function rkGenCrash(){
-  const u=Math.random();
-  return Math.min(1000,Math.max(1,Math.floor(100*0.97/(1-u))/100));
+/* Множители 1.00×–300×, RTP ≈ 97%. Колода из 100 раундов: каждая сотня раундов
+   содержит честную долю малых (1.xx), средних (2–5×), крупных (10×+) и редких
+   джекпотов (100×+), порядок внутри колоды случайный. */
+let rkDeck=[];
+function rkBuildDeck(){
+  const d=[];
+  for(let k=0;k<100;k++){
+    const u=(k+Math.random())/100;
+    d.push(Math.min(300,Math.max(1,Math.floor(100*0.97/(1-u))/100)));
+  }
+  for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]];}
+  return d;
 }
-function rkSeedHistory(){return Array.from({length:24},rkGenCrash)}
+function rkGenCrash(){
+  if(!rkDeck.length) rkDeck=rkBuildDeck();
+  return rkDeck.pop();
+}
+function rkSeedHistory(){return Array.from({length:30},rkGenCrash)}
+const rkMultAt=t=>Math.exp(0.09*t+0.0015*t*t);
+const rkTimeAt=m=>(-0.09+Math.sqrt(0.0081+0.006*Math.log(m)))/0.003;
 const fmt = n => Number(n).toLocaleString('ru-RU',{maximumFractionDigits:2});
 const esc = s => String(s).replace(/[&<>"']/g,c=>({
   '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
@@ -854,7 +870,7 @@ function log(type,name,amount,detail=''){
 let rkPhase='idle', rkActive=false, rkStake=10, rkCrashAt=1, rkStartTs=0, rkMult=1, rkTimer=null, rkEndTimer=null;
 let rkAutoOn=false, rkAuto=2, rkBets=[], rkCashedAt=0;
 
-function rkCls(m){return m>=10?'gold':m>=2?'green':'red'}
+function rkCls(m){return m>=50?'gold':m>=10?'purple':m>=5?'blue':m>=2?'green':'red'}
 function rkHistHtml(){
   return state.rkHist.map(m=>'<span class="rk-chip '+rkCls(m)+'">'+m.toFixed(2)+'×</span>').join('');
 }
@@ -879,11 +895,11 @@ function rocketView(){
     '<div class="rk-row"><label for="rkBet">Ставка, GRAM</label><span class="muted">Баланс: <b id="rkBal">'+fmt(state.bal)+'</b></span></div>'+
     '<div class="rk-row"><input id="rkBet" type="number" inputmode="decimal" min="0.1" step="0.1" value="'+rkStake+'" '+(locked?'disabled':'')+'></div>'+
     '<div class="rk-row rk-autorow"><button class="rk-switch '+(rkAutoOn?'on':'')+'" data-rkauto role="switch" aria-checked="'+rkAutoOn+'" aria-label="Авто-вывод"><i></i></button><span>Авто-вывод на</span>'+
-      '<input id="rkAuto" type="number" inputmode="decimal" min="1.01" step="0.1" value="'+rkAuto+'" '+(flying?'disabled':'')+'><b>×</b></div>'+
+      '<input id="rkAuto" type="number" inputmode="decimal" min="1.01" max="300" step="0.1" value="'+rkAuto+'" '+(flying?'disabled':'')+'><b>×</b></div>'+
     '<button class="btn rk-main '+st.cls+'" id="rkMain" '+st.attr+' '+(st.dis?'disabled':'')+'>'+st.txt+'</button>'+
   '</div>'+
   '<div class="sectionhead" style="margin-top:18px"><h2 style="font-size:15px">Мои ставки</h2></div><div id="rkBets">'+rkBetsHtml()+'</div>'+
-  '<p class="note">Демо: виртуальные GRAM. Множитель растёт, пока ракета не взорвётся в случайный момент — забери выигрыш раньше или включи авто-вывод.</p>'+
+  '<p class="note">Демо: виртуальные GRAM. Множитель от 1.00× до 300×: чаще всего ракета взрывается на 1–3×, но бывают 5×, 10×, 50× и редкие 100×+. Забери выигрыш раньше или включи авто-вывод.</p>'+
   '<button class="btn secondary" data-playback style="margin-top:8px">← Все режимы</button>';
 }
 
@@ -894,16 +910,16 @@ function rkDraw(){
   const g=c.getContext('2d'); g.scale(dpr,dpr); g.clearRect(0,0,w,h);
   const cs=getComputedStyle(document.documentElement);
   const accent=cs.getPropertyValue('--accent').trim()||'#ff9f1c', muted=cs.getPropertyValue('--muted').trim()||'#888';
-  const t=rkPhase==='idle'?0:(rkPhase==='crashed'?Math.log(rkCrashAt)/0.12:(Date.now()-rkStartTs)/1000);
+  const t=rkPhase==='idle'?0:(rkPhase==='crashed'?rkTimeAt(rkCrashAt):(Date.now()-rkStartTs)/1000);
   const m=rkPhase==='crashed'?rkCrashAt:(rkPhase==='flying'?rkMult:1);
-  const tMax=Math.max(8,t*1.15), mMax=Math.max(2,m*1.2);
-  const X=tt=>14+(w-28)*(tt/tMax), Y=mm=>h-16-(h-34)*((mm-1)/(mMax-1));
+  const tMax=Math.max(8,t*1.15), mMax=Math.max(2.5,m*1.3);
+  const X=tt=>14+(w-28)*(tt/tMax), Y=mm=>h-16-(h-34)*(Math.log(mm)/Math.log(mMax));
   g.strokeStyle=muted; g.globalAlpha=.25; g.lineWidth=1;
   for(let k=1;k<=3;k++){const yy=h-16-(h-34)*k/3;g.beginPath();g.moveTo(14,yy);g.lineTo(w-14,yy);g.stroke();}
   g.globalAlpha=1;
   if(rkPhase==='idle') return;
   g.strokeStyle=rkPhase==='crashed'?'#ff6b81':accent; g.lineWidth=3; g.lineJoin='round'; g.beginPath();
-  const steps=60; for(let i=0;i<=steps;i++){const tt=t*i/steps,mm=Math.exp(0.12*tt);i?g.lineTo(X(tt),Y(mm)):g.moveTo(X(tt),Y(mm));}
+  const steps=60; for(let i=0;i<=steps;i++){const tt=t*i/steps,mm=rkMultAt(tt);i?g.lineTo(X(tt),Y(mm)):g.moveTo(X(tt),Y(mm));}
   g.stroke();
   g.font='26px sans-serif'; g.textAlign='center'; g.textBaseline='middle';
   g.fillText(rkPhase==='crashed'?'💥':'🚀',Math.min(w-20,X(t)),Math.max(18,Y(m)));
@@ -929,7 +945,7 @@ function rkStart(){
   if(!Number.isFinite(stake)||stake<0.1){toast('Минимальная ставка 0.1 GRAM');return;}
   if(stake>state.bal){toast('Недостаточно средств');return;}
   const auto=Number($('rkAuto')?.value||rkAuto);
-  if(Number.isFinite(auto)&&auto>=1.01) rkAuto=Math.round(auto*100)/100;
+  if(Number.isFinite(auto)&&auto>=1.01) rkAuto=Math.min(300,Math.round(auto*100)/100);
   rkStake=stake;
   state.bal=round(state.bal-stake);
   rkActive=true; rkPhase='flying'; rkMult=1; rkCrashAt=rkGenCrash(); rkStartTs=Date.now();
@@ -950,7 +966,7 @@ function rkCash(at){
 }
 function rkTick(){
   const t=(Date.now()-rkStartTs)/1000;
-  rkMult=Math.min(rkCrashAt,Math.exp(0.12*t));
+  rkMult=Math.min(rkCrashAt,rkMultAt(t));
   if(rkMult>=rkCrashAt){ rkCrash(); return; }
   if(rkActive&&rkAutoOn&&rkAuto>=1.01&&rkMult>=rkAuto) rkCash(rkAuto);
   rkUpdateLive();
